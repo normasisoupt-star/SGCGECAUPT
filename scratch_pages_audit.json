@@ -1,0 +1,572 @@
+{
+  "PE": [
+    {
+      "code": "PE.01.01.01",
+      "title": "Gestión de políticas académicas",
+      "start_page": 10,
+      "content_page": 12
+    },
+    {
+      "code": "PE.01.01.02",
+      "title": "Gestión de políticas administrativas",
+      "start_page": 16,
+      "content_page": 18
+    },
+    {
+      "code": "PE.01.02.01",
+      "title": "Formulación del Plan Estratégico Institucional",
+      "start_page": 22,
+      "content_page": 24
+    },
+    {
+      "code": "PE.01.02.02",
+      "title": "Formulación del Presupuesto Institucional",
+      "start_page": 28,
+      "content_page": 30
+    },
+    {
+      "code": "PE.01.02.03",
+      "title": "Formulación del Plan Operativo Institucional",
+      "start_page": 34,
+      "content_page": 36
+    },
+    {
+      "code": "PE.01.02.04",
+      "title": "Formulación del Plan de Trabajo Anual",
+      "start_page": 40,
+      "content_page": 42
+    },
+    {
+      "code": "PE.01.02.05",
+      "title": "Seguimiento y evaluación de planes",
+      "start_page": 46,
+      "content_page": 48
+    },
+    {
+      "code": "PE.01.03.01",
+      "title": "Diseño y actualización del Modelo Educativo",
+      "start_page": 52,
+      "content_page": 54
+    },
+    {
+      "code": "PE.01.04.01",
+      "title": "Creación de carreras o programas",
+      "start_page": 58,
+      "content_page": 60
+    },
+    {
+      "code": "PE.01.04.02",
+      "title": "Supresión de carreras o programas",
+      "start_page": 65,
+      "content_page": 67
+    },
+    {
+      "code": "PE.01.04.03",
+      "title": "Modificación de denominación de carrera o programa",
+      "start_page": 71,
+      "content_page": 73
+    },
+    {
+      "code": "PE.02.01.01",
+      "title": "Revisión del sistema de gestión de la calidad",
+      "start_page": 79,
+      "content_page": 81
+    },
+    {
+      "code": "PE.02.01.02",
+      "title": "Gestión de Información Documentada",
+      "start_page": 87,
+      "content_page": 89
+    },
+    {
+      "code": "PE.02.01.03",
+      "title": "Gestión de Salidas No Conformes",
+      "start_page": 101,
+      "content_page": 103
+    },
+    {
+      "code": "PE.02.01.04",
+      "title": "Gestión de quejas, reclamos y apelaciones",
+      "start_page": 111,
+      "content_page": 114
+    },
+    {
+      "code": "PE.02.02.01",
+      "title": "Evaluación de condiciones básicas de calidad",
+      "start_page": 119,
+      "content_page": 121
+    },
+    {
+      "code": "PE.02.03.01",
+      "title": "Acreditación de carreras profesionales y programas de postgrado",
+      "start_page": 125,
+      "content_page": 127
+    },
+    {
+      "code": "PE.02.04.01",
+      "title": "Auditoría interna y externa",
+      "start_page": 136,
+      "content_page": 138
+    },
+    {
+      "code": "PE.02.04.02",
+      "title": "No conformidades y acciones correctivas",
+      "start_page": 145,
+      "content_page": 147
+    },
+    {
+      "code": "PE.03.01.01",
+      "title": "Identificación, evaluación, tratamiento y monitoreo de riesgos organizacionales",
+      "start_page": 155,
+      "content_page": 157
+    },
+    {
+      "code": "PE.03.02.01",
+      "title": "Gestión de riesgos y desastres",
+      "start_page": 163,
+      "content_page": 165
+    },
+    {
+      "code": "PE.03.02.02",
+      "title": "Gestión de seguridad y salud en el trabajo",
+      "start_page": 169,
+      "content_page": 171
+    },
+    {
+      "code": "PE.03.02.03",
+      "title": "Gestión de la seguridad informática",
+      "start_page": 175,
+      "content_page": 177
+    },
+    {
+      "code": "PE.04.01.01",
+      "title": "Gestión de convenios interinstitucionales",
+      "start_page": 181,
+      "content_page": 183
+    },
+    {
+      "code": "PE.04.02.01",
+      "title": "Difusión de información externa e interna",
+      "start_page": 188,
+      "content_page": 190
+    }
+  ],
+  "PM": [
+    {
+      "code": "PM.01.01.01",
+      "title": "Admisión",
+      "start_page": 10,
+      "content_page": 12
+    },
+    {
+      "code": "PM.01.01.02",
+      "title": "Nivelación de estudiante ingresantes",
+      "start_page": 21,
+      "content_page": 23
+    },
+    {
+      "code": "PM.01.02.01",
+      "title": "Diseño, rediseño, actualización y adecuación curricular",
+      "start_page": 29,
+      "content_page": 31
+    },
+    {
+      "code": "PM.01.02.02",
+      "title": "Elaboración del sílabo",
+      "start_page": 41,
+      "content_page": 43
+    },
+    {
+      "code": "PM.01.03.01",
+      "title": "Planificación de la enseñanza aprendizaje",
+      "start_page": 47,
+      "content_page": 49
+    },
+    {
+      "code": "PM.01.03.02",
+      "title": "Matrícula",
+      "start_page": 55,
+      "content_page": 57
+    },
+    {
+      "code": "PM.01.03.03",
+      "title": "Desarrollo de la enseñanza aprendizaje",
+      "start_page": 62,
+      "content_page": 64
+    },
+    {
+      "code": "PM.01.03.04",
+      "title": "Evaluación del aprendizaje",
+      "start_page": 69,
+      "content_page": 71
+    },
+    {
+      "code": "PM.01.03.05",
+      "title": "Desarrollo de prácticas preprofesionales",
+      "start_page": 77,
+      "content_page": 79
+    },
+    {
+      "code": "PM.01.04.01",
+      "title": "Obtención de grados académicos, títulos profesionales y de segunda especialidad",
+      "start_page": 83,
+      "content_page": 85
+    },
+    {
+      "code": "PM.01.04.02",
+      "title": "Seguimiento de egresados",
+      "start_page": 97,
+      "content_page": 99
+    },
+    {
+      "code": "PM.01.05.01",
+      "title": "Movilidad académica",
+      "start_page": 103,
+      "content_page": 105
+    },
+    {
+      "code": "PM.01.06.01",
+      "title": "Tutoría académica",
+      "start_page": 112,
+      "content_page": 114
+    },
+    {
+      "code": "PM.01.06.02",
+      "title": "Consejería",
+      "start_page": 119,
+      "content_page": 121
+    },
+    {
+      "code": "PM.01.06.03",
+      "title": "Salud mental",
+      "start_page": 125,
+      "content_page": 127
+    },
+    {
+      "code": "PM.01.06.04",
+      "title": "Asistencia Social",
+      "start_page": 131,
+      "content_page": 133
+    },
+    {
+      "code": "PM.01.06.05",
+      "title": "Atención primaria de salud",
+      "start_page": 138,
+      "content_page": 140
+    },
+    {
+      "code": "PM.01.06.06",
+      "title": "Integración a grupos deportivos",
+      "start_page": 144,
+      "content_page": 146
+    },
+    {
+      "code": "PM.01.06.07",
+      "title": "Integración a grupos culturales",
+      "start_page": 150,
+      "content_page": 152
+    },
+    {
+      "code": "PM.01.06.08",
+      "title": "Talleres extracurriculares",
+      "start_page": 156,
+      "content_page": 158
+    },
+    {
+      "code": "PM.01.06.09",
+      "title": "Becas y subvenciones",
+      "start_page": 162,
+      "content_page": 164
+    },
+    {
+      "code": "PM.01.06.10",
+      "title": "Gestión de la universidad saludable",
+      "start_page": 172,
+      "content_page": 174
+    },
+    {
+      "code": "PM.01.07.01",
+      "title": "Contratación e inducción de personal docente",
+      "start_page": 178,
+      "content_page": 180
+    },
+    {
+      "code": "PM.01.07.02",
+      "title": "Capacitación docente",
+      "start_page": 189,
+      "content_page": 191
+    },
+    {
+      "code": "PM.01.07.03",
+      "title": "Evaluación docente",
+      "start_page": 197,
+      "content_page": 199
+    },
+    {
+      "code": "PM.02.01.01",
+      "title": "Actualización de líneas de investigación",
+      "start_page": 205,
+      "content_page": 207
+    },
+    {
+      "code": "PM.02.01.02",
+      "title": "Conformación de grupos de investigación",
+      "start_page": 211,
+      "content_page": 213
+    },
+    {
+      "code": "PM.02.01.03",
+      "title": "Desarrollo de investigación",
+      "start_page": 218,
+      "content_page": 220
+    },
+    {
+      "code": "PM.02.01.04",
+      "title": "Publicación de investigación",
+      "start_page": 224,
+      "content_page": 226
+    },
+    {
+      "code": "PM.02.01.05",
+      "title": "Gestión de la propiedad intelectual",
+      "start_page": 230,
+      "content_page": 232
+    },
+    {
+      "code": "PM.02.02.01",
+      "title": "Innovación, desarrollo tecnológico y emprendimiento",
+      "start_page": 236,
+      "content_page": 238
+    },
+    {
+      "code": "PM.03.01.01",
+      "title": "Planificación de la responsabilidad social universitaria",
+      "start_page": 243,
+      "content_page": 245
+    },
+    {
+      "code": "PM.03.01.02",
+      "title": "Evaluación del impacto de las actividades de responsabilidad social universitaria",
+      "start_page": 250,
+      "content_page": 252
+    },
+    {
+      "code": "PM.03.02.01",
+      "title": "Gestión de la proyección social y voluntariado",
+      "start_page": 256,
+      "content_page": 258
+    },
+    {
+      "code": "PM.03.02.02",
+      "title": "Gestión de residuos",
+      "start_page": 262,
+      "content_page": 264
+    }
+  ],
+  "PS": [
+    {
+      "code": "PS.01.01.01",
+      "title": "Selección, contratación e inducción de personal administrativo",
+      "start_page": 10,
+      "content_page": 12
+    },
+    {
+      "code": "PS.01.01.01",
+      "title": "Evaluación del personal administrativo",
+      "start_page": 18,
+      "content_page": 20
+    },
+    {
+      "code": "PS.01.02.01",
+      "title": "Capacitación de personal administrativo",
+      "start_page": 24,
+      "content_page": 26
+    },
+    {
+      "code": "PS.02.01.01",
+      "title": "Adquisición de material bibliográfico comprado",
+      "start_page": 31,
+      "content_page": 33
+    },
+    {
+      "code": "PS.02.01.02",
+      "title": "Adquisición de material bibliográfico donado",
+      "start_page": 37,
+      "content_page": 39
+    },
+    {
+      "code": "PS.02.01.03",
+      "title": "Préstamo de material bibliográfico",
+      "start_page": 43,
+      "content_page": 45
+    },
+    {
+      "code": "PS.02.01.04",
+      "title": "Acceso a bases de datos",
+      "start_page": 49,
+      "content_page": 51
+    },
+    {
+      "code": "PS.02.02.01",
+      "title": "Publicación en repositorio de tesis e investigaciones",
+      "start_page": 55,
+      "content_page": 57
+    },
+    {
+      "code": "PS.03.01.01",
+      "title": "Elaboración de proyectos de inversión por recursos propios",
+      "start_page": 61,
+      "content_page": 63
+    },
+    {
+      "code": "PS.03.01.02",
+      "title": "Elaboración de proyectos de inversión por tercerización",
+      "start_page": 67,
+      "content_page": 69
+    },
+    {
+      "code": "PS.03.01.03",
+      "title": "Ejecución de proyectos de inversión",
+      "start_page": 74,
+      "content_page": 76
+    },
+    {
+      "code": "PS.03.01.04",
+      "title": "Liquidación y cierre de proyectos de inversión",
+      "start_page": 80,
+      "content_page": 82
+    },
+    {
+      "code": "PS.03.02.01",
+      "title": "Inventario de bienes patrimoniales",
+      "start_page": 86,
+      "content_page": 88
+    },
+    {
+      "code": "PS.03.03.01",
+      "title": "Mantenimiento de infraestructura",
+      "start_page": 93,
+      "content_page": 95
+    },
+    {
+      "code": "PS.03.03.02",
+      "title": "Mantenimiento y reposición de equipos, máquinas e instrumentos",
+      "start_page": 99,
+      "content_page": 101
+    },
+    {
+      "code": "PS.04.01.01",
+      "title": "Desarrollo, mejora e implementación de soluciones tecnológicas",
+      "start_page": 105,
+      "content_page": 107
+    },
+    {
+      "code": "PS.04.02.01",
+      "title": "Gestión de licencias de software y servicios",
+      "start_page": 115,
+      "content_page": 117
+    },
+    {
+      "code": "PS.04.02.02",
+      "title": "Gestión de servidores",
+      "start_page": 121,
+      "content_page": 123
+    },
+    {
+      "code": "PS.04.02.03",
+      "title": "Gestión de comunicaciones",
+      "start_page": 127,
+      "content_page": 129
+    },
+    {
+      "code": "PS.04.02.04",
+      "title": "Mantenimiento de equipos, redes y comunicaciones",
+      "start_page": 133,
+      "content_page": 135
+    },
+    {
+      "code": "PS.04.03.01",
+      "title": "Asistencia a usuarios",
+      "start_page": 140,
+      "content_page": 142
+    },
+    {
+      "code": "PS.04.03.02",
+      "title": "Atención de incidencias de usuarios",
+      "start_page": 146,
+      "content_page": 148
+    },
+    {
+      "code": "PS.05.01.01",
+      "title": "Gestión de ingresos",
+      "start_page": 152,
+      "content_page": 154
+    },
+    {
+      "code": "PS.05.01.02",
+      "title": "Gestión de pagos",
+      "start_page": 158,
+      "content_page": 160
+    },
+    {
+      "code": "PS.05.01.03",
+      "title": "Manejo de caja chica",
+      "start_page": 164,
+      "content_page": 166
+    },
+    {
+      "code": "PS.05.02.01",
+      "title": "Registro contable de operaciones",
+      "start_page": 170,
+      "content_page": 172
+    },
+    {
+      "code": "PS.05.02.02",
+      "title": "Preparación de estados financieros",
+      "start_page": 176,
+      "content_page": 178
+    },
+    {
+      "code": "PS.05.03.01",
+      "title": "Adquisición de bienes, servicios y obras por proceso de selección",
+      "start_page": 182,
+      "content_page": 184
+    },
+    {
+      "code": "PS.05.03.02",
+      "title": "Adquisición de bienes, servicios y obras por proceso directo",
+      "start_page": 189,
+      "content_page": 191
+    },
+    {
+      "code": "PS.05.04.01",
+      "title": "Obtención y actualización de licencias y títulos de propiedad",
+      "start_page": 196,
+      "content_page": 198
+    },
+    {
+      "code": "PS.05.04.02",
+      "title": "Verificación y aseguramiento de servicios públicos",
+      "start_page": 202,
+      "content_page": 204
+    },
+    {
+      "code": "PS.05.04.03",
+      "title": "Aseguramiento de servicios de seguridad y vigilancia",
+      "start_page": 208,
+      "content_page": 210
+    },
+    {
+      "code": "PS.06.01.01",
+      "title": "Asesoría y revisión legal",
+      "start_page": 214,
+      "content_page": 216
+    },
+    {
+      "code": "PS.06.02.01",
+      "title": "Gestión de procesos jurídicos",
+      "start_page": 220,
+      "content_page": 222
+    }
+  ]
+}
