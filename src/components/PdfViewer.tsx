@@ -352,19 +352,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               </span>
             </button>
           </div>
-
-          {/* Botón Destacado de Actividades */}
-          {activitiesPage && activitiesPage >= effectiveStart && activitiesPage <= effectiveEnd && (
-            <button
-              type="button"
-              onClick={() => scrollToPage(activitiesPage)}
-              className="px-2.5 py-1 rounded-lg bg-red-800 hover:bg-red-700 text-white font-bold text-[11px] flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-              title={`Ir a la página ${activitiesPage} de actividades del procedimiento`}
-            >
-              <BookOpen className="w-3.5 h-3.5 text-red-200" />
-              <span>Actividades (Pág. {activitiesPage})</span>
-            </button>
-          )}
         </div>
 
         {/* Acceso rápido a las páginas del rango (Píldoras) */}
