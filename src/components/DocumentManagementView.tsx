@@ -69,7 +69,8 @@ function getPageAndManual(code: string, storageLocation: string, description: st
   const rangeText = range ? range.rangeText : (fallbackPage ? String(fallbackPage) : '1');
   const pageCount = range ? range.pageCount : 1;
 
-  return { manual, page: fallbackPage || (range ? String(range.startPage) : null), range, startPage, endPage, rangeText, pageCount };
+    const activitiesPage = range ? range.activitiesPage : startPage;
+  return { manual, page: fallbackPage || (range ? String(range.startPage) : null), range, startPage, endPage, activitiesPage, rangeText, pageCount };
 }
 
 
@@ -92,6 +93,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   const [viewingDoc, setViewingDoc] = useState<ISODocument | null>(null);
   const [readingDoc, setReadingDoc] = useState<ISODocument | null>(null);
   const [readingTab, setReadingTab] = useState<'pdf' | 'details'>('pdf');
+  const [targetPdfPage, setTargetPdfPage] = useState<number | null>(null);
   const [versioningDoc, setVersioningDoc] = useState<ISODocument | null>(null);
 
   // Estados para nuevo documento
@@ -479,7 +481,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                           {/* Botón principal: Abrir Procedimiento */}
                           <button
                             onClick={() => {
-                              setReadingDoc(doc);
+                              setTargetPdfPage(null); setReadingDoc(doc);
                               setReadingTab('pdf');
                             }}
                             title="Abrir Visor Oficial del Procedimiento (PDF en su página de referencia)"
@@ -608,7 +610,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             {/* Contenido Oficial del Procedimiento */}
             <div className="p-6 overflow-y-auto space-y-5 text-sm text-slate-700 leading-relaxed">
               {(() => {
-                const { manual, page, range, startPage, endPage, rangeText, pageCount } = getPageAndManual(readingDoc.code, readingDoc.storageLocation, readingDoc.description);
+                const { manual, page, range, startPage, endPage, activitiesPage, rangeText, pageCount } = getPageAndManual(readingDoc.code, readingDoc.storageLocation, readingDoc.description);
                 const detailed = UPT_PROCEDURES_DETAILED[readingDoc.code];
                 const officialObj = detailed ? detailed.objective : readingDoc.description;
                 const officialScope = detailed ? detailed.scope : 'Aplica a todas las dependencias académicas y administrativas correspondientes de la Universidad Privada de Tacna.';
@@ -696,11 +698,12 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                     {readingTab === 'pdf' && (
                       <div className="space-y-3">
                         <PdfViewer
-                          key={`${readingDoc.code}-${startPage}-${endPage}`}
+                          key={`${readingDoc.code}-${startPage}-${endPage}-${targetPdfPage || 'default'}`}
                           pdfUrl={getLocalPdfPath(readingDoc.code)}
                           startPage={startPage}
                           endPage={endPage}
-                          initialPage={startPage}
+                          initialPage={targetPdfPage || startPage}
+                          activitiesPage={activitiesPage}
                           docCode={readingDoc.code}
                           docTitle={readingDoc.title}
                           manualName={manual}
@@ -772,11 +775,15 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                           </div>
                           <button
                             type="button"
-                            onClick={() => setReadingTab('pdf')}
+                            onClick={() => {
+                              setTargetPdfPage(activitiesPage);
+                              setReadingTab('pdf');
+                            }}
                             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-800 hover:bg-red-900 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs shrink-0"
+                            title={`Ir directamente a la página ${activitiesPage} de actividades del procedimiento`}
                           >
                             <BookOpen className="w-3.5 h-3.5" />
-                            <span>Ver Actividades en PDF {page ? `(Pág. ${page})` : ''}</span>
+                            <span>Ver Actividades en PDF (Pág. {activitiesPage})</span>
                           </button>
                         </div>
 
@@ -935,7 +942,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                 onClick={() => {
                   const doc = viewingDoc;
                   setViewingDoc(null);
-                  setReadingDoc(doc);
+                  setTargetPdfPage(null); setReadingDoc(doc);
                   setReadingTab('pdf');
                 }}
                 className="px-4 py-2 text-xs font-semibold text-white bg-red-800 hover:bg-red-900 rounded-xl transition-colors cursor-pointer"

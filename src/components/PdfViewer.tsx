@@ -162,6 +162,7 @@ interface PdfViewerProps {
   startPage?: number;
   endPage?: number;
   initialPage?: number;
+  activitiesPage?: number;
   docCode?: string;
   docTitle?: string;
   manualName?: string;
@@ -173,6 +174,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   startPage = 1,
   endPage,
   initialPage,
+  activitiesPage,
   docCode,
   docTitle,
   manualName,
@@ -225,8 +227,17 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         if (isCancelled) return;
         setPdfDoc(loadedDoc);
         setNumPages(loadedDoc.numPages);
-        setSingleCurrentPage(effectiveStart);
+        const target = initialPage && initialPage >= effectiveStart && initialPage <= effectiveEnd ? initialPage : effectiveStart;
+        setSingleCurrentPage(target);
         setLoading(false);
+        if (target > effectiveStart) {
+          setTimeout(() => {
+            const el = document.getElementById(`pdf-page-${target}`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 450);
+        }
       })
       .catch((err: Error) => {
         if (isCancelled) return;
@@ -243,7 +254,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         // ignore
       }
     };
-  }, [pdfUrl, effectiveStart, reloadKey]);
+  }, [pdfUrl, effectiveStart, reloadKey, initialPage, effectiveEnd]);
 
   // Jump to specific page
   const scrollToPage = (pageNum: number) => {
@@ -259,6 +270,12 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       }
     }
   };
+
+  useEffect(() => {
+    if (initialPage && initialPage >= effectiveStart && initialPage <= effectiveEnd) {
+      scrollToPage(initialPage);
+    }
+  }, [initialPage, effectiveStart, effectiveEnd]);
 
   const zoomIn = () => setScale((prev) => Math.min(prev + 0.2, 3.0));
   const zoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.6));
@@ -335,6 +352,19 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               </span>
             </button>
           </div>
+
+          {/* Botón Destacado de Actividades */}
+          {activitiesPage && activitiesPage >= effectiveStart && activitiesPage <= effectiveEnd && (
+            <button
+              type="button"
+              onClick={() => scrollToPage(activitiesPage)}
+              className="px-2.5 py-1 rounded-lg bg-red-800 hover:bg-red-700 text-white font-bold text-[11px] flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              title={`Ir a la página ${activitiesPage} de actividades del procedimiento`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-red-200" />
+              <span>Actividades (Pág. {activitiesPage})</span>
+            </button>
+          )}
         </div>
 
         {/* Acceso rápido a las páginas del rango (Píldoras) */}
