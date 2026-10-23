@@ -412,15 +412,17 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                   return (
                     <tr key={doc.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="px-5 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-slate-900 text-white font-sans shadow-2xs">
-                            {doc.code}
-                          </span>
-                          <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-sans">
-                            {doc.category}
-                          </span>
-                        </div>
-                        <div className="font-medium text-slate-900 mt-1.5 whitespace-normal break-words leading-snug">
+                        {doc.documentType !== 'Manual' && !doc.code.startsWith('MN') && (
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-slate-900 text-white font-sans shadow-2xs">
+                              {doc.code}
+                            </span>
+                            <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-sans">
+                              {doc.category}
+                            </span>
+                          </div>
+                        )}
+                        <div className={`font-medium text-slate-900 whitespace-normal break-words leading-snug ${doc.documentType !== 'Manual' && !doc.code.startsWith('MN') ? 'mt-1.5' : ''}`}>
                           {doc.title}
                         </div>
                         <div className="text-[11px] text-slate-400 mt-0.5">{doc.isoClause}</div>
