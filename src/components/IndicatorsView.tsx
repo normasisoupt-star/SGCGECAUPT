@@ -708,16 +708,19 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   {/* Nombre descriptivo de la evidencia */}
                   <div>
                     <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Nombre Oficial del Documento / Evidencia de Sustento: *
+                      Nombre Oficial o Relación de Documentos Anexos: *
                     </label>
-                    <input
-                      type="text"
+                    <textarea
+                      rows={3}
                       required
-                      placeholder="Ej. Plan_Anual_de_Trabajo_2026_Aprobado_Res_0418.pdf"
+                      placeholder="Ej:&#10;1. Plan_Anual_de_Trabajo_2026_Aprobado_Res_0418.pdf&#10;2. Informe_Trimestral_POI_2026.xlsx&#10;3. Acta_de_Aprobacion_Consejo.pdf"
                       value={evidenceName}
                       onChange={(e) => setEvidenceName(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-amber-700"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-amber-700 resize-y leading-relaxed"
                     />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Puedes detallar uno o varios documentos de sustento (un documento por línea o separados por comas).
+                    </p>
                   </div>
                 </div>
 
@@ -908,9 +911,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
                     <div className="p-3 rounded-xl bg-white border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="space-y-0.5 overflow-hidden">
-                        <div className="text-xs font-bold text-slate-900 truncate flex items-center gap-1.5">
-                          <FileText className="w-4 h-4 text-blue-700 shrink-0" />
-                          <span>{auditingIndicator.currentEvidenceName || 'Plan_de_Trabajo_Anual_y_Sustento.pdf'}</span>
+                        <div className="text-xs font-bold text-slate-900 flex items-start gap-1.5">
+                          <FileText className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
+                          <span className="whitespace-pre-line leading-relaxed">{auditingIndicator.currentEvidenceName || 'Plan_de_Trabajo_Anual_y_Sustento.pdf'}</span>
                         </div>
                         <div className="text-[11px] text-slate-500">
                           Reportado por: {auditingIndicator.measurements?.[0]?.reportedBy || auditingIndicator.responsible}
