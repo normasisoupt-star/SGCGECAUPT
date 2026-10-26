@@ -17,7 +17,7 @@ import {
 } from '../data/initialData';
 
 const STORAGE_KEYS = {
-  DOCS: 'upt_iso21001_documents_v21_09',
+  DOCS: 'upt_iso21001_documents_v26_10',
   CAPAS: 'upt_iso21001_non_conformities',
   CHECKLIST: 'upt_iso21001_audit_checklist',
   USERS: 'upt_iso21001_users',
@@ -42,7 +42,7 @@ export function initStorage() {
   const storedDocs = localStorage.getItem(STORAGE_KEYS.DOCS);
   if (!storedDocs) {
     try {
-      const oldDocs = localStorage.getItem('upt_iso21001_documents_v5') || localStorage.getItem('upt_iso21001_documents_v4') || localStorage.getItem('upt_iso21001_documents');
+      const oldDocs = localStorage.getItem('upt_iso21001_documents_v21_09') || localStorage.getItem('upt_iso21001_documents_v5') || localStorage.getItem('upt_iso21001_documents_v4') || localStorage.getItem('upt_iso21001_documents');
       const officialCodes = new Set(UPT_DOCUMENTS.map(d => d.code));
       if (oldDocs) {
         const oldParsed: ISODocument[] = JSON.parse(oldDocs);

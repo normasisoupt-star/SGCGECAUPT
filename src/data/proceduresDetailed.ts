@@ -258,7 +258,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PE.01.04.03": {
     code: "PE.01.04.03",
-    title: "Modificación de denominación de carreras o",
+    title: "Modificación de denominación de carreras o programas",
     page: 71,
     manual: "Manual de Procedimientos Estratégicos v03",
     objective: "Determinar la forma en que se evalúa, aprueba y ejecuta la modificación de denominación de una carrera o programa en la Universidad Privada de Tacna",
@@ -416,7 +416,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PE.02.03.01": {
     code: "PE.02.03.01",
-    title: "Acreditación de carreras profesionales y",
+    title: "Acreditación de carreras profesionales y programas",
     page: 125,
     manual: "Manual de Procedimientos Estratégicos v03",
     objective: "Determinar la forma en que se gestiona el proceso de acreditación de las carreras profesionales y programas de postgrado de la Universidad Privada de Tacna, asegurando el cumplimiento de los estándares de calidad establecidos por las entidades acreditadoras",
@@ -479,7 +479,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PE.03.01.01": {
     code: "PE.03.01.01",
-    title: "Identificación, evaluación, tratamiento y",
+    title: "Identificación, evaluación, tratamiento y monitoreo de riesgos",
     page: 155,
     manual: "Manual de Procedimientos Estratégicos v03",
     objective: "Determinar la forma en que se identifica, evalúa, trata y monitorea los riesgos organizacionales que puedan afectar el cumplimiento de los objetivos institucionales y la eficacia del Sistema de Gestión de la Calidad de la Universidad Privada de Tacna,",
@@ -629,7 +629,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.01.01.01": {
     code: "PS.01.01.01",
-    title: "Selección, contratación e inducción de",
+    title: "Selección, contratación e inducción de personal administrativo",
     page: 11,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se realiza la selección, contratación e inducción de personal administrativo en la Universidad Privada de Tacna",
@@ -693,7 +693,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.02.01.01": {
     code: "PS.02.01.01",
-    title: "Adquisición de material bibliográfico",
+    title: "Adquisición de material bibliográfico comprado",
     page: 31,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se realiza la adquisición de material bibliográfico por compra en la Universidad Privada de Tacna",
@@ -715,7 +715,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.02.01.02": {
     code: "PS.02.01.02",
-    title: "Adquisición de material bibliográfico",
+    title: "Adquisición de material bibliográfico donado",
     page: 31,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se realiza la adquisición de material bibliográfico por compra en la Universidad Privada de Tacna",
@@ -785,7 +785,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.02.02.01": {
     code: "PS.02.02.01",
-    title: "Publicación en repositorio de tesis e",
+    title: "Publicación en repositorio de tesis e investigaciones",
     page: 55,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se realizan publicaciones en el repositorio digital institucional en la Universidad Privada de Tacna",
@@ -800,7 +800,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.03.01.01": {
     code: "PS.03.01.01",
-    title: "Elaboración de proyectos de inversión por",
+    title: "Elaboración de proyectos de inversión por recursos propios",
     page: 61,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se elaboran proyectos de inversión por recursos propios en la Universidad Privada de Tacna",
@@ -820,7 +820,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.03.01.02": {
     code: "PS.03.01.02",
-    title: "Elaboración de proyectos de inversión por",
+    title: "Elaboración de proyectos de inversión por tercerización",
     page: 61,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se elaboran proyectos de inversión por recursos propios en la Universidad Privada de Tacna",
@@ -858,7 +858,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.03.01.04": {
     code: "PS.03.01.04",
-    title: "Liquidación y cierre de proyectos de",
+    title: "Liquidación y cierre de proyectos de inversión",
     page: 80,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se liquidan y cierran los proyectos de inversión en la Universidad Privada de Tacna",
@@ -941,7 +941,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.03.03.02": {
     code: "PS.03.03.02",
-    title: "Mantenimiento y reposición de equipos,",
+    title: "Mantenimiento y reposición de equipos, máquinas e instrumentos",
     page: 99,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Establecer los lineamientos y actividades estandarizadas para ejecutar el procedimiento de Mantenimiento y reposición de equipos, en la Universidad Privada de Tacna.",
@@ -956,7 +956,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.04.02.04": {
     code: "PS.04.02.04",
-    title: "Mantenimiento de equipos, redes y",
+    title: "Mantenimiento de equipos, redes y comunicaciones",
     page: 101,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se realiza el mantenimiento y reposición de equipos, máquinas e instrumentos en la Universidad Privada de Tacna",
@@ -985,7 +985,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.04.01.01": {
     code: "PS.04.01.01",
-    title: "Desarrollo, mejora e implementación de",
+    title: "Desarrollo, mejora e implementación de soluciones tecnológicas",
     page: 105,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se desarrolla, mejora e implementa soluciones tecnológicas institucionales de la Universidad Privada de Tacna",
@@ -1028,7 +1028,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.05.03.01": {
     code: "PS.05.03.01",
-    title: "Adquisición de bienes, servicios y obras por",
+    title: "Adquisición de bienes, servicios y obras por proceso de selección",
     page: 118,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se opera, monitorea y mejora la infraestructura de servidores de la Universidad Privada de Tacna",
@@ -1058,7 +1058,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.05.03.02": {
     code: "PS.05.03.02",
-    title: "Adquisición de bienes, servicios y obras por",
+    title: "Adquisición de bienes, servicios y obras por proceso directo",
     page: 118,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Establecer los lineamientos y actividades estandarizadas para ejecutar el procedimiento de Adquisición de bienes, servicios y obras por en la Universidad Privada de Tacna.",
@@ -1308,7 +1308,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.05.04.01": {
     code: "PS.05.04.01",
-    title: "Obtención y actualización de licencias y",
+    title: "Obtención y actualización de licencias y títulos de propiedad",
     page: 196,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se obtiene y renueva, actualiza licencias, permisos y títulos de propiedad en la Universidad Privada de Tacna.",
@@ -1330,7 +1330,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.05.04.02": {
     code: "PS.05.04.02",
-    title: "Verificación y aseguramiento de servicios",
+    title: "Verificación y aseguramiento de servicios públicos",
     page: 202,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se asegura la disponibilidad, continuidad y conformidad de los servicios públicos necesarios para el funcionamiento de la Universidad Privada de Tacna.",
@@ -1350,7 +1350,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PS.05.04.03": {
     code: "PS.05.04.03",
-    title: "Aseguramiento de servicios de seguridad y",
+    title: "Aseguramiento de servicios de seguridad y vigilancia",
     page: 202,
     manual: "Manual de Procedimientos de Soporte v03",
     objective: "Determinar la forma en que se asegura la disponibilidad, continuidad y conformidad de los servicios públicos necesarios para el funcionamiento de la Universidad Privada de Tacna.",
@@ -1490,7 +1490,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PM.01.02.01": {
     code: "PM.01.02.01",
-    title: "Diseño, rediseño, actualización y",
+    title: "Diseño, rediseño, actualización y adecuación curricular",
     page: 29,
     manual: "Manual de Procedimientos Misionales v03",
     objective: "Determinar la forma en que se diseña, rediseña, actualiza y adecúa los planes curriculares de las carreras profesionales o programas de postgrado",
@@ -1576,7 +1576,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PM.03.01.01": {
     code: "PM.03.01.01",
-    title: "Planificación de la responsabilidad social",
+    title: "Planificación de la responsabilidad social universitaria",
     page: 47,
     manual: "Manual de Procedimientos Misionales v03",
     objective: "Determinar la forma en que se planifica la enseñanza–aprendizaje en la Universidad Privada de Tacna.",
@@ -1723,7 +1723,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PM.01.04.01": {
     code: "PM.01.04.01",
-    title: "Obtención de grados académicos, títulos",
+    title: "Obtención de grados académicos y títulos",
     page: 83,
     manual: "Manual de Procedimientos Misionales v03",
     objective: "Determinar la forma en que se obtienen los grados académicos, títulos profesionales y de segunda especialidad en la Universidad Privada de Tacna",
@@ -2113,7 +2113,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PM.01.07.01": {
     code: "PM.01.07.01",
-    title: "Contratación e inducción de personal",
+    title: "Contratación e inducción de personal docente",
     page: 178,
     manual: "Manual de Procedimientos Misionales v03",
     objective: "Determinar la forma en que se realiza la contratación e inducción de personal docente en la Universidad Privada de Tacna",
@@ -2301,7 +2301,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PM.02.02.01": {
     code: "PM.02.02.01",
-    title: "Innovación, desarrollo tecnológico y",
+    title: "Innovación, desarrollo tecnológico y emprendimiento",
     page: 236,
     manual: "Manual de Procedimientos Misionales v03",
     objective: "Determinar la forma en que se promueve la innovación, el desarrollo tecnológico y el emprendimiento en la Universidad Privada de Tacna",
@@ -2322,7 +2322,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PM.03.01.02": {
     code: "PM.03.01.02",
-    title: "Evaluación del impacto de las actividades",
+    title: "Evaluación del impacto de las actividades de RSU",
     page: 250,
     manual: "Manual de Procedimientos Misionales v03",
     objective: "Establecer los lineamientos y mecanismos para evaluar de manera sistemática y objetiva el impacto social, ambiental, académico e institucional de las actividades y proyectos de responsabilidad social universitaria en la Universidad Privada de Tacna.",
@@ -2338,7 +2338,7 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
   },
   "PM.03.02.01": {
     code: "PM.03.02.01",
-    title: "Gestión de la proyección social",
+    title: "Gestión de la proyección social y voluntariado",
     page: 256,
     manual: "Manual de Procedimientos Misionales v03",
     objective: "Establecer las acciones necesarias para planificar, organizar, ejecutar, supervisar y evaluar las actividades de proyección social y voluntario universitario.",

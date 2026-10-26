@@ -497,7 +497,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pe-01-04-03',
     code: 'PE.01.04.03',
-    title: 'Modificación de denominación de carreras o',
+    title: 'Modificación de denominación de carreras o programas',
     documentType: 'Procedimiento',
     processCode: 'PE.01',
     processName: 'Planeamiento Institucional',
@@ -659,7 +659,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pe-02-03-01',
     code: 'PE.02.03.01',
-    title: 'Acreditación de carreras profesionales y',
+    title: 'Acreditación de carreras profesionales y programas',
     documentType: 'Procedimiento',
     processCode: 'PE.02',
     processName: 'Gestión de la Calidad',
@@ -740,7 +740,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pe-03-01-01',
     code: 'PE.03.01.01',
-    title: 'Identificación, evaluación, tratamiento y',
+    title: 'Identificación, evaluación, tratamiento y monitoreo de riesgos',
     documentType: 'Procedimiento',
     processCode: 'PE.03',
     processName: 'Gestión de Riesgos Institucionales',
@@ -956,7 +956,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pm-01-02-01',
     code: 'PM.01.02.01',
-    title: 'Diseño, rediseño, actualización y',
+    title: 'Diseño, rediseño, actualización y adecuación curricular',
     documentType: 'Procedimiento',
     processCode: 'PM.01',
     processName: 'Formación Integral Pregrado y Postgrado',
@@ -1145,7 +1145,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pm-01-04-01',
     code: 'PM.01.04.01',
-    title: 'Obtención de grados académicos, títulos',
+    title: 'Obtención de grados académicos y títulos',
     documentType: 'Procedimiento',
     processCode: 'PM.01',
     processName: 'Formación Integral Pregrado y Postgrado',
@@ -1496,7 +1496,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pm-01-07-01',
     code: 'PM.01.07.01',
-    title: 'Contratación e inducción de personal',
+    title: 'Contratación e inducción de personal docente',
     documentType: 'Procedimiento',
     processCode: 'PM.01',
     processName: 'Formación Integral Pregrado y Postgrado',
@@ -1712,7 +1712,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pm-02-02-01',
     code: 'PM.02.02.01',
-    title: 'Innovación, desarrollo tecnológico y',
+    title: 'Innovación, desarrollo tecnológico y emprendimiento',
     documentType: 'Procedimiento',
     processCode: 'PM.02',
     processName: 'Investigación, Desarrollo e Innovación (I+D+i)',
@@ -1739,7 +1739,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pm-03-01-01',
     code: 'PM.03.01.01',
-    title: 'Planificación de la responsabilidad social',
+    title: 'Planificación de la responsabilidad social universitaria',
     documentType: 'Procedimiento',
     processCode: 'PM.03',
     processName: 'Responsabilidad Social Universitaria (RSU)',
@@ -1766,7 +1766,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pm-03-01-02',
     code: 'PM.03.01.02',
-    title: 'Evaluación del impacto de las actividades',
+    title: 'Evaluación del impacto de las actividades de RSU',
     documentType: 'Procedimiento',
     processCode: 'PM.03',
     processName: 'Responsabilidad Social Universitaria (RSU)',
@@ -1793,7 +1793,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-pm-03-02-01',
     code: 'PM.03.02.01',
-    title: 'Gestión de la proyección social',
+    title: 'Gestión de la proyección social y voluntariado',
     documentType: 'Procedimiento',
     processCode: 'PM.03',
     processName: 'Responsabilidad Social Universitaria (RSU)',
@@ -1847,7 +1847,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-01-01-01',
     code: 'PS.01.01.01',
-    title: 'Selección, contratación e inducción de',
+    title: 'Selección, contratación e inducción de personal administrativo',
     documentType: 'Procedimiento',
     processCode: 'PS.01',
     processName: 'Gestión de Potencial Humano',
@@ -1901,7 +1901,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-02-01-01',
     code: 'PS.02.01.01',
-    title: 'Adquisición de material bibliográfico',
+    title: 'Adquisición de material bibliográfico comprado',
     documentType: 'Procedimiento',
     processCode: 'PS.02',
     processName: 'Gestión de Centros de Información',
@@ -1928,7 +1928,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-02-01-02',
     code: 'PS.02.01.02',
-    title: 'Adquisición de material bibliográfico',
+    title: 'Adquisición de material bibliográfico donado',
     documentType: 'Procedimiento',
     processCode: 'PS.02',
     processName: 'Gestión de Centros de Información',
@@ -2009,7 +2009,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-02-02-01',
     code: 'PS.02.02.01',
-    title: 'Publicación en repositorio de tesis e',
+    title: 'Publicación en repositorio de tesis e investigaciones',
     documentType: 'Procedimiento',
     processCode: 'PS.02',
     processName: 'Gestión de Centros de Información',
@@ -2036,7 +2036,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-03-01-01',
     code: 'PS.03.01.01',
-    title: 'Elaboración de proyectos de inversión por',
+    title: 'Elaboración de proyectos de inversión por recursos propios',
     documentType: 'Procedimiento',
     processCode: 'PS.03',
     processName: 'Gestión de Infraestructura y Patrimonio',
@@ -2063,7 +2063,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-03-01-02',
     code: 'PS.03.01.02',
-    title: 'Elaboración de proyectos de inversión por',
+    title: 'Elaboración de proyectos de inversión por tercerización',
     documentType: 'Procedimiento',
     processCode: 'PS.03',
     processName: 'Gestión de Infraestructura y Patrimonio',
@@ -2117,7 +2117,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-03-01-04',
     code: 'PS.03.01.04',
-    title: 'Liquidación y cierre de proyectos de',
+    title: 'Liquidación y cierre de proyectos de inversión',
     documentType: 'Procedimiento',
     processCode: 'PS.03',
     processName: 'Gestión de Infraestructura y Patrimonio',
@@ -2198,7 +2198,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-03-03-02',
     code: 'PS.03.03.02',
-    title: 'Mantenimiento y reposición de equipos,',
+    title: 'Mantenimiento y reposición de equipos, máquinas e instrumentos',
     documentType: 'Procedimiento',
     processCode: 'PS.03',
     processName: 'Gestión de Infraestructura y Patrimonio',
@@ -2225,7 +2225,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-04-01-01',
     code: 'PS.04.01.01',
-    title: 'Desarrollo, mejora e implementación de',
+    title: 'Desarrollo, mejora e implementación de soluciones tecnológicas',
     documentType: 'Procedimiento',
     processCode: 'PS.04',
     processName: 'Gestión de las Tecnologías de Información (TEIN)',
@@ -2333,7 +2333,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-04-02-04',
     code: 'PS.04.02.04',
-    title: 'Mantenimiento de equipos, redes y',
+    title: 'Mantenimiento de equipos, redes y comunicaciones',
     documentType: 'Procedimiento',
     processCode: 'PS.04',
     processName: 'Gestión de las Tecnologías de Información (TEIN)',
@@ -2549,7 +2549,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-05-03-01',
     code: 'PS.05.03.01',
-    title: 'Adquisición de bienes, servicios y obras por',
+    title: 'Adquisición de bienes, servicios y obras por proceso de selección',
     documentType: 'Procedimiento',
     processCode: 'PS.05',
     processName: 'Gestión Administrativa y Financiera',
@@ -2576,7 +2576,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-05-03-02',
     code: 'PS.05.03.02',
-    title: 'Adquisición de bienes, servicios y obras por',
+    title: 'Adquisición de bienes, servicios y obras por proceso directo',
     documentType: 'Procedimiento',
     processCode: 'PS.05',
     processName: 'Gestión Administrativa y Financiera',
@@ -2603,7 +2603,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-05-04-01',
     code: 'PS.05.04.01',
-    title: 'Obtención y actualización de licencias y',
+    title: 'Obtención y actualización de licencias y títulos de propiedad',
     documentType: 'Procedimiento',
     processCode: 'PS.05',
     processName: 'Gestión Administrativa y Financiera',
@@ -2630,7 +2630,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-05-04-02',
     code: 'PS.05.04.02',
-    title: 'Verificación y aseguramiento de servicios',
+    title: 'Verificación y aseguramiento de servicios públicos',
     documentType: 'Procedimiento',
     processCode: 'PS.05',
     processName: 'Gestión Administrativa y Financiera',
@@ -2657,7 +2657,7 @@ export const UPT_DOCUMENTS: ISODocument[] = [
   {
     id: 'doc-ps-05-04-03',
     code: 'PS.05.04.03',
-    title: 'Aseguramiento de servicios de seguridad y',
+    title: 'Aseguramiento de servicios de seguridad y vigilancia',
     documentType: 'Procedimiento',
     processCode: 'PS.05',
     processName: 'Gestión Administrativa y Financiera',
