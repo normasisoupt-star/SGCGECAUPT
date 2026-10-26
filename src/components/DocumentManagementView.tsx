@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { 
-  FileText, 
+  FileText,
+  Compass,
+  Building2,
+  RotateCcw,
+  HelpCircle,
+  Filter, 
   Search, 
   Plus, 
   Download, 
@@ -34,6 +39,7 @@ import { UPT_PROCEDURES_DETAILED } from '../data/proceduresDetailed';
 import { getDocumentCloudUrl, getManualCloudName, getDocumentExactPageUrl, getLocalPdfPath, SHAREPOINT_LISTA_MAESTRA_DOCX } from '../data/cloudManuals';
 import { PdfViewer } from './PdfViewer';
 import { getProcedureRange } from '../data/procedurePageRanges';
+import { normalizeSearchText, getSynonymProcedureCodes, UPT_DEPENDENCIES, GUIDE_TOPICS, GuideTopic } from '../data/searchSynonyms';
 
 interface DocumentManagementViewProps {
   documents: ISODocument[];
@@ -111,22 +117,65 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   const [newVersionNumber, setNewVersionNumber] = useState('');
   const [newVersionReason, setNewVersionReason] = useState('');
 
+  // Estados para búsqueda asistida y por dependencias
+  const [selectedDependency, setSelectedDependency] = useState('all');
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+  const [selectedGuidePillar, setSelectedGuidePillar] = useState<'all' | 'Misional' | 'Soporte' | 'Estratégico'>('all');
+  const [selectedGuideTopicId, setSelectedGuideTopicId] = useState<string | null>(null);
+
   const canApprove = activeUser.role === 'geca';
   const canCreate = activeUser.role === 'geca' || activeUser.role === 'vrac' || activeUser.role === 'vrin' || activeUser.role === 'diga';
   const isRectorado = activeUser.role === 'rectorado';
 
+  const normalizedTerm = normalizeSearchText(searchTerm);
+  const synonymCodes = getSynonymProcedureCodes(searchTerm);
+
   const filteredDocs = documents.filter((doc) => {
+    const normTitle = normalizeSearchText(doc.title);
+    const normCode = normalizeSearchText(doc.code);
+    const normProcName = normalizeSearchText(doc.processName);
+    const normDesc = normalizeSearchText(doc.description || '');
+    const normUploadedBy = normalizeSearchText(doc.uploadedBy || '');
+
     const matchesSearch =
-      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.processName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.description.toLowerCase().includes(searchTerm.toLowerCase());
+      !normalizedTerm ||
+      normTitle.includes(normalizedTerm) ||
+      normCode.includes(normalizedTerm) ||
+      normProcName.includes(normalizedTerm) ||
+      normDesc.includes(normalizedTerm) ||
+      normUploadedBy.includes(normalizedTerm) ||
+      synonymCodes.has(doc.code);
+
     const matchesType = selectedType === 'all' || doc.documentType === selectedType;
     const matchesStatus = selectedStatus === 'all' || doc.status === selectedStatus;
     const matchesProcess = selectedProcess === 'all' || doc.processCode === selectedProcess;
 
-    return matchesSearch && matchesType && matchesStatus && matchesProcess;
+    let matchesDependency = true;
+    if (selectedDependency !== 'all') {
+      const depObj = UPT_DEPENDENCIES.find((d) => d.id === selectedDependency);
+      if (depObj && depObj.filterKeywords.length > 0) {
+        const combinedMeta = `${normUploadedBy} ${normProcName} ${normCode} ${normTitle}`.toLowerCase();
+        matchesDependency = depObj.filterKeywords.some((kw) => combinedMeta.includes(kw.toLowerCase()));
+      }
+    }
+
+    return matchesSearch && matchesType && matchesStatus && matchesProcess && matchesDependency;
   });
+
+  const isFilterActive =
+    searchTerm.trim() !== '' ||
+    selectedDependency !== 'all' ||
+    selectedType !== 'all' ||
+    selectedStatus !== 'all' ||
+    selectedProcess !== 'all';
+
+  const resetAllFilters = () => {
+    setSearchTerm('');
+    setSelectedDependency('all');
+    setSelectedType('all');
+    setSelectedStatus('all');
+    setSelectedProcess('all');
+  };
 
   const handleCreateDocument = (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,23 +379,82 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
       </div>
 
       {/* Barra de Filtros y Búsqueda */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Buscar por código (ej. PE.02.01.02, PM.01.02.01), nombre o palabra clave..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-600 bg-slate-50/50"
-          />
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+          {/* Input de Búsqueda Inteligente */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar por trámite cotidiano (ej: matrícula, título, compras, sueldos, biblioteca), código o tema..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-8 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50/60 placeholder:text-slate-400 font-sans"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                title="Borrar búsqueda"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Botón Asistente Guiado Institucional */}
+          <button
+            type="button"
+            onClick={() => setIsGuideModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-2xs transition-all cursor-pointer shrink-0 border border-slate-800"
+            title="Asistente para encontrar procedimientos por tema o trámite sin códigos"
+          >
+            <Compass className="w-4 h-4 text-red-400" />
+            <span>Asistente Guiado de Búsqueda</span>
+          </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Filtros Institucionales */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold mr-1">
+            <Filter className="w-3.5 h-3.5 text-slate-400" />
+            <span>Filtrar:</span>
+          </div>
+
+          {/* Filtro por Oficina / Dependencia */}
+          <select
+            value={selectedDependency}
+            onChange={(e) => setSelectedDependency(e.target.value)}
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[250px]"
+            title="Filtrar por oficina o área responsable de la UPT"
+          >
+            {UPT_DEPENDENCIES.map((dep) => (
+              <option key={dep.id} value={dep.id}>
+                {dep.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Filtro por Proceso */}
+          <select
+            value={selectedProcess}
+            onChange={(e) => setSelectedProcess(e.target.value)}
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[210px]"
+          >
+            <option value="all">Todos los Procesos (13)</option>
+            {UPT_PROCESSES.map((proc) => (
+              <option key={proc.code} value={proc.code}>
+                {proc.code} - {proc.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Filtro por Tipo */}
           <select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-600 bg-white cursor-pointer font-medium"
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50 hover:bg-white cursor-pointer font-medium"
           >
             <option value="all">Todos los Tipos ({documents.length})</option>
             <option value="Procedimiento">Procedimientos ({documents.filter((d) => d.documentType === 'Procedimiento').length})</option>
@@ -356,10 +464,11 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             <option value="Registro / Formato">Formatos (RG)</option>
           </select>
 
+          {/* Filtro por Estado */}
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-600 bg-white cursor-pointer font-medium"
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50 hover:bg-white cursor-pointer font-medium"
           >
             <option value="all">Todos los Estados</option>
             <option value="vigente">Vigente</option>
@@ -368,19 +477,39 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             <option value="obsoleto">Obsoleto</option>
           </select>
 
-          <select
-            value={selectedProcess}
-            onChange={(e) => setSelectedProcess(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-600 bg-white cursor-pointer font-medium max-w-[220px]"
-          >
-            <option value="all">Todos los Procesos (13)</option>
-            {UPT_PROCESSES.map((proc) => (
-              <option key={proc.code} value={proc.code}>
-                {proc.code} - {proc.name}
-              </option>
-            ))}
-          </select>
+          {/* Botón de Limpiar Filtros si hay algo activo */}
+          {isFilterActive && (
+            <button
+              type="button"
+              onClick={resetAllFilters}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-700 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded-xl transition-colors cursor-pointer border border-red-200 ml-auto"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Limpiar filtros</span>
+            </button>
+          )}
         </div>
+
+        {/* Indicador de Resultados Activos */}
+        {isFilterActive && (
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-slate-800">
+                Mostrando {filteredDocs.length} de {documents.length} documentos
+              </span>
+              {synonymCodes.size > 0 && searchTerm && (
+                <span className="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md text-[11px] font-medium">
+                  💡 Búsqueda temática inteligente activada
+                </span>
+              )}
+            </div>
+            {filteredDocs.length === 0 && (
+              <span className="text-red-600 font-medium">
+                No se encontraron coincidencias. Prueba borrando los filtros.
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tabla Oficial Lista Maestra */}
