@@ -9,6 +9,7 @@ import {
   Clock,
   FileText,
   Paperclip,
+  Cloud,
   Upload,
   ExternalLink,
   ShieldCheck,
@@ -61,7 +62,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [numerator, setNumerator] = useState<number | ''>('');
   const [denominator, setDenominator] = useState<number | ''>('');
   const [directValue, setDirectValue] = useState<number | ''>('');
-  const [evidenceType, setEvidenceType] = useState<'file' | 'sharepoint' | 'dms'>('file');
+  const [evidenceType, setEvidenceType] = useState<'file' | 'sharepoint' | 'dms'>('sharepoint');
   const [evidenceName, setEvidenceName] = useState('');
   const [evidenceUrl, setEvidenceUrl] = useState('');
   const [evidenceNotes, setEvidenceNotes] = useState('');
@@ -131,7 +132,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
     setMeasuringIndicator(ind);
     setPeriod('2026 - Evaluación Anual');
-    setEvidenceType('file');
+    setEvidenceType('sharepoint');
     setEvidenceName(ind.currentEvidenceName || 'Plan_de_Trabajo_Anual_y_Sustento.pdf');
     setEvidenceUrl(ind.currentEvidenceUrl || '');
     setEvidenceNotes('');
@@ -677,116 +678,47 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
               {/* SECCIÓN B: EVIDENCIA DOCUMENTAL OBLIGATORIA */}
               <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-3">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
-                  <Paperclip className="w-4 h-4 text-amber-700" />
-                  <span>2. Anexar Sustento Documental (Plan de Trabajo / Evidencias)</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
+                    <Paperclip className="w-4 h-4 text-amber-700" />
+                    <span>2. Anexar Sustento Documental (Plan de Trabajo / Evidencias)</span>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold bg-amber-800 text-white shadow-2xs">
+                    <Cloud className="w-3.5 h-3.5 text-amber-200" />
+                    <span>Enlace SharePoint Nube / OneDrive / Drive</span>
+                  </div>
                 </div>
 
-                {/* Tipo de Fuente de Evidencia */}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEvidenceType('file')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      evidenceType === 'file'
-                        ? 'bg-amber-800 text-white shadow-2xs'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    📁 Subir Archivo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEvidenceType('dms')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      evidenceType === 'dms'
-                        ? 'bg-amber-800 text-white shadow-2xs'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    📄 Procedimiento / Plan del DMS
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEvidenceType('sharepoint')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      evidenceType === 'sharepoint'
-                        ? 'bg-amber-800 text-white shadow-2xs'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    ☁️ SharePoint Nube
-                  </button>
-                </div>
-
-                {/* Contenido según tipo */}
-                {evidenceType === 'file' && (
-                  <div className="space-y-2">
-                    <label className="block text-[11px] font-semibold text-slate-700">
-                      Seleccionar Archivo de Sustento (Plan Anual de Trabajo, Informe POI, Excel, PDF):
-                    </label>
-                    <input
-                      type="file"
-                      accept=".pdf,.xlsx,.xls,.docx,.doc"
-                      onChange={handleFileUpload}
-                      className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 cursor-pointer"
-                    />
-                    {uploadedFileName && (
-                      <div className="text-[11px] text-emerald-800 font-bold flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        <span>Archivo adjunto: {uploadedFileName}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {evidenceType === 'dms' && (
-                  <div className="space-y-2">
-                    <label className="block text-[11px] font-semibold text-slate-700">
-                      Seleccionar Procedimiento o Plan Institucional Custodiado:
-                    </label>
-                    <select
-                      onChange={handleSelectDMSDoc}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white font-medium"
-                    >
-                      <option value="">-- Seleccionar Procedimiento Oficial --</option>
-                      {documents.map(d => (
-                        <option key={d.code} value={d.code}>
-                          {d.code} - {d.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {evidenceType === 'sharepoint' && (
-                  <div className="space-y-2">
-                    <label className="block text-[11px] font-semibold text-slate-700">
-                      Enlace Directo en SharePoint Institucional UPT:
+                {/* Enlace a la Nube (SharePoint, OneDrive, Google Drive) */}
+                <div className="space-y-3 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Enlace Directo del Sustento (SharePoint Nube / OneDrive / Google Drive): *
                     </label>
                     <input
                       type="url"
-                      placeholder="https://uptpe-my.sharepoint.com/..."
+                      required
+                      placeholder="https://uptpe-my.sharepoint.com/... o https://drive.google.com/..."
                       value={evidenceUrl}
                       onChange={(e) => setEvidenceUrl(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white font-mono"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-mono focus:outline-none focus:ring-2 focus:ring-amber-700"
                     />
                   </div>
-                )}
 
-                {/* Nombre descriptivo de la evidencia */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Nombre Oficial del Documento Anexo
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej. Plan_Anual_de_Trabajo_2026_Aprobado_Res_0418.pdf"
-                    value={evidenceName}
-                    onChange={(e) => setEvidenceName(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white font-medium"
-                  />
+                  {/* Nombre descriptivo de la evidencia */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Nombre Oficial del Documento / Evidencia de Sustento: *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ej. Plan_Anual_de_Trabajo_2026_Aprobado_Res_0418.pdf"
+                      value={evidenceName}
+                      onChange={(e) => setEvidenceName(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-amber-700"
+                    />
+                  </div>
                 </div>
 
                 {/* Observaciones metodológicas */}
