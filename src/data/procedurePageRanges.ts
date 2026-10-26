@@ -250,6 +250,16 @@ export const UPT_PROCEDURE_PAGE_RANGES: Record<string, ProcedureRangeInfo> = {
     "rangeText": "181 a 187",
     "activitiesPage": 183
   },
+  "PE.04.01.02": {
+    "code": "PE.04.01.02",
+    "title": "Gestión de alianzas estratégicas",
+    "startPage": 181,
+    "endPage": 187,
+    "pageCount": 7,
+    "manual": "Manual de Procedimientos Estratégicos v3.0",
+    "rangeText": "181 a 187",
+    "activitiesPage": 184
+  },
   "PE.04.02.01": {
     "code": "PE.04.02.01",
     "title": "Difusión de información interna y externa",
@@ -614,11 +624,31 @@ export const UPT_PROCEDURE_PAGE_RANGES: Record<string, ProcedureRangeInfo> = {
     "code": "PS.01.01.01",
     "title": "Selección, contratación e inducción de personal administrativo",
     "startPage": 10,
-    "endPage": 23,
-    "pageCount": 14,
+    "endPage": 17,
+    "pageCount": 8,
     "manual": "Manual de Procedimientos de Soporte v03",
-    "rangeText": "10 a 23",
+    "rangeText": "10 a 17",
     "activitiesPage": 12
+  },
+  "PS.01.01.02": {
+    "code": "PS.01.01.02",
+    "title": "Evaluación del personal administrativo",
+    "startPage": 18,
+    "endPage": 23,
+    "pageCount": 6,
+    "manual": "Manual de Procedimientos de Soporte v3.0",
+    "rangeText": "18 a 23",
+    "activitiesPage": 21
+  },
+  "PS 01.01.02": {
+    "code": "PS.01.01.02",
+    "title": "Evaluación del personal administrativo",
+    "startPage": 18,
+    "endPage": 23,
+    "pageCount": 6,
+    "manual": "Manual de Procedimientos de Soporte v3.0",
+    "rangeText": "18 a 23",
+    "activitiesPage": 21
   },
   "PS.01.02.01": {
     "code": "PS.01.02.01",

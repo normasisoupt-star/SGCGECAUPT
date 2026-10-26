@@ -17,7 +17,7 @@ import {
 } from '../data/initialData';
 
 const STORAGE_KEYS = {
-  DOCS: 'upt_iso21001_documents_v26_10',
+  DOCS: 'upt_iso21001_documents_v26_10_c',
   CAPAS: 'upt_iso21001_non_conformities',
   CHECKLIST: 'upt_iso21001_audit_checklist',
   USERS: 'upt_iso21001_users',
@@ -95,7 +95,7 @@ export function getDocuments(): ISODocument[] {
 
     // Always ensure official documents use the latest audited storageLocation & description
     const officialMap = new Map(UPT_DOCUMENTS.map(d => [d.code, d]));
-    return parsed.map(d => {
+    const updated = parsed.map(d => {
       const off = officialMap.get(d.code);
       if (off) {
         return {
@@ -107,6 +107,17 @@ export function getDocuments(): ISODocument[] {
       }
       return d;
     });
+
+    // Automatically incorporate any official document added to UPT_DOCUMENTS
+    const existingCodes = new Set(updated.map(d => d.code));
+    const missingOfficial = UPT_DOCUMENTS.filter(d => !existingCodes.has(d.code));
+    if (missingOfficial.length > 0) {
+      const fullList = [...updated, ...missingOfficial];
+      localStorage.setItem(STORAGE_KEYS.DOCS, JSON.stringify(fullList));
+      return fullList;
+    }
+
+    return updated;
   } catch {
     return UPT_DOCUMENTS;
   }

@@ -609,6 +609,22 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
       { step: 25, task: "Renovar o modificar el convenio Oficina de Relaciones Nacionales e Internacionales Jefe de Oficina de Relaciones Nacionales e Internacionales", unit: "Unidad Orgánica Responsable", responsible: "Responsable Designado" },
     ]
   },
+  "PE.04.01.02": {
+    code: "PE.04.01.02",
+    title: "Gestión de alianzas estratégicas",
+    page: 181,
+    manual: "Manual de Procedimientos Estratégicos v03",
+    objective: "Establecer las directrices y mecanismos para la identificación, formalización, ejecución y seguimiento de alianzas estratégicas institucionales nacionales e internacionales en la Universidad Privada de Tacna.",
+    scope: "Aplica a la Dirección de Cooperación y Relaciones Interinstitucionales, Rectorado, Vicerrectorados, Facultades y unidades académicas y administrativas involucradas.",
+    activities: [
+      { step: 1, task: "Identificar la necesidad de suscribir una alianza o convenio estratégico", unit: "Unidad orgánica", responsible: "Jefe de Unidad orgánica" },
+      { step: 2, task: "Gestionar alianza con institución o contraparte externa", unit: "Unidad orgánica", responsible: "Jefe de Unidad orgánica" },
+      { step: 3, task: "Comunicar a Oficina de Relaciones Nacionales e Internacionales las gestiones realizadas", unit: "Unidad orgánica", responsible: "Jefe de Unidad orgánica" },
+      { step: 4, task: "Formular el proyecto de alianza o convenio estratégico", unit: "Oficina de Relaciones Nacionales e Internacionales", responsible: "Jefe de Oficina de Relaciones Nacionales e Internacionales" },
+      { step: 5, task: "Revisión legal y dictamen de procedencia jurídica", unit: "Oficina de Asesoría Jurídica y Legal", responsible: "Jefe de la Oficina de Asesoría Jurídica y Legal" },
+      { step: 6, task: "Aprobación y suscripción por Consejo Universitario y Rectorado", unit: "Rectorado / Consejo Universitario", responsible: "Rector / Consejo Universitario" }
+    ]
+  },
   "PE.04.02.01": {
     code: "PE.04.02.01",
     title: "Difusión de información interna y externa",
@@ -663,6 +679,22 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
       { step: 30, task: "Presentar contrato a Ministerio de Trabajo para su registro en el plazo de ley de ser necesario Área de Gestión del Potencial Humano Jefe del área de Gestión del Potencial Humano administrativo contratado", unit: "Unidad Orgánica Responsable", responsible: "Responsable Designado" },
       { step: 2, task: "Sistema de Gestión de Calidad Política de Calidad, contribución del trabajador. APHU ☐ Sí ☐ No", unit: "Unidad Orgánica Responsable", responsible: "Responsable Designado" },
       { step: 8, task: "Organización y unidad de trabajo Funciones de la unidad, estructura, responsables y principales procesos. Unidad orgánica ☐ Sí ☐ No", unit: "Unidad Orgánica Responsable", responsible: "Responsable Designado" },
+    ]
+  },
+  "PS.01.01.02": {
+    code: "PS.01.01.02",
+    title: "Evaluación del personal administrativo",
+    page: 18,
+    manual: "Manual de Procedimientos de Soporte v03",
+    objective: "Establecer la metodología y criterios para evaluar periódicamente el desempeño y competencias del personal administrativo de la Universidad Privada de Tacna.",
+    scope: "Aplica a todo el personal administrativo bajo cualquier modalidad laboral en las distintas dependencias de la universidad.",
+    activities: [
+      { step: 1, task: "Elaborar cronograma de evaluación anual", unit: "Área de Gestión del Potencial Humano", responsible: "Jefe del Área de Gestión del Potencial Humano" },
+      { step: 2, task: "Elaborar o actualizar instrumentos de evaluación", unit: "Área de Gestión del Potencial Humano", responsible: "Jefe del Área de Gestión del Potencial Humano" },
+      { step: 3, task: "Evaluar al personal administrativo a su cargo conforme a cronograma", unit: "Área u oficina", responsible: "Jefe del Área u oficina" },
+      { step: 4, task: "Consolidar resultados de la evaluación", unit: "Área de Gestión del Potencial Humano", responsible: "Jefe del Área de Gestión del Potencial Humano" },
+      { step: 5, task: "Retroalimentar resultados al trabajador administrativo", unit: "Área de Gestión del Potencial Humano", responsible: "Jefe del Área de Gestión del Potencial Humano" },
+      { step: 6, task: "Ejecutar acciones de mejora cuando el resultado de la evaluación es menor al esperado", unit: "Área de Gestión del Potencial Humano", responsible: "Jefe del Área de Gestión del Potencial Humano" }
     ]
   },
   "PS.01.02.01": {
