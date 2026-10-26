@@ -1162,6 +1162,178 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
         </div>
       )}
 
+      {/* Modal: Asistente Institucional de Búsqueda Guiada */}
+      {isGuideModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            {/* Cabecera Institucional */}
+            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-red-800 flex items-center justify-center text-white">
+                  <Compass className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">
+                    Asistente Institucional de Búsqueda UPT
+                  </h2>
+                  <p className="text-xs text-slate-300">
+                    Encuentra tu procedimiento oficial seleccionando tu tema o trámite cotidiano
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsGuideModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Pestañas de Ámbitos Institucionales */}
+            <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-slate-600 mr-1">Ámbito:</span>
+              {[
+                { id: 'all', label: 'Todos los Temas' },
+                { id: 'Misional', label: 'Formación y Estudiantes (Misional)' },
+                { id: 'Soporte', label: 'Administración y Soporte' },
+                { id: 'Estratégico', label: 'Dirección y Calidad' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedGuidePillar(tab.id as any);
+                    setSelectedGuideTopicId(null);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    selectedGuidePillar === tab.id
+                      ? 'bg-slate-900 text-white shadow-2xs'
+                      : 'bg-white text-slate-600 hover:bg-slate-200/70 border border-slate-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Contenido con Scroll */}
+            <div className="p-6 overflow-y-auto space-y-4 flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {GUIDE_TOPICS.filter(
+                  (t) => selectedGuidePillar === 'all' || t.pillar === selectedGuidePillar
+                ).map((topic) => {
+                  const isExpanded = selectedGuideTopicId === topic.id;
+                  const matchingDocs = documents.filter((d) =>
+                    topic.procedureCodes.includes(d.code)
+                  );
+
+                  return (
+                    <div
+                      key={topic.id}
+                      className={`p-4 rounded-2xl border transition-all ${
+                        isExpanded
+                          ? 'border-red-700 bg-red-50/20 shadow-xs'
+                          : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-2xs'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                            {topic.pillar}
+                          </span>
+                          <h3 className="font-bold text-sm text-slate-900 mt-1.5">
+                            {topic.title}
+                          </h3>
+                          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                            {topic.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span className="text-xs text-slate-500 font-medium">
+                          {matchingDocs.length} procedimientos asociados
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedGuideTopicId(isExpanded ? null : topic.id)
+                          }
+                          className="px-3 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors cursor-pointer"
+                        >
+                          {isExpanded ? 'Ocultar' : 'Ver Procedimientos'}
+                        </button>
+                      </div>
+
+                      {/* Lista desplegada de procedimientos del tema */}
+                      {isExpanded && (
+                        <div className="mt-3.5 pt-3 border-t border-red-100 space-y-2">
+                          {matchingDocs.map((doc) => (
+                            <div
+                              key={doc.id}
+                              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 flex items-center justify-between gap-3 shadow-2xs"
+                            >
+                              <div className="min-w-0">
+                                <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900 text-white font-sans mr-2">
+                                  {doc.code}
+                                </span>
+                                <div className="text-xs font-medium text-slate-900 truncate mt-0.5">
+                                  {doc.title}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsGuideModalOpen(false);
+                                  setReadingDoc(doc);
+                                  setTargetPdfPage(null);
+                                  setReadingTab('pdf');
+                                }}
+                                className="px-2.5 py-1 text-xs font-semibold bg-red-800 hover:bg-red-900 text-white rounded-lg shadow-2xs shrink-0 cursor-pointer transition-colors"
+                              >
+                                Ver PDF
+                              </button>
+                            </div>
+                          ))}
+
+                          <div className="pt-2 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSearchTerm(topic.title);
+                                setIsGuideModalOpen(false);
+                              }}
+                              className="text-xs font-semibold text-red-700 hover:text-red-800 underline cursor-pointer"
+                            >
+                              Filtrar estos procedimientos en la Lista Maestra →
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Pie de modal */}
+            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-xs text-slate-500">
+                Sistema de Gestión de la Calidad (SGC) - Universidad Privada de Tacna
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsGuideModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 cursor-pointer transition-colors"
+              >
+                Cerrar Asistente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal 4: Nuevo Documento */}
       {isOpenNewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
