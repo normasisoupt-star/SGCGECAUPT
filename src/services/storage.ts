@@ -5,7 +5,8 @@ import {
   UserProfile, 
   ActivityLog,
   UPTIndicator,
-  IndicatorMeasurement
+  IndicatorMeasurement,
+  EvaluationYear
 } from '../types';
 import { 
   UPT_DOCUMENTS, 
@@ -24,6 +25,7 @@ const STORAGE_KEYS = {
   ACTIVE_USER: 'upt_iso21001_active_user',
   LOGS: 'upt_iso21001_activity_logs',
   INDICATORS: 'upt_iso21001_indicators_v04_10',
+  YEARS: 'upt_iso21001_evaluation_years_v1',
 };
 
 const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
@@ -69,6 +71,14 @@ export function initStorage() {
   }
   if (!localStorage.getItem(STORAGE_KEYS.LOGS)) {
     localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(UPT_ACTIVITY_LOGS));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.YEARS)) {
+    localStorage.setItem(
+      STORAGE_KEYS.YEARS,
+      JSON.stringify([
+        { year: 2026, status: 'abierto', openedAt: '2026-01-01', openedBy: 'Jefe de la Oficina de Gestión de la Calidad (GECA)' }
+      ])
+    );
   }
   const storedIndicators = localStorage.getItem(STORAGE_KEYS.INDICATORS);
   if (!storedIndicators || JSON.parse(storedIndicators).length < 20) {
@@ -516,4 +526,61 @@ export function resetToDefaults(): void {
   localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(UPT_ACTIVITY_LOGS));
   localStorage.setItem(STORAGE_KEYS.INDICATORS, JSON.stringify(UPT_INDICATORS));
   broadcastChange('ALL_RESET');
+}
+
+
+// --- GOBERNANZA DE AÑOS DE EVALUACIÓN ---
+export function getEvaluationYears(): EvaluationYear[] {
+  initStorage();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.YEARS);
+    if (!raw) {
+      return [{ year: 2026, status: 'abierto', openedAt: '2026-01-01', openedBy: 'Jefe de la Oficina de Gestión de la Calidad (GECA)' }];
+    }
+    const parsed: EvaluationYear[] = JSON.parse(raw);
+    if (!parsed.some(y => y.year === 2026)) {
+      parsed.unshift({ year: 2026, status: 'abierto', openedAt: '2026-01-01', openedBy: 'Jefe de la Oficina de Gestión de la Calidad (GECA)' });
+    }
+    return parsed.sort((a, b) => a.year - b.year);
+  } catch {
+    return [{ year: 2026, status: 'abierto' }];
+  }
+}
+
+export function saveEvaluationYears(years: EvaluationYear[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEYS.YEARS, JSON.stringify(years));
+  broadcastChange('years_updated', years);
+}
+
+export function openNewEvaluationYear(year: number, authorName: string): EvaluationYear[] {
+  const years = getEvaluationYears();
+  if (years.some(y => y.year === year)) return years;
+  const newYearObj: EvaluationYear = {
+    year,
+    status: 'abierto',
+    openedAt: new Date().toISOString().split('T')[0],
+    openedBy: authorName,
+  };
+  const updated: EvaluationYear[] = [...years, newYearObj].sort((a, b) => a.year - b.year);
+  saveEvaluationYears(updated);
+  return updated;
+}
+
+export function toggleYearStatus(year: number, authorName: string): EvaluationYear[] {
+  const years = getEvaluationYears();
+  const updated = years.map((y) => {
+    if (y.year === year) {
+      const nextStatus: 'abierto' | 'cerrado' = y.status === 'abierto' ? 'cerrado' : 'abierto';
+      return {
+        ...y,
+        status: nextStatus,
+        closedAt: nextStatus === 'cerrado' ? new Date().toISOString().split('T')[0] : undefined,
+        closedBy: nextStatus === 'cerrado' ? authorName : undefined,
+      };
+    }
+    return y;
+  });
+  saveEvaluationYears(updated);
+  return updated;
 }

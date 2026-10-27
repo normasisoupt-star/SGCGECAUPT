@@ -137,6 +137,15 @@ export interface IndicatorMeasurement {
   validatedAt?: string;
 }
 
+export interface EvaluationYear {
+  year: number;
+  status: 'abierto' | 'cerrado';
+  closedAt?: string;
+  closedBy?: string;
+  openedAt?: string;
+  openedBy?: string;
+}
+
 export interface UPTIndicator {
   code: string;
   name: string;
