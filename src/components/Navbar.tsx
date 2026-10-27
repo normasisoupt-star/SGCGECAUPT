@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Settings as SettingsIcon,
   ChevronDown,
   GraduationCap
 } from 'lucide-react';
@@ -10,7 +9,7 @@ interface NavbarProps {
   users: UserProfile[];
   activeUser: UserProfile;
   onSwitchUser: (user: UserProfile) => void;
-  onOpenSettings: () => void;
+  onOpenSettings?: () => void;
 }
 
 const ROLE_COLORS: Record<UserRole, string> = {
@@ -62,13 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>SGOE UPT Conectado</span>
           </div>
 
-          <button
-            onClick={onOpenSettings}
-            title="Configuración de Base de Datos y Respaldos"
-            className="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
-          >
-            <SettingsIcon className="w-5 h-5" />
-          </button>
+
 
           {/* Menú de Simulación de Usuario UPT */}
           <div className="relative">

@@ -8,7 +8,6 @@ import { IndicatorsView } from './components/IndicatorsView';
 import { CAPAManagementView } from './components/CAPAManagementView';
 import { AuditChecklistView } from './components/AuditChecklistView';
 import { ActivityLogsView } from './components/ActivityLogsView';
-import { SettingsModal } from './components/SettingsModal';
 
 import {
   getDocuments,
@@ -59,7 +58,6 @@ export function App() {
 
   const [isOpenNewDocModal, setIsOpenNewDocModal] = useState(false);
   const [isOpenNewCapaModal, setIsOpenNewCapaModal] = useState(false);
-  const [isOpenSettingsModal, setIsOpenSettingsModal] = useState(false);
 
   const refreshAll = () => {
     setDocuments(getDocuments());
@@ -155,7 +153,6 @@ export function App() {
         users={users}
         activeUser={activeUser}
         onSwitchUser={handleSwitchUser}
-        onOpenSettings={() => setIsOpenSettingsModal(true)}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -241,11 +238,7 @@ export function App() {
         </main>
       </div>
 
-      <SettingsModal
-        isOpen={isOpenSettingsModal}
-        onClose={() => setIsOpenSettingsModal(false)}
-        onDataChanged={refreshAll}
-      />
+
     </div>
   );
 }
