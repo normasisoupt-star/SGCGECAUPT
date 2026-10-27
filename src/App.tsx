@@ -226,9 +226,17 @@ export function App() {
           {activeTab === 'checklist' && (
             <AuditChecklistView
               checklist={checklist}
+              nonConformities={nonConformities}
               activeUser={activeUser}
               onUpdateItem={handleUpdateChecklistItem}
               onCreateCapaFromFinding={handleCreateCapaFromFinding}
+              onNavigateToCapa={() => {
+                setActiveTab('capa');
+              }}
+              onOpenNewCapa={() => {
+                setActiveTab('capa');
+                setIsOpenNewCapaModal(true);
+              }}
             />
           )}
 

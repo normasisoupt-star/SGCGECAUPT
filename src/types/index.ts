@@ -170,8 +170,24 @@ export interface UPTIndicator {
   measurements?: IndicatorMeasurement[];
 }
 
+export interface AuditProcessSession {
+  id: string;
+  year: number;
+  processCode: ProcessLevel0;
+  processName: string;
+  office: string;
+  responsible: string;
+  auditor: string;
+  date: string;
+  schedule: string;
+  clauses: string[];
+  status: 'programada' | 'en_curso' | 'completada';
+  notes?: string;
+}
+
 export interface AuditChecklistItem {
   id: string;
+  year?: number;
   clause: string;
   clauseTitle: string;
   requirement: string;
@@ -180,6 +196,8 @@ export interface AuditChecklistItem {
   status: 'conforme' | 'no_conforme' | 'observacion' | 'no_evaluado';
   notes?: string;
   findingReference?: string;
+  findingReferences?: string[];
+  office?: string;
 }
 
 export interface ActivityLog {

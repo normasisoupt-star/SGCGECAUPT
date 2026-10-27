@@ -1,4 +1,5 @@
 import { 
+  AuditProcessSession,
   ISODocument, 
   NonConformity, 
   AuditChecklistItem, 
@@ -11,7 +12,8 @@ import {
 import { 
   UPT_DOCUMENTS, 
   UPT_NON_CONFORMITIES, 
-  UPT_CHECKLIST, 
+  UPT_CHECKLIST,
+  UPT_AUDIT_SESSIONS, 
   UPT_USERS, 
   UPT_ACTIVITY_LOGS,
   UPT_INDICATORS 
@@ -26,6 +28,7 @@ const STORAGE_KEYS = {
   LOGS: 'upt_iso21001_activity_logs',
   INDICATORS: 'upt_iso21001_indicators_v26_10_denominations',
   YEARS: 'upt_iso21001_evaluation_years_v1',
+  AUDIT_SESSIONS: 'upt_iso21001_audit_sessions_v1',
 };
 
 const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
@@ -59,6 +62,9 @@ export function initStorage() {
   }
   if (!localStorage.getItem(STORAGE_KEYS.CAPAS)) {
     localStorage.setItem(STORAGE_KEYS.CAPAS, JSON.stringify(UPT_NON_CONFORMITIES));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.AUDIT_SESSIONS)) {
+    localStorage.setItem(STORAGE_KEYS.AUDIT_SESSIONS, JSON.stringify(UPT_AUDIT_SESSIONS));
   }
   if (!localStorage.getItem(STORAGE_KEYS.CHECKLIST)) {
     localStorage.setItem(STORAGE_KEYS.CHECKLIST, JSON.stringify(UPT_CHECKLIST));
@@ -414,6 +420,44 @@ export function validateIndicatorMeasurement(
 }
 
 // --- AUDITORÍA & CHECKLIST ---
+
+// --- PLAN DE AUDITORÍA POR PROCESOS & OFICINAS ---
+export function getAuditSessions(): AuditProcessSession[] {
+  initStorage();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.AUDIT_SESSIONS);
+    return raw ? JSON.parse(raw) : UPT_AUDIT_SESSIONS;
+  } catch {
+    return UPT_AUDIT_SESSIONS;
+  }
+}
+
+export function saveAuditSessions(sessions: AuditProcessSession[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEYS.AUDIT_SESSIONS, JSON.stringify(sessions));
+  broadcastChange('audit_sessions_updated', sessions);
+}
+
+export function updateAuditSession(session: AuditProcessSession): void {
+  const sessions = getAuditSessions();
+  const idx = sessions.findIndex(s => s.id === session.id);
+  if (idx >= 0) {
+    sessions[idx] = session;
+    saveAuditSessions(sessions);
+  }
+}
+
+export function addAuditSession(sessionData: Omit<AuditProcessSession, 'id'>): AuditProcessSession {
+  const sessions = getAuditSessions();
+  const newSession: AuditProcessSession = {
+    ...sessionData,
+    id: 'aud-ses-' + Date.now(),
+  };
+  sessions.push(newSession);
+  saveAuditSessions(sessions);
+  return newSession;
+}
+
 export function getChecklist(): AuditChecklistItem[] {
   initStorage();
   try {
