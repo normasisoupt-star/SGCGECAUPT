@@ -24,7 +24,7 @@ const STORAGE_KEYS = {
   USERS: 'upt_iso21001_users',
   ACTIVE_USER: 'upt_iso21001_active_user',
   LOGS: 'upt_iso21001_activity_logs',
-  INDICATORS: 'upt_iso21001_indicators_v04_10',
+  INDICATORS: 'upt_iso21001_indicators_v26_10_denominations',
   YEARS: 'upt_iso21001_evaluation_years_v1',
 };
 
@@ -300,6 +300,7 @@ export function getIndicators(): UPTIndicator[] {
         return {
           ...off,
           ...ind,
+          responsible: off.responsible,
           formulaType: off.formulaType || ind.formulaType,
           numeratorLabel: off.numeratorLabel || ind.numeratorLabel,
           denominatorLabel: off.denominatorLabel || ind.denominatorLabel,

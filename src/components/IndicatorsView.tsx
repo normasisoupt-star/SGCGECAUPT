@@ -242,11 +242,34 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
   // Filtrado de Indicadores
   const filtered = indicators.filter((ind) => {
+    const term = searchTerm.toLowerCase().trim();
+    const acronymSynonyms: Record<string, string> = {
+      'opla': 'planeamiento',
+      'diga': 'administración',
+      'adma': 'admisión',
+      'espg': 'posgrado',
+      'gpad': 'docencia',
+      'vrac': 'vicerrector académico',
+      'resu': 'responsabilidad social',
+      'geca': 'calidad',
+      'tein': 'tecnología',
+      'reni': 'relaciones',
+      'obun': 'bienestar',
+      'pitt': 'pitt',
+      'edun': 'edun',
+      'aphu': 'potencial humano',
+      'bisa': 'biblioteca',
+      'csst': 'seguridad y salud',
+      'sst': 'seguridad y salud',
+    };
+    const expandedTerm = acronymSynonyms[term] || '';
+
     const matchesSearch = (
-      ind.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ind.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ind.processName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ind.responsible.toLowerCase().includes(searchTerm.toLowerCase())
+      ind.name.toLowerCase().includes(term) ||
+      ind.code.toLowerCase().includes(term) ||
+      ind.processName.toLowerCase().includes(term) ||
+      ind.responsible.toLowerCase().includes(term) ||
+      (expandedTerm !== '' && ind.responsible.toLowerCase().includes(expandedTerm))
     );
 
     const matchesCategory = 
@@ -877,9 +900,12 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right max-w-[62%]">
                     <span className="text-[10px] text-slate-400 font-semibold block">Frecuencia: {ind.frequency}</span>
-                    <span className="text-[10px] text-slate-500 font-semibold">Dueño: {ind.responsible.split('(')[0].trim()}</span>
+                    <span className="text-[11px] text-slate-700 font-semibold block leading-snug mt-0.5 line-clamp-2" title={ind.responsible}>
+                      <span className="text-slate-500 font-normal">Dueño: </span>
+                      <span className="text-slate-900 font-bold">{ind.responsible}</span>
+                    </span>
                   </div>
                 </div>
 
