@@ -4,7 +4,8 @@ import {
   GraduationCap,
   Building2,
   Globe,
-  Check
+  Check,
+  LogOut
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types';
 
@@ -14,6 +15,7 @@ interface NavbarProps {
   onSwitchUser: (user: UserProfile) => void;
   scopeMode: 'my_office' | 'all';
   onToggleScopeMode: (mode: 'my_office' | 'all') => void;
+  onLogout?: () => void;
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -43,6 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSwitchUser,
   scopeMode,
   onToggleScopeMode,
+  onLogout,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -185,9 +188,41 @@ export const Navbar: React.FC<NavbarProps> = ({
                     );
                   })}
                 </div>
+
+                {/* Footer de la ventana: Cerrar Sesión */}
+                <div className="p-3 border-t border-slate-100 bg-slate-50/80 rounded-b-3xl flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span className="text-[11px] text-slate-500 font-medium">Sesión iniciada</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      onLogout?.();
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer shadow-2xs"
+                    title="Cerrar la sesión actual"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                    <span>Cerrar sesión</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
+
+          {/* Botón Rápido de Cerrar Sesión en Header */}
+          {onLogout && (
+            <button
+              type="button"
+              onClick={onLogout}
+              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors cursor-pointer shrink-0"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </header>
