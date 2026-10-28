@@ -62,7 +62,9 @@ export function App() {
   const [isOpenNewDocModal, setIsOpenNewDocModal] = useState(false);
   const [isOpenNewCapaModal, setIsOpenNewCapaModal] = useState(false);
   const [scopeMode, setScopeMode] = useState<'my_office' | 'all'>('my_office');
-  const [isLoggedOut, setIsLoggedOut] = useState(false);
+  const [isLoggedOut, setIsLoggedOut] = useState(() => {
+    return sessionStorage.getItem('upt_sgc_logged_in') !== 'true';
+  });
 
   const refreshAll = () => {
     setDocuments(getDocuments());
@@ -161,6 +163,7 @@ export function App() {
     const created = registerUser(newUser);
     refreshAll();
     handleSwitchUser(created);
+    sessionStorage.setItem('upt_sgc_logged_in', 'true');
     setIsLoggedOut(false);
   };
 
@@ -171,6 +174,7 @@ export function App() {
         activeUser={activeUser}
         onLogin={(user) => {
           handleSwitchUser(user);
+          sessionStorage.setItem('upt_sgc_logged_in', 'true');
           setIsLoggedOut(false);
         }}
         onRegisterUser={handleRegisterUser}
@@ -186,7 +190,10 @@ export function App() {
         onSwitchUser={handleSwitchUser}
         scopeMode={scopeMode}
         onToggleScopeMode={setScopeMode}
-        onLogout={() => setIsLoggedOut(true)}
+        onLogout={() => {
+          sessionStorage.removeItem('upt_sgc_logged_in');
+          setIsLoggedOut(true);
+        }}
       />
 
       <div className="flex-1 flex overflow-hidden">

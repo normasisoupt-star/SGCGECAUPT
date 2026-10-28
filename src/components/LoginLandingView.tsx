@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  Building2, 
-  Mail, 
-  Lock, 
   ArrowRight, 
   UserPlus, 
-  ShieldCheck, 
   FileText, 
   TrendingUp, 
   Eye, 
@@ -112,135 +108,138 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
   return (
     <div 
-      className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden bg-cover bg-center bg-no-repeat"
+      className="min-h-screen w-full relative flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden bg-cover bg-center bg-no-repeat select-none"
       style={{ backgroundImage: `url('/upt_campus_fachada.jpg')` }}
     >
-      {/* Capa de desenfoque suave idéntica al mockup (suave y diurna) */}
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-[5px]"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20 pointer-events-none"></div>
+      {/* Capa de desenfoque suave idéntica al mockup */}
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-[4px]"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/15 pointer-events-none"></div>
 
       {/* CONTENEDOR PRINCIPAL FLOTANTE */}
-      <div className="relative z-10 max-w-5xl w-full mx-auto my-auto pt-16 sm:pt-20">
+      <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto pt-14 sm:pt-16">
         
-        {/* ESCUDO OFICIAL UPT SUPERPUESTO EN EL BORDE SUPERIOR (Exactamente como en la muestra 1) */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        {/* ESCUDO OFICIAL UPT SUPERPUESTO EXACTAMENTE EN EL BORDE SUPERIOR */}
+        <div className="absolute -top-10 sm:-top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
           <img 
             src="/upt_escudo_oficial.png" 
             alt="Escudo Oficial Universidad Privada de Tacna - Veritas et Vita" 
-            className="h-32 sm:h-44 w-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.3)] filter contrast-105"
+            className="h-32 sm:h-40 md:h-44 w-auto object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)]"
           />
         </div>
 
-        {/* TARJETA UNIFICADA DE VIDRIO ESMERILADO (FROSTED GLASS CONTINUO) */}
-        <div className="bg-white/40 backdrop-blur-2xl rounded-[2.5rem] border border-white/70 shadow-[0_25px_60px_rgba(0,0,0,0.18)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 pt-16 sm:pt-20 pb-8 sm:pb-10 px-6 sm:px-10">
+        {/* TARJETA GLASSMORPHISM TRANSLÚCIDA CONTINUA (Idéntica a media_1793227531358.png) */}
+        <div 
+          className="rounded-[28px] border border-white/80 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden grid grid-cols-1 md:grid-cols-2 pt-14 sm:pt-16 pb-8 sm:pb-9 px-6 sm:px-10 relative"
+          style={{
+            background: 'rgba(255, 255, 255, 0.45)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+          }}
+        >
           
           {/* LADO IZQUIERDO: TÍTULO, SELLOS ISO Y MEDALLONES CIRCULARES */}
-          <div className="lg:col-span-5 flex flex-col justify-between pr-0 lg:pr-8 pb-8 lg:pb-0 border-b lg:border-b-0 lg:border-r border-white/50">
+          <div className="flex flex-col justify-between pr-0 md:pr-6 pb-6 md:pb-0 border-b md:border-b-0 md:border-r border-white/60">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+              <h1 className="text-2xl sm:text-[28px] lg:text-[32px] font-black text-slate-900 leading-[1.18] tracking-tight">
                 Sistema de <br />
                 Gestión de la Calidad
               </h1>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1 tracking-tight">
+              <div className="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight">
                 SGC UPT
               </div>
 
               {/* SELLOS OFICIALES ISO (Diseño gemelo al mockup) */}
-              <div className="mt-6 sm:mt-8 flex items-center gap-3">
+              <div className="mt-5 sm:mt-6 flex items-center gap-3">
                 {/* ISO 21001 */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-sky-300 shadow-xs">
-                  <div className="w-7 h-7 rounded-full bg-sky-700 text-white flex items-center justify-center font-black text-[9px] tracking-tighter">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-[#0284c7] shadow-2xs">
+                  <div className="w-7 h-7 rounded-full bg-[#0369a1] text-white flex items-center justify-center font-black text-[9px] tracking-tighter">
                     ISO
                   </div>
-                  <div>
-                    <div className="text-[11px] font-black text-sky-900 leading-tight">ISO</div>
-                    <div className="text-[10px] font-bold text-sky-700">21001:2018</div>
+                  <div className="leading-tight text-left">
+                    <div className="text-[11px] font-black text-[#0369a1]">ISO</div>
+                    <div className="text-[10px] font-bold text-[#0284c7]">21001:2018</div>
                   </div>
                 </div>
 
                 {/* ISO 9001 */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-blue-400 shadow-xs">
-                  <div className="w-7 h-7 rounded-full bg-blue-800 text-white flex items-center justify-center font-black text-[9px] tracking-tighter">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-[#1e40af] shadow-2xs">
+                  <div className="w-7 h-7 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center font-black text-[9px] tracking-tighter">
                     ISO
                   </div>
-                  <div>
-                    <div className="text-[11px] font-black text-blue-950 leading-tight">ISO</div>
-                    <div className="text-[10px] font-bold text-blue-800">9001:2015</div>
+                  <div className="leading-tight text-left">
+                    <div className="text-[11px] font-black text-[#1e3a8a]">ISO</div>
+                    <div className="text-[10px] font-bold text-[#1d4ed8]">9001:2015</div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* MEDALLONES CIRCULARES INSTITUCIONALES (Diseño exacto al mockup) */}
-            <div className="mt-8 flex items-center gap-6">
+            <div className="mt-7 flex items-center gap-8">
               {/* Medallón 98 */}
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-white/85 border-2 border-slate-300/80 shadow-md flex flex-col items-center justify-center p-2 relative group hover:scale-105 transition-transform">
-                  <div className="w-4 h-4 text-slate-700 mb-0.5">
-                    <FileText className="w-4 h-4 mx-auto" />
-                  </div>
+                <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-white/80 border-2 border-dashed border-slate-300 shadow-sm flex flex-col items-center justify-center p-2">
+                  <FileText className="w-4 h-4 text-slate-600 mb-0.5" />
                   <div className="text-xl sm:text-2xl font-black text-slate-900 leading-none">98</div>
                 </div>
-                <span className="text-[11px] font-bold text-slate-800 mt-2 max-w-[90px] leading-tight">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 mt-1.5 max-w-[85px] leading-tight">
                   Procedimientos vigentes
                 </span>
               </div>
 
               {/* Medallón 61 */}
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-white/85 border-2 border-slate-300/80 shadow-md flex flex-col items-center justify-center p-2 relative group hover:scale-105 transition-transform">
-                  <div className="w-4 h-4 text-slate-700 mb-0.5">
-                    <TrendingUp className="w-4 h-4 mx-auto" />
-                  </div>
+                <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-white/80 border-2 border-dashed border-slate-300 shadow-sm flex flex-col items-center justify-center p-2">
+                  <TrendingUp className="w-4 h-4 text-slate-600 mb-0.5" />
                   <div className="text-xl sm:text-2xl font-black text-slate-900 leading-none">61</div>
                 </div>
-                <span className="text-[11px] font-bold text-slate-800 mt-2 max-w-[90px] leading-tight">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 mt-1.5 max-w-[85px] leading-tight">
                   Indicadores monitoreados
                 </span>
               </div>
             </div>
           </div>
 
-          {/* LADO DERECHO: FORMULARIO VIDRIO Y PÍLDORAS DE ACCESO */}
-          <div className="lg:col-span-7 flex flex-col justify-between pl-0 lg:pl-8 pt-6 lg:pt-0">
+          {/* LADO DERECHO: FORMULARIO Y PÍLDORAS */}
+          <div className="flex flex-col justify-between pl-0 md:pl-6 pt-4 md:pt-0">
             <div>
-              {/* Encabezado Pestañas y Badge de 16 Oficinas */}
-              <div className="flex items-center justify-between border-b border-white/60 pb-2.5 mb-5">
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => { setActiveTab('login'); setStatusMessage(null); }}
-                    className={`pb-1 text-xs font-bold transition-all cursor-pointer ${
-                      activeTab === 'login'
-                        ? 'border-b-2 border-red-900 text-slate-900'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Iniciar Sesión
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setActiveTab('register'); setStatusMessage(null); }}
-                    className={`pb-1 text-xs font-bold transition-all cursor-pointer ${
-                      activeTab === 'register'
-                        ? 'border-b-2 border-red-900 text-slate-900'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Registrar Nuevo Funcionario
-                  </button>
-                </div>
+              {/* Pestañas Iniciar Sesión / Registrar */}
+              <div className="flex items-center gap-5 border-b border-slate-300/60 pb-2">
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('login'); setStatusMessage(null); }}
+                  className={`text-xs font-bold transition-all cursor-pointer relative pb-1.5 ${
+                    activeTab === 'login'
+                      ? 'text-slate-900 after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-slate-900'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Iniciar Sesión
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('register'); setStatusMessage(null); }}
+                  className={`text-xs font-bold transition-all cursor-pointer relative pb-1.5 ${
+                    activeTab === 'register'
+                      ? 'text-slate-900 after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-slate-900'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Registrar Nuevo Funcionario
+                </button>
+              </div>
 
-                {/* Insignia 16 Oficinas Conectadas (Gemela a la imagen) */}
-                <div className="px-3 py-1 rounded-full bg-white/80 border border-white text-slate-800 text-xs font-bold flex items-center gap-2 shadow-xs">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              {/* Pill Badge: 🟢 16 Oficinas Conectadas */}
+              <div className="mt-3.5 mb-3 flex justify-start">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-white text-slate-800 text-xs font-bold shadow-2xs">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
                   <span>16 Oficinas Conectadas</span>
                 </div>
               </div>
 
               {/* Mensajes de Alerta */}
               {statusMessage && (
-                <div className={`mb-4 p-3 rounded-2xl text-xs flex items-center gap-2 shadow-xs ${
+                <div className={`mb-3 p-2.5 rounded-xl text-xs flex items-center gap-2 shadow-xs ${
                   statusMessage.type === 'success'
                     ? 'bg-emerald-100/90 text-emerald-950 border border-emerald-300'
                     : 'bg-rose-100/90 text-rose-950 border border-rose-300'
@@ -254,70 +253,53 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                 </div>
               )}
 
-              {/* FORMULARIO LOGIN */}
-              {activeTab === 'login' && (
-                <form onSubmit={handleLoginSubmit} className="space-y-4">
-                  {/* Campo Correo Institucional */}
+              {/* VISTA LOGIN */}
+              {activeTab === 'login' ? (
+                <form onSubmit={handleLoginSubmit} className="space-y-3">
+                  {/* Correo Institucional */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                       Correo Institucional
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                        <Mail className="w-4 h-4" />
-                      </div>
                       <input
                         type="text"
-                        value={currentUser?.email || 'usuario@upt.pe'}
+                        value={currentUser?.email || ''}
                         readOnly
                         placeholder="@upt.pe"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/70 border border-white/80 text-slate-900 text-xs font-medium shadow-inner focus:outline-none focus:bg-white"
+                        className="w-full px-4 py-2 rounded-xl bg-white/70 border border-white/80 text-xs font-medium text-slate-900 shadow-inner focus:outline-none focus:bg-white/90"
                       />
                     </div>
                   </div>
 
-                  {/* Campo Contraseña */}
+                  {/* Contraseña */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                       Contraseña
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                        <Lock className="w-4 h-4" />
-                      </div>
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-10 pr-10 py-2.5 rounded-2xl bg-white/70 border border-white/80 text-slate-900 text-xs font-mono shadow-inner focus:outline-none focus:bg-white"
+                        className="w-full px-4 py-2 pr-10 rounded-xl bg-white/70 border border-white/80 text-xs font-mono text-slate-900 shadow-inner focus:outline-none focus:bg-white/90"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-800 cursor-pointer"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </div>
 
-                  {/* Enlace Olvidó Contraseña */}
-                  <div className="text-right">
-                    <button
-                      type="button"
-                      onClick={() => alert('Para soporte con sus credenciales, comuníquese con TEIN o GECA.')}
-                      className="text-[11px] text-slate-700 hover:text-red-900 hover:underline cursor-pointer font-medium"
-                    >
-                      ¿Olvidó su contraseña?
-                    </button>
-                  </div>
-
-                  {/* Chips de Selección Rápida de Oficinas (Gemelas a la imagen 1) */}
-                  <div className="pt-1">
-                    <div className="text-[11px] font-bold text-slate-800 mb-2">
+                  {/* Acceso Rápido de Oficinas (Gemelo al mockup) */}
+                  <div>
+                    <div className="text-[11px] font-semibold text-slate-700 mb-1.5">
                       Acceso rápido de oficinas:
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {[
                         { label: 'OPLA', code: 'PE.01', role: 'opla' },
                         { label: 'GECA', code: 'PE.02', role: 'geca' },
@@ -331,14 +313,14 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             key={chip.role}
                             type="button"
                             onClick={() => handleSelectQuickOffice(chip.role)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5 shadow-xs ${
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border flex items-center gap-1 shadow-2xs ${
                               isSelected
-                                ? 'bg-red-900 text-white border-red-900 scale-105 shadow-md'
-                                : 'bg-white/75 hover:bg-white text-slate-800 border-white/80'
+                                ? 'bg-[#800020] text-white border-[#800020] scale-105'
+                                : 'bg-white/75 hover:bg-white text-slate-700 border-white/80'
                             }`}
                           >
                             <span>{chip.label}</span>
-                            <span className={`text-[10px] font-mono ${isSelected ? 'text-red-200' : 'text-slate-500'}`}>
+                            <span className={`text-[10px] font-mono ${isSelected ? 'text-rose-200' : 'text-slate-500'}`}>
                               {chip.code}
                             </span>
                           </button>
@@ -347,12 +329,12 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Selector General de Todas las Dependencias */}
-                  <div className="pt-1">
+                  {/* Dropdown de Todas las Dependencias */}
+                  <div>
                     <select
                       value={currentUser?.id}
                       onChange={(e) => setSelectedUserId(e.target.value)}
-                      className="w-full text-xs font-semibold px-3.5 py-2 rounded-xl bg-white/60 border border-white/80 text-slate-800 focus:outline-none focus:bg-white cursor-pointer"
+                      className="w-full text-xs font-medium px-3 py-1.5 rounded-lg bg-white/60 border border-white/80 text-slate-800 focus:outline-none focus:bg-white cursor-pointer"
                     >
                       {users.map(u => (
                         <option key={u.id} value={u.id}>
@@ -362,72 +344,62 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     </select>
                   </div>
 
-                  {/* BOTÓN ROJO CARMESÍ REDONDEADO (IDÉNTICO AL MOCKUP) */}
+                  {/* Botón Rojo Carmesí Redondeado (Píldora Idéntica al Mockup) */}
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full py-3 px-8 rounded-full bg-[#800020] hover:bg-[#600018] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-red-900/30 hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                      className="w-full py-2.5 px-6 rounded-full bg-[#800020] hover:bg-[#600018] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer group"
                     >
                       <span>Ingresar a Mi Oficina</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
                 </form>
-              )}
-
-              {/* FORMULARIO REGISTRO */}
-              {activeTab === 'register' && (
-                <form onSubmit={handleRegisterSubmit} className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              ) : (
+                /* VISTA REGISTRO */
+                <form onSubmit={handleRegisterSubmit} className="space-y-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                        Nombres y Apellidos *
-                      </label>
+                      <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Nombres y Apellidos *</label>
                       <input
                         type="text"
                         placeholder="Ej. Mg. Carlos Albarracín"
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
                         required
-                        className="w-full px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                        Cargo o Puesto
-                      </label>
+                      <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Cargo o Puesto</label>
                       <input
                         type="text"
                         placeholder="Ej. Especialista de Calidad"
                         value={regCharge}
                         onChange={(e) => setRegCharge(e.target.value)}
-                        className="w-full px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                      Correo Institucional (@upt.pe) *
-                    </label>
+                    <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Correo Institucional (@upt.pe) *</label>
                     <input
                       type="text"
                       placeholder="usuario@upt.pe"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
                       required
-                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white"
+                      className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                      Oficina Asignada *
-                    </label>
+                    <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Oficina Asignada *</label>
                     <select
                       value={regOfficeIndex}
                       onChange={(e) => setRegOfficeIndex(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white cursor-pointer font-medium"
+                      className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white cursor-pointer font-medium"
                     >
                       {OFFICE_DIRECTORY.map((off, idx) => (
                         <option key={off.code} value={idx}>
@@ -438,26 +410,24 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                      Rol de Acceso en el SGC
-                    </label>
+                    <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Rol en el SGC</label>
                     <select
                       value={regRole}
                       onChange={(e) => setRegRole(e.target.value as UserRole)}
-                      className="w-full px-3 py-2 rounded-xl bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white cursor-pointer font-medium"
+                      className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white cursor-pointer font-medium"
                     >
                       <option value="colaborador">Colaborador Administrativo</option>
-                      <option value="director_escuela">Dueño de Proceso (Registro de Evidencias)</option>
-                      <option value="auditor">Auditor Interno Designado</option>
+                      <option value="director_escuela">Dueño de Proceso</option>
+                      <option value="auditor">Auditor Interno</option>
                     </select>
                   </div>
 
-                  <div className="pt-2">
+                  <div className="pt-1.5">
                     <button
                       type="submit"
-                      className="w-full py-2.5 px-6 rounded-full bg-[#800020] hover:bg-[#600018] text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-2 px-6 rounded-full bg-[#800020] hover:bg-[#600018] text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <UserPlus className="w-4 h-4" />
+                      <UserPlus className="w-3.5 h-3.5" />
                       <span>Completar Registro Institucional</span>
                     </button>
                   </div>
