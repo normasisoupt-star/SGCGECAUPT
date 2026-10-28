@@ -44,6 +44,8 @@ interface IndicatorsViewProps {
   onUpdateIndicator: (indicator: UPTIndicator) => void;
   onAddMeasurement: (code: string, data: Omit<IndicatorMeasurement, 'id' | 'date'>) => void;
   onValidateMeasurement: (code: string, measurementId: string, status: 'validado_conforme' | 'observado', comment: string) => void;
+  scopeMode?: 'my_office' | 'all';
+  onToggleScopeMode?: (mode: 'my_office' | 'all') => void;
 }
 
 export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
@@ -53,6 +55,8 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   onUpdateIndicator,
   onAddMeasurement,
   onValidateMeasurement,
+  scopeMode = 'all',
+  onToggleScopeMode,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'ALL' | 'PE' | 'PM' | 'PS'>('ALL');
@@ -279,7 +283,17 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     const currentStatus = ind.validationStatus || 'validado_conforme';
     const matchesStatus = statusFilter === 'ALL' || currentStatus === statusFilter;
 
-    return matchesSearch && matchesCategory && matchesStatus;
+    let matchesScope = true;
+    if (scopeMode === 'my_office') {
+      if (activeUser.role !== 'geca' && activeUser.role !== 'rectorado' && activeUser.role !== 'auditor') {
+        const userOffice = (activeUser.officeName || activeUser.department).toLowerCase();
+        const matchesResp = ind.responsible.toLowerCase().includes(userOffice) || userOffice.includes(ind.responsible.toLowerCase());
+        const matchesProc = activeUser.processCodes && activeUser.processCodes.some(p => ind.processCode.startsWith(p));
+        matchesScope = Boolean(matchesResp || matchesProc);
+      }
+    }
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesScope;
   });
 
   // Apertura del modal de registro
@@ -740,6 +754,32 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
       {viewMode === 'tablero' ? (
         <>
+          {/* Banner de Espacio de Trabajo por Oficina */}
+          {scopeMode === 'my_office' && activeUser.role !== 'geca' && activeUser.role !== 'rectorado' && (
+            <div className="p-4 rounded-3xl bg-blue-50 border border-blue-200 text-blue-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-bold text-xs uppercase tracking-wider text-blue-700 block">
+                    Tablero de Indicadores de Mi Oficina
+                  </span>
+                  <p className="text-xs text-blue-900 mt-0.5">
+                    Mostrando <strong>{filtered.length} indicadores oficiales</strong> bajo la competencia de: <strong>{activeUser.officeName || activeUser.department}</strong>.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onToggleScopeMode?.('all')}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-blue-900 hover:bg-blue-100 border border-blue-200 transition-colors shadow-2xs cursor-pointer shrink-0"
+              >
+                Ver todos los 61 indicadores UPT
+              </button>
+            </div>
+          )}
+
           {/* Barra de Filtros */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-100/70 p-2 rounded-2xl border border-slate-200">
         <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto p-1">

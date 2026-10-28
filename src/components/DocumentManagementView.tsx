@@ -50,6 +50,8 @@ interface DocumentManagementViewProps {
   isOpenNewModal: boolean;
   onCloseNewModal: () => void;
   onOpenNewModal: () => void;
+  scopeMode?: 'my_office' | 'all';
+  onToggleScopeMode?: (mode: 'my_office' | 'all') => void;
 }
 
 const STATUS_CONFIG: Record<DocumentStatus, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -90,6 +92,8 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   isOpenNewModal,
   onCloseNewModal,
   onOpenNewModal,
+  scopeMode = 'all',
+  onToggleScopeMode,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -159,7 +163,12 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
       }
     }
 
-    return matchesSearch && matchesType && matchesStatus && matchesProcess && matchesDependency;
+    let matchesScope = true;
+    if (scopeMode === 'my_office' && activeUser.processCodes && activeUser.processCodes.length > 0) {
+      matchesScope = activeUser.processCodes.includes(doc.processCode);
+    }
+
+    return matchesSearch && matchesType && matchesStatus && matchesProcess && matchesDependency && matchesScope;
   });
 
   const isFilterActive =

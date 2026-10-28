@@ -58,6 +58,7 @@ export function App() {
 
   const [isOpenNewDocModal, setIsOpenNewDocModal] = useState(false);
   const [isOpenNewCapaModal, setIsOpenNewCapaModal] = useState(false);
+  const [scopeMode, setScopeMode] = useState<'my_office' | 'all'>('my_office');
 
   const refreshAll = () => {
     setDocuments(getDocuments());
@@ -79,6 +80,11 @@ export function App() {
   const handleSwitchUser = (user: UserProfile) => {
     setActiveUser(user);
     setActiveUserState(user);
+    if (user.role === 'geca' || user.role === 'rectorado' || user.role === 'auditor') {
+      setScopeMode('all');
+    } else {
+      setScopeMode('my_office');
+    }
   };
 
   const handleSaveDocument = (doc: ISODocument) => {
@@ -153,6 +159,8 @@ export function App() {
         users={users}
         activeUser={activeUser}
         onSwitchUser={handleSwitchUser}
+        scopeMode={scopeMode}
+        onToggleScopeMode={setScopeMode}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -197,6 +205,8 @@ export function App() {
               isOpenNewModal={isOpenNewDocModal}
               onCloseNewModal={() => setIsOpenNewDocModal(false)}
               onOpenNewModal={() => setIsOpenNewDocModal(true)}
+              scopeMode={scopeMode}
+              onToggleScopeMode={setScopeMode}
             />
           )}
 
@@ -208,6 +218,8 @@ export function App() {
               onUpdateIndicator={handleUpdateIndicator}
               onAddMeasurement={handleAddMeasurement}
               onValidateMeasurement={handleValidateMeasurement}
+              scopeMode={scopeMode}
+              onToggleScopeMode={setScopeMode}
             />
           )}
 
@@ -220,6 +232,8 @@ export function App() {
               isOpenNewModal={isOpenNewCapaModal}
               onCloseNewModal={() => setIsOpenNewCapaModal(false)}
               onOpenNewModal={() => setIsOpenNewCapaModal(true)}
+              scopeMode={scopeMode}
+              onToggleScopeMode={setScopeMode}
             />
           )}
 
@@ -237,6 +251,8 @@ export function App() {
                 setActiveTab('capa');
                 setIsOpenNewCapaModal(true);
               }}
+              scopeMode={scopeMode}
+              onToggleScopeMode={setScopeMode}
             />
           )}
 

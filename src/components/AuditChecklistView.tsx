@@ -46,6 +46,8 @@ interface AuditChecklistViewProps {
   onCreateCapaFromFinding: (item: AuditChecklistItem) => void;
   onNavigateToCapa?: (capaCode?: string) => void;
   onOpenNewCapa?: () => void;
+  scopeMode?: 'my_office' | 'all';
+  onToggleScopeMode?: (mode: 'my_office' | 'all') => void;
 }
 
 export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
@@ -56,6 +58,8 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
   onCreateCapaFromFinding,
   onNavigateToCapa,
   onOpenNewCapa,
+  scopeMode = 'all',
+  onToggleScopeMode,
 }) => {
   const isAdmin = activeUser.role === 'geca';
   const isRectorado = activeUser.role === 'rectorado';
@@ -117,10 +121,20 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
   const [newSchedule, setNewSchedule] = useState('09:00 - 12:00');
   const [newClauses, setNewClauses] = useState('7.2, 8.2 & 8.3');
 
-  // Filtrar sesiones por año
+  // Filtrar sesiones por año y por alcance de oficina
   const currentYearSessions = useMemo(() => {
-    return sessions.filter((s) => s.year === selectedYear);
-  }, [sessions, selectedYear]);
+    let list = sessions.filter((s) => s.year === selectedYear);
+    if (scopeMode === 'my_office' && !isAdmin && !isRectorado && activeUser.role !== 'auditor') {
+      const officeTerm = (activeUser.officeName || activeUser.department).toLowerCase();
+      list = list.filter((s) => {
+        const matchesProc = activeUser.processCodes && activeUser.processCodes.includes(s.processCode);
+        const matchesOffice = s.office.toLowerCase().includes(officeTerm) || officeTerm.includes(s.office.toLowerCase());
+        const matchesResp = s.responsible.toLowerCase().includes(activeUser.name.toLowerCase());
+        return Boolean(matchesProc || matchesOffice || matchesResp);
+      });
+    }
+    return list;
+  }, [sessions, selectedYear, scopeMode, activeUser, isAdmin, isRectorado]);
 
   // Sesiones filtradas por proceso
   const filteredSessions = useMemo(() => {
@@ -178,12 +192,21 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
   const evaluatedCount = total - checklist.filter((c) => c.status === 'no_evaluado').length;
   const score = evaluatedCount > 0 ? Math.round((conformeCount / evaluatedCount) * 100) : 0;
 
-  // Filtrado de No Conformidades vinculadas al año
+  // Filtrado de No Conformidades vinculadas al año y alcance de oficina
   const currentYearNCs = useMemo(() => {
-    return nonConformities.filter((nc) => {
+    let list = nonConformities.filter((nc) => {
       return nc.detectedDate ? nc.detectedDate.includes(String(selectedYear)) : true;
     });
-  }, [nonConformities, selectedYear]);
+    if (scopeMode === 'my_office' && !isAdmin && !isRectorado && activeUser.role !== 'auditor') {
+      const officeTerm = (activeUser.officeName || activeUser.department).toLowerCase();
+      list = list.filter((nc) => {
+        const matchesProc = activeUser.processCodes && activeUser.processCodes.includes(nc.processCode);
+        const matchesDept = nc.department.toLowerCase().includes(officeTerm) || officeTerm.includes(nc.department.toLowerCase());
+        return Boolean(matchesProc || matchesDept);
+      });
+    }
+    return list;
+  }, [nonConformities, selectedYear, scopeMode, activeUser, isAdmin, isRectorado]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -367,6 +390,31 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
       {/* ======================================================== */}
       {viewTab === 'plan_procesos' && (
         <div className="space-y-5 animate-in fade-in duration-200">
+          {/* Banner de Espacio de Trabajo por Oficina */}
+          {scopeMode === 'my_office' && !isAdmin && !isRectorado && activeUser.role !== 'auditor' && (
+            <div className="p-4 rounded-3xl bg-blue-50 border border-blue-200 text-blue-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-bold text-xs uppercase tracking-wider text-blue-700 block">
+                    Agenda de Auditoría de Mi Oficina
+                  </span>
+                  <p className="text-xs text-blue-900 mt-0.5">
+                    Mostrando las sesiones y requisitos asignados a: <strong>{activeUser.officeName || activeUser.department}</strong>.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onToggleScopeMode?.('all')}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-blue-900 hover:bg-blue-100 border border-blue-200 transition-colors shadow-2xs cursor-pointer shrink-0"
+              >
+                Ver Plan Institucional Completo
+              </button>
+            </div>
+          )}
           {/* Filtro por Macroproceso / Proceso */}
           <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
             <div className="flex items-center gap-2">

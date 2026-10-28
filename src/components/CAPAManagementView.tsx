@@ -30,6 +30,8 @@ interface CAPAManagementViewProps {
   isOpenNewModal: boolean;
   onCloseNewModal: () => void;
   onOpenNewModal: () => void;
+  scopeMode?: 'my_office' | 'all';
+  onToggleScopeMode?: (mode: 'my_office' | 'all') => void;
 }
 
 const SEVERITY_CONFIG: Record<NonConformitySeverity, { label: string; color: string; badge: string }> = {
@@ -46,8 +48,11 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
   isOpenNewModal,
   onCloseNewModal,
   onOpenNewModal,
+  scopeMode = 'all',
+  onToggleScopeMode,
 }) => {
   const isRectorado = activeUser.role === 'rectorado';
+  const isAdmin = activeUser.role === 'geca';
   const [selectedStatusTab, setSelectedStatusTab] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -96,7 +101,15 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
       nc.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
       nc.isoClause.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesStatus && matchesSearch;
+    let matchesScope = true;
+    if (scopeMode === 'my_office' && !isAdmin && !isRectorado && activeUser.role !== 'auditor') {
+      const officeTerm = (activeUser.officeName || activeUser.department).toLowerCase();
+      const matchesProc = activeUser.processCodes && activeUser.processCodes.includes(nc.processCode);
+      const matchesDept = nc.department.toLowerCase().includes(officeTerm) || officeTerm.includes(nc.department.toLowerCase());
+      matchesScope = Boolean(matchesProc || matchesDept);
+    }
+
+    return matchesStatus && matchesSearch && matchesScope;
   });
 
   const handleCreateNC = (e: React.FormEvent) => {

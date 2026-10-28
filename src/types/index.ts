@@ -1,4 +1,22 @@
-export type UserRole = 'geca' | 'rectorado' | 'vrac' | 'vrin' | 'diga' | 'director_escuela' | 'auditor' | 'colaborador';
+export type UserRole = 
+  | 'geca' 
+  | 'rectorado' 
+  | 'vrac' 
+  | 'vrin' 
+  | 'diga' 
+  | 'director_escuela' 
+  | 'opla'
+  | 'aphu'
+  | 'resu'
+  | 'tein'
+  | 'bisa'
+  | 'adma'
+  | 'obun'
+  | 'espg'
+  | 'reni'
+  | 'csst'
+  | 'auditor' 
+  | 'colaborador';
 
 export interface UserProfile {
   id: string;
@@ -7,7 +25,9 @@ export interface UserProfile {
   role: UserRole;
   charge: string;
   department: string;
+  officeName?: string;
   avatar?: string;
+  processCodes?: ProcessLevel0[];
 }
 
 export type ProcessLevel0 = 

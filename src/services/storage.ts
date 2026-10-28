@@ -23,7 +23,7 @@ const STORAGE_KEYS = {
   DOCS: 'upt_iso21001_documents_v26_10_c',
   CAPAS: 'upt_iso21001_non_conformities',
   CHECKLIST: 'upt_iso21001_audit_checklist',
-  USERS: 'upt_iso21001_users',
+  USERS: 'upt_iso21001_users_v2_offices',
   ACTIVE_USER: 'upt_iso21001_active_user',
   LOGS: 'upt_iso21001_activity_logs',
   INDICATORS: 'upt_iso21001_indicators_v26_10_denominations',
@@ -483,7 +483,12 @@ export function getUsers(): UserProfile[] {
   initStorage();
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.USERS);
-    return raw ? JSON.parse(raw) : UPT_USERS;
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (!parsed || parsed.length < UPT_USERS.length) {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(UPT_USERS));
+      return UPT_USERS;
+    }
+    return parsed;
   } catch {
     return UPT_USERS;
   }
