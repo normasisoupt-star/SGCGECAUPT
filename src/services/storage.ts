@@ -509,6 +509,29 @@ export function setActiveUser(user: UserProfile): void {
   broadcastChange('USER_CHANGED', user);
 }
 
+export function registerUser(newUser: Omit<UserProfile, 'id'>): UserProfile {
+  const users = getUsers();
+  const id = `u-custom-${Date.now()}`;
+  const created: UserProfile = {
+    ...newUser,
+    id,
+    avatar: newUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+  };
+  users.push(created);
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  setActiveUser(created);
+  addActivityLog({
+    userName: created.name,
+    userRole: created.charge,
+    action: 'Registró nuevo funcionario institucional en el SGC UPT',
+    entityType: 'sistema',
+    entityId: created.id,
+    details: `Oficina: ${created.officeName || created.department} (${created.processCodes ? created.processCodes.join(', ') : 'SGC'}) - Rol: ${created.role.toUpperCase()}`,
+  });
+  broadcastChange('USER_CHANGED', created);
+  return created;
+}
+
 // --- HISTORIAL DE ACTIVIDADES ---
 export function getLogs(): ActivityLog[] {
   initStorage();
