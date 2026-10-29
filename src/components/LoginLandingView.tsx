@@ -121,32 +121,32 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       <div className="fixed inset-0 w-full h-full bg-white/10 backdrop-brightness-[0.98] -z-10 pointer-events-none" />
       
       {/* CONTENEDOR PRINCIPAL FLOTANTE */}
-      <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto pt-20 sm:pt-24">
+      <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto py-6 sm:py-8">
         
-        {/* 1. ESCUDO UPT SUPERIOR: Mucho más grande (triple de tamaño), centrado horizontalmente y sobresaliendo (top: -70px) */}
-        <div className="absolute -top-16 sm:-top-24 md:-top-28 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-          <img 
-            src="/upt_escudo_oficial.png" 
-            alt="Escudo Oficial Universidad Privada de Tacna - Veritas et Vita" 
-            className="h-44 sm:h-52 md:h-60 w-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.3)] filter contrast-105"
-          />
-        </div>
-
-        {/* 2. TARJETA CENTRAL: Glassmorphism real con estilos exactos */}
+        {/* TARJETA CENTRAL: Glassmorphism envolviendo completamente el logo UPT y el sistema */}
         <div 
-          className="overflow-hidden grid grid-cols-1 md:grid-cols-2 pt-16 sm:pt-20 pb-8 sm:pb-10 px-6 sm:px-10 relative"
+          className="relative pt-8 pb-8 sm:pb-10 px-6 sm:px-10"
           style={{
-            background: 'rgba(255, 255, 255, 0.45)',
-            backdropFilter: 'blur(14px)',
-            WebkitBackdropFilter: 'blur(14px)',
-            border: '1px solid rgba(255, 255, 255, 0.6)',
-            borderRadius: '20px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+            background: 'rgba(255, 255, 255, 0.48)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.65)',
+            borderRadius: '24px',
+            boxShadow: '0 20px 45px rgba(0,0,0,0.16)',
           }}
         >
-          
-          {/* LADO IZQUIERDO: TÍTULO, SELLOS ISO FORMALES Y MEDALLAS CONCÉNTRICAS */}
-          <div className="flex flex-col justify-between pr-0 md:pr-8 pb-6 md:pb-0 border-b md:border-b-0 md:border-r border-white/60">
+          {/* ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL */}
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/upt_escudo_oficial.png" 
+              alt="Escudo Oficial Universidad Privada de Tacna - Veritas et Vita" 
+              className="h-36 sm:h-44 md:h-48 w-auto object-contain filter drop-shadow-[0_8px_18px_rgba(0,0,0,0.16)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+            {/* LADO IZQUIERDO: TÍTULO, SELLOS ISO FORMALES Y MEDALLAS CONCÉNTRICAS */}
+            <div className="flex flex-col justify-between pr-0 md:pr-8 pb-6 md:pb-0 border-b md:border-b-0 md:border-r border-white/60">
             <div>
               <h1 className="text-2xl sm:text-[30px] lg:text-[34px] font-black text-slate-900 leading-[1.14] tracking-tight">
                 Sistema de <br />
@@ -453,5 +453,6 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         </div>
       </div>
     </div>
+  </div>
   );
 };

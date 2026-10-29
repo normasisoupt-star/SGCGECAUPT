@@ -167,19 +167,21 @@
     <!-- CONTENEDOR RELATIVO PARA PERMITIR QUE EL ESCUDO SOBRESALGA DE FORMA ELEGANTE -->
     <div class="relative w-full">
       
-      <!-- ESCUDO HERÁLDICO OFICIAL UPT SOBRESALIENTE -->
-      <div class="absolute -top-16 sm:-top-20 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center group">
-        <div class="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
-          <img 
-            src="/upt_escudo_oficial.png" 
-            alt="Escudo Heráldico UPT" 
-            class="w-28 h-32 sm:w-36 sm:h-40 md:w-40 md:h-44 object-contain filter drop-shadow-2xl"
-          />
-        </div>
-      </div>
-
       <!-- TARJETA CENTRAL DE CRISTAL ESMERILADO (GLASSMORPHISM) -->
-      <div class="glass-card w-full pt-16 sm:pt-20 pb-10 px-6 sm:px-10 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div class="glass-card w-full pt-8 pb-10 px-6 sm:px-10 md:px-12">
+        
+        <!-- ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL -->
+        <div class="flex justify-center mb-6">
+          <div class="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
+            <img 
+              src="/upt_escudo_oficial.png" 
+              alt="Escudo Heráldico UPT" 
+              class="w-32 h-36 sm:w-40 sm:h-44 md:w-44 md:h-48 object-contain filter drop-shadow-xl"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         
         <!-- ================= LADO IZQUIERDO: INFORMACIÓN INSTITUCIONAL, NORMAS Y MÉTRICAS ================= -->
         <div class="lg:col-span-6 flex flex-col justify-center space-y-7 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-8 lg:pb-0 lg:pr-8">
@@ -446,6 +448,8 @@
       </div>
 
     </div>
+
+  </div>
 
   </main>
 
