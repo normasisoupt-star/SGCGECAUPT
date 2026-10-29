@@ -110,6 +110,21 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
   return (
     <div className="min-h-screen w-full relative flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden select-none">
+      {/* BARRA SUPERIOR INSTITUCIONAL: PORTAL OFICIAL UPT • SGC */}
+      <div className="fixed top-0 left-0 right-0 px-6 py-2.5 z-20 flex justify-between items-center bg-black/25 backdrop-blur-md border-b border-white/10 text-white text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-bold tracking-wider uppercase text-[11px] drop-shadow-sm font-sans">
+            PORTAL OFICIAL UPT &bull; SGC
+          </span>
+        </div>
+        <div className="flex items-center gap-4 text-[11px] text-white/90">
+          <span className="hidden sm:inline bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+            Tacna, Perú
+          </span>
+        </div>
+      </div>
+
       {/* FONDO GENERAL: Fotografía oficial del campus UPT Capanique con luz natural */}
       <div 
         className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat -z-10"
@@ -121,7 +136,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       <div className="fixed inset-0 w-full h-full bg-white/10 backdrop-brightness-[0.98] -z-10 pointer-events-none" />
       
       {/* CONTENEDOR PRINCIPAL FLOTANTE */}
-      <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto py-6 sm:py-8">
+      <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto py-6 sm:py-8 mt-6 sm:mt-8">
         
         {/* TARJETA CENTRAL: Glassmorphism envolviendo completamente el logo UPT y el sistema */}
         <div 
@@ -220,6 +235,11 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                   Indicadores monitoreados
                 </span>
               </div>
+            </div>
+
+            {/* Pie de acreditación institucional: Oficina Gestión de la Calidad */}
+            <div className="mt-8 pt-3 border-t border-slate-300/50 flex items-center justify-start text-xs text-slate-700 font-semibold tracking-wide">
+              <span>Oficina Gestión de la Calidad</span>
             </div>
           </div>
 
@@ -448,6 +468,24 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                   </div>
                 </form>
               )}
+
+              {/* MESA DE AYUDA SGC */}
+              <div className="mt-4 pt-3 border-t border-slate-300/40 text-center">
+                <div className="text-[10px] font-bold text-[#1E3F5D] uppercase tracking-wider mb-1">
+                  Mesa de Ayuda SGC
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-slate-700">
+                  <a href="mailto:autoevaluacion@upt.edu.pe" className="text-[#1E3F5D] font-medium hover:underline">
+                    autoevaluacion@upt.edu.pe
+                  </a>
+                  <span className="text-slate-400">&bull;</span>
+                  <a href="https://www.upt.edu.pe" target="_blank" rel="noreferrer" className="text-[#1E3F5D] font-medium hover:underline">
+                    www.upt.edu.pe
+                  </a>
+                  <span className="text-slate-400">&bull;</span>
+                  <span className="text-[#9C7D0F] font-bold">051-427212 (443)</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
