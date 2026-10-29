@@ -174,15 +174,15 @@
     <div class="relative w-full">
       
       <!-- TARJETA CENTRAL DE CRISTAL ESMERILADO (GLASSMORPHISM) -->
-      <div class="glass-card w-full py-3.5 px-6 sm:px-8 max-h-[calc(100vh-80px)] flex flex-col justify-center">
+      <div class="glass-card w-full py-6 sm:py-8 px-6 sm:px-8 lg:px-10 max-h-[calc(100vh-70px)] flex flex-col justify-center">
         
         <!-- ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL -->
-        <div class="flex justify-center mb-2">
+        <div class="flex justify-center mb-3 sm:mb-4">
           <div class="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
             <img 
               src="/upt_escudo_oficial.png" 
               alt="Escudo Heráldico UPT" 
-              class="w-20 h-24 sm:w-24 sm:h-28 object-contain filter drop-shadow-xl"
+              class="w-24 h-28 sm:w-28 sm:h-32 lg:w-32 lg:h-36 object-contain filter drop-shadow-xl"
             />
           </div>
         </div>
@@ -190,7 +190,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center">
         
         <!-- ================= LADO IZQUIERDO: INFORMACIÓN INSTITUCIONAL, NORMAS Y MÉTRICAS ================= -->
-        <div class="lg:col-span-6 flex flex-col justify-center space-y-3.5 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-3 lg:pb-0 lg:pr-6">
+        <div class="lg:col-span-6 flex flex-col justify-between space-y-4 lg:space-y-5 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-4 lg:pb-0 lg:pr-8">
           
           <!-- Encabezado de la Universidad y del Sistema -->
           <div class="space-y-2 text-center lg:text-left">
@@ -292,7 +292,7 @@
         <!-- ================= LADO DERECHO: FORMULARIO DE AUTENTICACIÓN ================= -->
         <div class="lg:col-span-6 flex flex-col justify-center">
           
-          <div class="glass-subcard rounded-2xl p-4 sm:p-5 border border-white/80 shadow-md">
+          <div class="glass-subcard rounded-2xl p-5 sm:p-6 border border-white/80 shadow-md">
             
             <div class="flex items-center justify-between mb-2.5"><div><h3 class="text-base font-bold text-uptblue font-outfit">
                   Acceso a Funcionarios y Auditores
@@ -336,7 +336,7 @@
             </div>
 
             <!-- FORMULARIO DE ACCESO -->
-            <form class="space-y-2.5" onsubmit="event.preventDefault(); alert('Iniciando sesión segura en SGC UPT...');">
+            <form class="space-y-3 sm:space-y-3.5" onsubmit="event.preventDefault(); alert('Iniciando sesión segura en SGC UPT...');">
               
               <!-- Campo de Usuario con terminación fija @upt.pe -->
               <div>
@@ -355,7 +355,7 @@
                     name="username" 
                     placeholder="cgarcia.calidad" 
                     value="cgarcia.calidad"
-                    class="glass-input w-full pl-10 pr-24 py-1.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                    class="glass-input w-full pl-10 pr-24 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
                     required
                   >
                   <!-- Terminación fija @upt.pe -->
@@ -389,7 +389,7 @@
                     name="password" 
                     placeholder="••••••••••••" 
                     value="Tacna2024Calidad*"
-                    class="glass-input w-full pl-10 pr-10 py-1.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                    class="glass-input w-full pl-10 pr-10 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
                     required
                   >
                   <button type="button" class="absolute right-0 inset-y-0 pr-3 flex items-center text-slate-400 hover:text-slate-600" onclick="togglePassword()">
@@ -416,7 +416,7 @@
               <div class="pt-2">
                 <button 
                   type="submit" 
-                  class="w-full py-2.5 px-5 rounded-xl bg-gradient-to-r from-granate to-granate-dark hover:from-granate-hover hover:to-granate-dark text-white font-outfit font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:shadow-granate/30 transition-all duration-200 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0"
+                  class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-granate to-granate-dark hover:from-granate-hover hover:to-granate-dark text-white font-outfit font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:shadow-granate/30 transition-all duration-200 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0"
                 >
                   <span>Ingresar a Mi Oficina</span>
                   <span class="text-base font-bold">&rarr;</span>
@@ -440,7 +440,7 @@
           </div>
 
           <!-- Mensaje de soporte técnico institucional -->
-          <div class="mt-2 pt-2 border-t border-slate-300/40 text-center">
+          <div class="mt-3 pt-2.5 border-t border-slate-300/40 text-center">
             <div class="text-[11px] font-semibold text-uptblue uppercase tracking-wider mb-1">Mesa de Ayuda SGC</div>
             <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
               <a href="mailto:autoevaluacion@upt.edu.pe" class="text-uptblue font-medium hover:underline">autoevaluacion@upt.edu.pe</a>

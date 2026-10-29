@@ -137,7 +137,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         
         {/* TARJETA CENTRAL: Glassmorphism translúcido de alta definición */}
         <div 
-          className="relative py-4 sm:py-5 px-6 sm:px-8"
+          className="relative py-6 sm:py-8 px-6 sm:px-8 lg:px-10"
           style={{
             background: 'rgba(255, 255, 255, 0.28)',
             backdropFilter: 'blur(8px) saturate(130%)',
@@ -148,11 +148,11 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
           }}
         >
           {/* ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL */}
-          <div className="flex justify-center mb-2">
+          <div className="flex justify-center mb-3 sm:mb-4">
             <img 
               src="/upt_escudo_oficial.png" 
               alt="Escudo Oficial Universidad Privada de Tacna - Veritas et Vita" 
-              className="h-20 sm:h-24 md:h-26 w-auto object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.14)]"
+              className="h-24 sm:h-28 md:h-32 w-auto object-contain filter drop-shadow-[0_8px_18px_rgba(0,0,0,0.16)]"
             />
           </div>
 
