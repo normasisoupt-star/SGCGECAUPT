@@ -30,7 +30,7 @@ interface LoginLandingViewProps {
 }
 
 const OFFICE_DIRECTORY = [
-  { name: 'Oficina de Gestión de la Calidad (GECA)', charge: 'Jefe de Calidad (GECA)', code: 'PE.02', proc: ['PE.02.01.01', 'PE.02.02.01', 'PE.02.04.01'] },
+  { name: 'Oficina de Gestión de la Calidad', charge: 'Especialista / Responsable de Calidad', code: 'PE.02', proc: ['PE.02.01.01', 'PE.02.02.01', 'PE.02.04.01'] },
   { name: 'Oficina de Planificación y Calidad Académica (OPLA)', charge: 'Jefe de OPLA', code: 'PE.01', proc: ['PE.01.01.01', 'PE.01.02.01', 'PE.01.03.01'] },
   { name: 'Oficina de Seguridad y Gestión del Riesgo', charge: 'Responsable de Seguridad', code: 'PE.03', proc: ['PE.03.01.01', 'PE.03.02.01'] },
   { name: 'Oficina de Cooperación y Relaciones Interinstitucionales', charge: 'Jefe de Cooperación', code: 'PE.04', proc: ['PE.04.01.01'] },
@@ -596,7 +596,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             <option value="colaborador">Colaborador Administrativo</option>
                             <option value="director_escuela">Dueño de Proceso / Director</option>
                             <option value="auditor">Auditor Interno (NTP-ISO 21001:2026)</option>
-                            <option value="geca">Gestión de la Calidad (Administrador)</option>
+                            <option value="geca">Administrador</option>
                           </select>
                         </div>
 
