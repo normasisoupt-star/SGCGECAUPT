@@ -1,32 +1,43 @@
-# React + TypeScript + Vite
+﻿# 🏛️ Universidad Privada de Tacna (UPT)
+## Sistema de Gestión de la Calidad (SGC)
+### *Alineado a las Normas NTP-ISO 21001:2026 (SGOE) • ISO 9001:2015 • Modelo SUNEDU CBC*
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+[![Norma](https://img.shields.io/badge/Norma_Técnica-NTP--ISO_21001%3A2026-0F2942?style=for-the-badge&logo=probot)](https://www.inacal.gob.pe/)
+[![Calidad](https://img.shields.io/badge/Gestión_de_Calidad-ISO_9001%3A2015-C0392B?style=for-the-badge)](https://www.iso.org/)
+[![Estado](https://img.shields.io/badge/Estado-Producción_/_Presentación-27AE60?style=for-the-badge)](https://normasisoupt-star.github.io/SGCGECAUPT/)
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📌 Cuadro Maestro de Oficinas, Facultades, Escuela de Posgrado, Procesos y Procedimientos
 
-## React Compiler
+| # | Nivel / Bloque | Dependencia / Oficina / Facultad | Macroproceso (Nivel 0) | Tipo | Procedimientos Específicos que Gestiona |
+|:---:|---|---|:---:|:---:|---|
+| **1** | **Estratégico** | **Oficina de Planificación y Calidad Académica (OPLA)** | **PE.01**<br>Planeamiento Institucional | Estratégico | • **PE.01.01.01:** Formulación y Evaluación del PEI<br>• **PE.01.01.02:** Formulación y Seguimiento del POI<br>• **PE.01.02.01:** Diseño y Actualización Curricular<br>• **PE.01.02.02:** Determinación de Oferta Académica y Vacantes<br>• **PE.01.02.03:** Evaluación de Perfiles de Egreso<br>• **PE.01.02.04:** Coherencia del Modelo Educativo UPT<br>• **PE.01.02.05:** Creación de Nuevas Carreras y Programas<br>• **PE.01.03.01:** Formulación y Control Presupuestal<br>• **PE.01.04.01:** Monitoreo de Estadísticas e Indicadores<br>• **PE.01.04.02:** Evaluación Anual de la Gestión Universitaria<br>• **PE.01.04.03:** Elaboración de la Memoria Anual |
+| **2** | **Estratégico** | **Oficina de Gestión de la Calidad (GECA)** | **PE.02**<br>Gestión de la Calidad | Estratégico | • **PE.02.01.01:** Revisión por la Dirección (19 Puntos Cl. 9.3)<br>• **PE.02.01.02:** Información Documentada (RG04/05)<br>• **PE.02.01.03:** Control de Salidas No Conformes (RG06)<br>• **PE.02.01.04:** Gestión de Quejas y Reclamos (RG07)<br>• **PE.02.02.01:** Autoevaluación y Estándares SUNEDU CBC<br>• **PE.02.03.01:** Acreditación de Programas Académicos<br>• **PE.02.04.01:** Auditorías Internas (NTP-ISO 21001:2026 Cl. 9.2)<br>• **PE.02.04.02:** Acciones Correctivas y Causa Raíz (RG08 / PHVA) |
+| **3** | **Estratégico** | **Oficina de Seguridad y Gestión del Riesgo (CSST)** | **PE.03**<br>Gestión de Riesgos Institucionales | Estratégico | • **PE.03.01.01:** Gestión de Riesgos y Oportunidades (RG01/02)<br>• **PE.03.02.01:** Matriz IPERC y Seguridad Ocupacional<br>• **PE.03.02.02:** Plan de Emergencias y Simulacros de Campus<br>• **PE.03.02.03:** Investigación de Incidentes y Accidentes |
+| **4** | **Estratégico** | **Oficina de Relaciones Interinstitucionales (RENI)** | **PE.04**<br>Gestión Interinstitucional | Estratégico | • **PE.04.01.01:** Gestión y Monitoreo de Convenios Nacionales/Internacionales<br>• **PE.04.02.01:** Promoción y Difusión de Imagen Institucional |
+| **5** | **Misional (VRAC)** | **Oficina de Admisión y Marketing (ADMA)** | **PM.01**<br>Formación Integral | Misional | • **PM.01.01.01:** Convocatoria y Examen de Admisión Ordinario<br>• **PM.01.01.02:** Admisión Extraordinaria (Primeros Puestos, Traslados y Deportistas)<br>• **PE.01.02.02:** Difusión y Promoción de Oferta Académica y Vacantes |
+| **6** | **Misional (VRAC)** | **Oficina de Bienestar Universitario (OBUN)** | **PM.01**<br>Formación Integral | Misional | • **PM.01.02.05:** Sistema de Tutoría y Apoyo Psicopedagógico Integral<br>• **PM.01.02.08:** Adaptaciones Curriculares para Alumnos NEE (Cl. 8.5.1.3)<br>• **PM.01.02.10:** Detección Temprana y Monitoreo de Deserción Estudiantil<br>• Programas de Salud Universitaria, Deporte y Comedor Estudiantil |
+| **7** | **Misional (VRAC)** | **Gestión de Procesos Académicos y Docencia (GPAD)** | **PM.01**<br>Formación Integral | Misional | • **PM.01.01.03:** Proceso de Matrícula Semestral Regular y Extemporánea<br>• **PM.01.01.04:** Convalidaciones y Traslados Internos/Externos<br>• **PM.01.02.01:** Determinación de Carga Lectiva y Horarios Institucionales<br>• **PM.01.02.02:** Supervisión y Publicación de Sílabos por Competencias<br>• **PM.01.02.09:** Evaluación Semestral del Desempeño Docente<br>• **PM.01.03.03:** Emisión y Registro de Grados de Bachiller y Títulos Profesionales<br>• **PM.01.03.04:** Expedición de Duplicados Oficiales de Diplomas |
+| **8** | **Misional (Facultad)** | 🎓 **FAING**<br>*(Facultad de Ingeniería)* | **PM.01**<br>Formación Integral de Pregrado | Misional | *(Ejecución operativa directa de carreras profesionales):*<br>• **PM.01.02.03:** Dictado de Cátedras Teóricas y Sesiones Prácticas<br>• **PM.01.02.04:** Registro y Control de Evaluaciones y Actas de Notas<br>• **PM.01.02.06:** Prácticas Preprofesionales y Vinculación Empresarial<br>• **PM.01.02.07:** Gestión de Talleres y Laboratorios de Ingeniería<br>• **PM.01.03.01:** Conformación de Expedientes de Egresados<br>• **PM.01.03.02:** Asignación de Asesores, Jurados y Sustentación de Tesis<br>• **PM.01.03.05:** Seguimiento a Graduados y Empleabilidad |
+| **9** | **Misional (Facultad)** | 🎓 **FACSA**<br>*(Facultad de Ciencias de la Salud)* | **PM.01**<br>Formación Integral de Pregrado | Misional | *(Mismo marco de procedimientos de carrera que FAING):*<br>• Cátedras y evaluaciones teóricas/prácticas (PM.01.02.03/04)<br>• Prácticas clínicas hospitalarias e internado rotatorio (PM.01.02.06)<br>• Laboratorios biomédicos y centros de simulación clínica (PM.01.02.07)<br>• Asesoría, jurados y sustentación de tesis de salud (PM.01.03.02) |
+| **10** | **Misional (Facultad)** | 🎓 **FACEM**<br>*(Facultad de Ciencias Empresariales)* | **PM.01**<br>Formación Integral de Pregrado | Misional | *(Mismo marco de procedimientos de carrera que FAING):*<br>• Cátedras y evaluaciones teóricas/prácticas (PM.01.02.03/04)<br>• Prácticas preprofesionales en empresas e instituciones (PM.01.02.06)<br>• Laboratorios de negocios, simuladores y finanzas (PM.01.02.07)<br>• Asesoría, jurados y sustentación de tesis empresariales (PM.01.03.02) |
+| **11** | **Misional (Facultad)** | 🎓 **FADE**<br>*(Facultad de Derecho y Ciencias Políticas)* | **PM.01**<br>Formación Integral de Pregrado | Misional | *(Mismo marco de procedimientos de carrera que FAING):*<br>• Cátedras y evaluaciones teóricas/prácticas (PM.01.02.03/04)<br>• Asignación, supervisión y convalidación del SECIGRA (PM.01.02.06)<br>• Sala de audiencias y práctica forense (PM.01.02.07)<br>• Asesoría, jurados y sustentación de tesis de derecho (PM.01.03.02) |
+| **12** | **Misional (Facultad)** | 🎓 **FAU**<br>*(Facultad de Arquitectura y Urbanismo)* | **PM.01**<br>Formación Integral de Pregrado | Misional | *(Mismo marco de procedimientos de carrera que FAING):*<br>• Cátedras y evaluaciones teóricas/prácticas (PM.01.02.03/04)<br>• Prácticas preprofesionales en estudios y proyectos urbanos (PM.01.02.06)<br>• Talleres integrales de diseño, maquetación y plotteo (PM.01.02.07)<br>• Jurados y sustentación de proyectos de tesis arquitectónica (PM.01.03.02) |
+| **13** | **Misional (Facultad)** | 🎓 **FAEDCOH**<br>*(Facultad de Educación, Comunicación y Humanidades)* | **PM.01**<br>Formación Integral de Pregrado | Misional | *(Mismo marco de procedimientos de carrera que FAING):*<br>• Cátedras y evaluaciones teóricas/prácticas (PM.01.02.03/04)<br>• Prácticas preprofesionales pedagógicas y de comunicación (PM.01.02.06)<br>• Talleres de radio, televisión y producción audiovisual (PM.01.02.07)<br>• Jurados y sustentación de tesis de licenciatura (PM.01.03.02) |
+| **14** | **Misional (Posgrado)** | 🏛️ **Escuela de Posgrado (ESPG)** | **PM.01 / PM.02**<br>Formación Posgrado e I+D+i | Misional | • **PM.01.01.01/03:** Admisión y Matrícula de Maestrías y Doctorados<br>• **PM.01.02.01/04:** Carga Docente Modular y Calificaciones Posgrado<br>• **PM.01.03.02:** Asesoría Metodológica, Dictamen y Sustentación de Tesis<br>• **PM.01.03.03:** Tramitación y Emisión de Grados de Maestro y Doctor<br>• **PM.02.01.01:** Articulación de Tesis a Líneas de Investigación Institucionales<br>• **PM.02.02.01:** Artículos Científicos Derivados de Investigaciones Posgrado |
+| **15** | **Misional (I+D+i)** | **Vicerrectorado de Investigación (VRIN) / PITT** | **PM.02**<br>Investigación, Desarrollo e Innovación | Misional | • **PM.02.01.01:** Gestión de Líneas y Proyectos de Investigación<br>• **PM.02.01.02:** Fondos Concursables y Fondos Canon<br>• **PM.02.02.01:** Publicaciones Científicas en Scopus y Web of Science<br>• **PM.02.02.02:** Fondo Editorial Universitario (EDUN)<br>• **PM.02.03.01:** Incubación de Empresas y Startups (Incuba UPT) |
+| **16** | **Misional (RSU)** | **Oficina de Responsabilidad Social Universitaria (RSU)** | **PM.03**<br>Responsabilidad Social Universitaria | Misional | • **PM.03.01.01:** Proyectos de Proyección Social y RSU<br>• **PM.03.01.02:** Servicio Social Universitario (SSU)<br>• **PM.03.01.03:** Voluntariado y Gestión Ambiental en Campus |
+| **17** | **Soporte** | **Área de Potencial Humano (APHU)** | **PS.01**<br>Gestión de Potencial Humano | Soporte | • **PS.01.01.01:** Reclutamiento y Selección de Personal<br>• **PS.01.01.02:** Inducción al Puesto y al SGC (Cl. 7.2)<br>• **PS.01.01.03:** Contratación y Altas en el Sistema Laboral<br>• **PS.01.01.04:** Evaluación de Desempeño Administrativo<br>• **PS.01.01.05:** Plan Anual de Capacitación del Personal<br>• **PS.01.01.06:** Control de Asistencia, Permisos y Licencias<br>• **PS.01.01.07:** Planillas de Remuneraciones y Beneficios |
+| **18** | **Soporte** | **Centro de Información y Biblioteca (CINFO)** | **PS.02**<br>Centros de Información y Biblioteca | Soporte | • **PS.02.01.01:** Préstamo y Circulación de Bibliografía Física<br>• **PS.02.01.02:** Adquisición y Catalogación de Colecciones<br>• **PS.02.01.03:** Repositorio Institucional y Tesis Digitales |
+| **19** | **Soporte** | **Oficina de Infraestructura y Mantenimiento** | **PS.03**<br>Infraestructura y Patrimonio | Soporte | • **PS.03.01.01:** Mantenimiento de Edificaciones y Campus Capanique<br>• **PS.03.01.02:** Ejecución de Obras y Proyectos de Inversión<br>• **PS.03.02.01:** Inventario Patrimonial y Asignación de Bienes |
+| **20** | **Soporte** | **Oficina de Tecnologías de Información (TEIN)** | **PS.04**<br>Tecnologías de la Información | Soporte | • **PS.04.01.01:** Mesa de Ayuda, Soporte Técnico y Redes<br>• **PS.04.01.02:** Desarrollo y Mantenimiento de Software<br>• **PS.04.01.03:** Servidores, Ciberseguridad y Copias de Respaldo<br>• **PS.04.01.04:** Aula Virtual y Cuentas de Correo Institucional |
+| **21** | **Soporte** | **Dirección General de Administración (DIGA) / Finanzas** | **PS.05**<br>Gestión Administrativa y Financiera | Soporte | • **PS.05.01.01:** Adquisición de Bienes y Servicios<br>• **PS.05.01.02:** Almacén Central y Despacho de Materiales<br>• **PS.05.02.01:** Recaudación de Pensiones y Cobranzas<br>• **PS.05.02.02:** Contabilidad y Estados Financieros |
+| **22** | **Soporte** | **Oficina de Asesoría Jurídica (OAJU)** | **PS.06**<br>Gestión Legal | Soporte | • **PS.06.01.01:** Emisión de Opiniones y Dictámenes Legales<br>• **PS.06.01.02:** Patrocinio Legal y Defensa Universitaria |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## 🚀 Despliegue y Acceso
+- **Portal Web SGC:** Plataforma institucional desarrollada en React, TypeScript y TailwindCSS.
+- **Autenticación Oficial:** Integrada con Firebase Authentication (@upt.pe).
+- **Base Normativa:** ISO 21001:2018 / NTP-ISO 21001:2026 (INACAL) e ISO 9001:2015.
