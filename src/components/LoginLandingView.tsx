@@ -229,7 +229,20 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
     } catch (err: any) {
       console.error('Error al registrar en Firebase:', err);
       let errorText = 'Error al registrar en Firebase.';
-      if (err.code === 'auth/email-already-in-use') {
+      if (err.code === 'auth/configuration-not-found') {
+        errorText = 'Falta activar Authentication en Firebase: entra a la consola de Firebase > Authentication y haz clic en "Comenzar" y activa "Correo/Contraseña".';
+        // Fallback local para que el usuario no quede bloqueado
+        onRegisterUser(newUser);
+        const localUser: UserProfile = { ...newUser, id: `u-local-${Date.now()}` };
+        setStatusMessage({
+          type: 'info',
+          text: `Usuario registrado en el sistema SGC. (Nota: ${errorText})`,
+        });
+        setTimeout(() => {
+          onLogin(localUser);
+        }, 1800);
+        return;
+      } else if (err.code === 'auth/email-already-in-use') {
         errorText = 'Este correo institucional ya está registrado en Firebase. Inicia sesión con tu contraseña.';
       } else if (err.code === 'auth/weak-password') {
         errorText = 'La contraseña debe tener al menos 6 caracteres.';
