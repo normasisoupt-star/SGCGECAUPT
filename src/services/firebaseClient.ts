@@ -9,13 +9,6 @@ import {
   User as FirebaseUser,
   Auth
 } from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  getDoc,
-  Firestore 
-} from 'firebase/firestore';
 import { UserProfile, UserRole, ProcessLevel0 } from '../types';
 
 export interface FirebaseConfig {
@@ -41,7 +34,6 @@ export const OFFICIAL_FIREBASE_CONFIG: FirebaseConfig = {
 
 let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
-let firestoreDb: Firestore | null = null;
 
 export function initFirebase(): { app: FirebaseApp; auth: Auth; isConfigured: boolean } {
   try {
@@ -51,14 +43,11 @@ export function initFirebase(): { app: FirebaseApp; auth: Auth; isConfigured: bo
       firebaseApp = initializeApp(OFFICIAL_FIREBASE_CONFIG);
     }
     firebaseAuth = getAuth(firebaseApp);
-    firestoreDb = getFirestore(firebaseApp);
     return { app: firebaseApp, auth: firebaseAuth, isConfigured: true };
   } catch (error) {
     console.error('Error al inicializar Firebase SGCUPT:', error);
-    // Si ya fue inicializado
     firebaseApp = getApp();
     firebaseAuth = getAuth(firebaseApp);
-    firestoreDb = getFirestore(firebaseApp);
     return { app: firebaseApp, auth: firebaseAuth, isConfigured: true };
   }
 }
@@ -67,11 +56,11 @@ export function initFirebase(): { app: FirebaseApp; auth: Auth; isConfigured: bo
 initFirebase();
 
 export function isFirebaseConfigured(): boolean {
-  return true; // Configurado nativamente con el proyecto SGCUPT
+  return true;
 }
 
 /**
- * Registro de un nuevo funcionario en Firebase Auth + Firestore
+ * Registro ultra-rápido en Firebase Authentication (sin bloqueos de Firestore)
  */
 export async function registerWithFirebase(
   email: string,
@@ -88,17 +77,23 @@ export async function registerWithFirebase(
 ): Promise<UserProfile> {
   const auth = firebaseAuth || getAuth();
 
-  const credential = await createUserWithEmailAndPassword(auth, email, password);
+  // Ejecutar registro con timeout de seguridad de 8 segundos
+  const authPromise = createUserWithEmailAndPassword(auth, email, password);
+  const timeoutPromise = new Promise<never>((_, reject) => 
+    setTimeout(() => reject(new Error('Tiempo de espera agotado al conectar con Firebase Auth.')), 8000)
+  );
+
+  const credential = await Promise.race([authPromise, timeoutPromise]);
   const user = credential.user;
 
-  // Actualizar nombre visible en Auth
+  // Actualizar nombre visible en Firebase
   try {
     await updateProfile(user, {
       displayName: profileData.name,
       photoURL: profileData.avatar,
     });
   } catch (err) {
-    console.warn('No se pudo actualizar el perfil básico de Firebase:', err);
+    console.warn('Aviso: no se pudo actualizar displayName:', err);
   }
 
   const userProfile: UserProfile = {
@@ -113,64 +108,30 @@ export async function registerWithFirebase(
     avatar: profileData.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
   };
 
-  // Guardar datos institucionales extendidos en Firestore
-  if (firestoreDb) {
-    try {
-      const userRef = doc(firestoreDb, 'users', user.uid);
-      await setDoc(userRef, {
-        ...userProfile,
-        createdAt: new Date().toISOString(),
-        institution: 'Universidad Privada de Tacna',
-        sgcStatus: 'activo',
-      }, { merge: true });
-    } catch (fsErr) {
-      console.warn('Aviso: Firestore en modo restringido; perfil preservado en sesión local:', fsErr);
-    }
-  }
-
   return userProfile;
 }
 
 /**
- * Inicio de sesión con correo institucional y contraseña en Firebase Auth
+ * Inicio de sesión ultra-rápido con correo y contraseña en Firebase Auth
  */
 export async function loginWithFirebase(email: string, password: string): Promise<UserProfile> {
   const auth = firebaseAuth || getAuth();
 
-  const credential = await signInWithEmailAndPassword(auth, email, password);
-  const user = credential.user;
+  const authPromise = signInWithEmailAndPassword(auth, email, password);
+  const timeoutPromise = new Promise<never>((_, reject) => 
+    setTimeout(() => reject(new Error('Tiempo de espera agotado al conectar con Firebase Auth.')), 8000)
+  );
 
-  // Intentar leer perfil completo desde Firestore
-  if (firestoreDb) {
-    try {
-      const userRef = doc(firestoreDb, 'users', user.uid);
-      const snap = await getDoc(userRef);
-      if (snap.exists()) {
-        const data = snap.data();
-        return {
-          id: user.uid,
-          name: data.name || user.displayName || user.email?.split('@')[0] || 'Funcionario UPT',
-          email: user.email || email,
-          charge: data.charge || 'Funcionario SGC',
-          department: data.department || 'Oficina Institucional',
-          officeName: data.officeName || data.department || 'Oficina Institucional',
-          role: data.role || 'colaborador',
-          processCodes: data.processCodes || ['PE.02'],
-          avatar: data.avatar || user.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-        };
-      }
-    } catch (fsErr) {
-      console.warn('Lectura Firestore:', fsErr);
-    }
-  }
+  const credential = await Promise.race([authPromise, timeoutPromise]);
+  const user = credential.user;
 
   return {
     id: user.uid,
     name: user.displayName || user.email?.split('@')[0] || 'Funcionario UPT',
     email: user.email || email,
     charge: 'Funcionario SGC UPT',
-    department: 'Oficina de Gestión de la Calidad',
-    officeName: 'Oficina de Gestión de la Calidad',
+    department: 'Oficina Institucional',
+    officeName: 'Oficina Institucional',
     role: 'colaborador',
     processCodes: ['PE.02'],
     avatar: user.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
