@@ -28,7 +28,7 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({ onSelectProcessF
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-red-900 text-white font-sans shadow-2xs">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-[#0d2d3f] text-white font-outfit border border-[#9C7D0F]/40 shadow-xs">
               UPT SGC - NIVEL 0
             </span>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -78,8 +78,8 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({ onSelectProcessF
         {/* 1. PROCESOS ESTRATÉGICOS */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0d2d3f] flex items-center gap-2 font-outfit">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#0d2d3f]"></span>
               <span>1. Procesos Estratégicos (04 Procesos &bull; 25 Procedimientos)</span>
             </h3>
             <span className="text-[11px] text-slate-400">Dirección, Calidad, Riesgos y Convenios</span>
@@ -90,13 +90,13 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({ onSelectProcessF
               <div
                 key={proc.code}
                 onClick={() => onSelectProcessFilter(proc.code as ProcessLevel0)}
-                className="p-4 rounded-2xl border border-purple-100 bg-purple-50/30 hover:bg-purple-50 hover:border-purple-300 transition-all cursor-pointer space-y-2 group"
+                className="p-4 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-[#0d2d3f]/30 shadow-xs transition-all cursor-pointer space-y-2 group"
               >
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-purple-900 text-white font-sans shadow-2xs">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-[#0d2d3f] text-white font-outfit shadow-xs">
                     {proc.code}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-purple-400 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="w-4 h-4 text-[#0d2d3f] group-hover:translate-x-1 transition-transform" />
                 </div>
                 <h4 className="font-bold text-slate-900 text-sm leading-snug">{proc.name}</h4>
                 <p className="text-[11px] text-slate-500 line-clamp-2">{proc.desc}</p>
@@ -123,7 +123,7 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({ onSelectProcessF
                 className="p-5 rounded-2xl border-2 border-red-200 bg-red-50/20 hover:bg-red-50/60 hover:border-red-400 transition-all cursor-pointer space-y-2 group"
               >
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-red-900 text-white font-sans shadow-2xs">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-[#0d2d3f] text-white font-outfit border border-[#9C7D0F]/40 shadow-xs">
                     {proc.code}
                   </span>
                   <ChevronRight className="w-4 h-4 text-red-400 group-hover:translate-x-1 transition-transform" />
@@ -138,8 +138,8 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({ onSelectProcessF
         {/* 3. PROCESOS DE SOPORTE */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#9C7D0F] flex items-center gap-2 font-outfit">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#9C7D0F]"></span>
               <span>3. Procesos de Soporte (06 Procesos &bull; 34 Procedimientos)</span>
             </h3>
             <span className="text-[11px] text-slate-400">Recursos humanos, infraestructura, TI, finanzas y legal</span>
@@ -150,13 +150,13 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({ onSelectProcessF
               <div
                 key={proc.code}
                 onClick={() => onSelectProcessFilter(proc.code as ProcessLevel0)}
-                className="p-4 rounded-2xl border border-blue-100 bg-blue-50/30 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer space-y-2 group"
+                className="p-4 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-[#9C7D0F]/40 shadow-xs transition-all cursor-pointer space-y-2 group"
               >
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-blue-900 text-white font-sans shadow-2xs">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold tracking-wider bg-[#9C7D0F] text-white font-outfit shadow-xs">
                     {proc.code}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="w-4 h-4 text-[#9C7D0F] group-hover:translate-x-1 transition-transform" />
                 </div>
                 <h4 className="font-bold text-slate-900 text-sm leading-snug">{proc.name}</h4>
                 <p className="text-[11px] text-slate-500 line-clamp-2">{proc.desc}</p>

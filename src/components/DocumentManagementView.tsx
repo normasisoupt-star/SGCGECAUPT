@@ -314,7 +314,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-800 border border-red-200">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#0d2d3f]/10 text-[#0d2d3f] border border-[#0d2d3f]/20 font-outfit">
               Formato RG04.PE.02 / RG05.PE.02
             </span>
             <span className="text-xs text-slate-500">Oficina de Gestión de la Calidad (GECA)</span>
@@ -348,7 +348,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           {canCreate && (
             <button
               onClick={onOpenNewModal}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-red-800 text-white hover:bg-red-900 shadow-xs transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-[#0d2d3f] text-white hover:bg-[#001826] shadow-md shadow-[#0d2d3f]/20 transition-all cursor-pointer font-outfit"
             >
               <Plus className="w-4 h-4" />
               <span>Nuevo Procedimiento</span>
@@ -382,7 +382,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
           <div className="text-xs font-medium text-slate-400">Procesos UPT Cubiertos</div>
-          <div className="text-2xl font-bold text-red-800 mt-1">13 / 13</div>
+          <div className="text-2xl font-bold text-[#0d2d3f] mt-1 font-outfit">13 / 13</div>
           <div className="text-[11px] text-slate-400 mt-1">Estratégicos, Misionales, Soporte</div>
         </div>
       </div>
@@ -398,7 +398,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
               placeholder="Buscar por trámite cotidiano (ej: matrícula, título, compras, sueldos, biblioteca), código o tema..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-8 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50/60 placeholder:text-slate-400 font-sans"
+              className="w-full pl-9 pr-8 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50/60 placeholder:text-slate-400 font-sans"
             />
             {searchTerm && (
               <button
@@ -419,7 +419,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white shadow-2xs transition-all cursor-pointer shrink-0 border border-slate-800"
             title="Asistente para encontrar procedimientos por tema o trámite sin códigos"
           >
-            <Compass className="w-4 h-4 text-red-400" />
+            <Compass className="w-4 h-4 text-[#D4AF37]" />
             <span>Asistente Guiado de Búsqueda</span>
           </button>
         </div>
@@ -435,7 +435,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           <select
             value={selectedDependency}
             onChange={(e) => setSelectedDependency(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[250px]"
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[250px]"
             title="Filtrar por oficina o área responsable de la UPT"
           >
             {UPT_DEPENDENCIES.map((dep) => (
@@ -449,7 +449,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           <select
             value={selectedProcess}
             onChange={(e) => setSelectedProcess(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[210px]"
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[210px]"
           >
             <option value="all">Todos los Procesos (13)</option>
             {UPT_PROCESSES.map((proc) => (
@@ -463,7 +463,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           <select
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50 hover:bg-white cursor-pointer font-medium"
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium"
           >
             <option value="all">Todos los Tipos ({documents.length})</option>
             <option value="Procedimiento">Procedimientos ({documents.filter((d) => d.documentType === 'Procedimiento').length})</option>
@@ -477,7 +477,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-700 bg-slate-50 hover:bg-white cursor-pointer font-medium"
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium"
           >
             <option value="all">Todos los Estados</option>
             <option value="vigente">Vigente</option>
@@ -694,13 +694,13 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl lg:max-w-6xl my-4 overflow-hidden flex flex-col max-h-[92vh]">
             {/* Cabecera formato oficial SGC UPT */}
-            <div className="px-6 py-4 bg-gradient-to-r from-red-900 to-red-800 text-white flex items-center justify-between shrink-0">
+            <div className="px-6 py-4 bg-gradient-to-r from-[#0d2d3f] to-[#001826] border-b-2 border-[#9C7D0F] text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-lg border border-white/20">
                   🏛️
                 </div>
                 <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-red-200">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-[#F3E5AB] font-outfit">
                     Universidad Privada de Tacna &bull; Sistema de Gestión de la Calidad
                   </div>
                   <h2 className="text-base font-bold text-white leading-snug">
