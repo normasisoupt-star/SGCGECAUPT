@@ -263,7 +263,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       {/* CAPA DE FONDO: FOTOGRAFÍA ARQUITECTÓNICA DE CAMPUS */}
       <div className="fixed inset-0 w-full h-full -z-20 overflow-hidden">
         <img 
-          src="/upt_campus_fachada.jpg" 
+          src="./upt_campus_fachada.jpg" 
           alt="Campus Universidad Privada de Tacna" 
           className="w-full h-full object-cover object-center"
         />
@@ -303,7 +303,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
             <div className="flex justify-center mb-3 sm:mb-4">
               <div className="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
                 <img 
-                  src="/upt_escudo_oficial.png" 
+                  src="./upt_escudo_oficial.png" 
                   alt="Escudo Heráldico UPT" 
                   className="w-24 h-28 sm:w-28 sm:h-32 lg:w-32 lg:h-36 object-contain filter drop-shadow-xl"
                 />
