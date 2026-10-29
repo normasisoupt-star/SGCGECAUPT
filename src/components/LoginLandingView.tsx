@@ -132,22 +132,19 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
           backgroundImage: `url('/upt_campus_fachada.jpg')`,
         }}
       />
-      {/* Sutil veladura diurna para contraste sin oscurecer */}
-      <div className="fixed inset-0 w-full h-full bg-white/10 backdrop-brightness-[0.98] -z-10 pointer-events-none" />
-      
       {/* CONTENEDOR PRINCIPAL FLOTANTE */}
       <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto py-6 sm:py-8 mt-6 sm:mt-8">
         
-        {/* TARJETA CENTRAL: Glassmorphism envolviendo completamente el logo UPT y el sistema */}
+        {/* TARJETA CENTRAL: Glassmorphism translúcido de alta definición */}
         <div 
           className="relative pt-8 pb-8 sm:pb-10 px-6 sm:px-10"
           style={{
-            background: 'rgba(255, 255, 255, 0.48)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
+            background: 'rgba(255, 255, 255, 0.28)',
+            backdropFilter: 'blur(8px) saturate(130%)',
+            WebkitBackdropFilter: 'blur(8px) saturate(130%)',
             border: '1px solid rgba(255, 255, 255, 0.65)',
             borderRadius: '24px',
-            boxShadow: '0 20px 45px rgba(0,0,0,0.16)',
+            boxShadow: '0 20px 45px rgba(0,0,0,0.12)',
           }}
         >
           {/* ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL */}
