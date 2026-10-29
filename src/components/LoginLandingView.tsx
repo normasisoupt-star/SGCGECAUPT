@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserProfile, UserRole, ProcessLevel0 } from '../types';
 import { 
   CheckCircle2, 
@@ -50,6 +50,12 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [rememberSession, setRememberSession] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Asegurar que los campos de inicio de sesión SIEMPRE inicien limpios y vacíos
+  useEffect(() => {
+    setEmailUsername('');
+    setPassword('');
+  }, [activeTab]);
 
   // Registration State
   const [regName, setRegName] = useState('');
@@ -432,7 +438,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                   {activeTab === 'login' ? (
                     <div>
                       {/* FORMULARIO DE ACCESO CON FIREBASE AUTH */}
-                      <form className="space-y-3 sm:space-y-3.5" onSubmit={handleLoginSubmit}>
+                      <form className="space-y-3 sm:space-y-3.5" onSubmit={handleLoginSubmit} autoComplete="off">
                         
                         {/* Campo de Usuario con terminación fija @upt.pe */}
                         <div>
@@ -445,12 +451,14 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             </div>
                             <input 
                               type="text" 
+                              name="upt_login_username"
+                              autoComplete="off"
                               value={emailUsername}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setEmailUsername(val);
                               }}
-                              placeholder="usuario@upt.pe o usuario" 
+                              placeholder="Ingrese usuario o correo institucional" 
                               className="glass-input w-full pl-10 pr-24 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
                               required
                             />
@@ -480,9 +488,11 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             </div>
                             <input 
                               type={showPassword ? 'text' : 'password'}
+                              name="upt_login_password"
+                              autoComplete="new-password"
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
-                              placeholder="••••••••••••" 
+                              placeholder="Ingrese su contraseña" 
                               className="glass-input w-full pl-10 pr-10 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
                               required
                             />
