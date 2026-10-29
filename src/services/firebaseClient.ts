@@ -25,98 +25,53 @@ export interface FirebaseConfig {
   storageBucket?: string;
   messagingSenderId?: string;
   appId?: string;
+  measurementId?: string;
 }
 
-const STORAGE_KEY_FIREBASE = 'upt_iso21001_firebase_config';
-
-export function getStoredFirebaseConfig(): FirebaseConfig | null {
-  if (typeof window === 'undefined') return null;
-
-  // 1. Verificar variables de entorno Vite
-  const envApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-  const envProjectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-  if (envApiKey && envProjectId) {
-    return {
-      apiKey: envApiKey,
-      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || `${envProjectId}.firebaseapp.com`,
-      projectId: envProjectId,
-      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || `${envProjectId}.appspot.com`,
-      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-      appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-    };
-  }
-
-  // 2. Verificar localStorage
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_FIREBASE);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed.apiKey && parsed.projectId) {
-        return parsed;
-      }
-    }
-  } catch (e) {
-    console.error('Error leyendo config de Firebase de localStorage:', e);
-  }
-
-  return null;
-}
+// Credenciales Oficiales del Proyecto Firebase SGCUPT
+export const OFFICIAL_FIREBASE_CONFIG: FirebaseConfig = {
+  apiKey: "AIzaSyCyekDE7KRvJEPiaDuUiPdxVC9Y1jDxoaQ",
+  authDomain: "sgcupt.firebaseapp.com",
+  projectId: "sgcupt",
+  storageBucket: "sgcupt.firebasestorage.app",
+  messagingSenderId: "614789838002",
+  appId: "1:614789838002:web:e420b9be9279fcf2a3c5ab",
+  measurementId: "G-5R508PTCF8"
+};
 
 let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
 let firestoreDb: Firestore | null = null;
 
-export function initFirebase(customConfig?: FirebaseConfig): { app: FirebaseApp | null; auth: Auth | null; isConfigured: boolean } {
-  const config = customConfig || getStoredFirebaseConfig();
-
-  if (!config || !config.apiKey || !config.projectId) {
-    return { app: null, auth: null, isConfigured: false };
-  }
-
+export function initFirebase(): { app: FirebaseApp; auth: Auth; isConfigured: boolean } {
   try {
     if (getApps().length > 0) {
       firebaseApp = getApp();
     } else {
-      firebaseApp = initializeApp(config);
+      firebaseApp = initializeApp(OFFICIAL_FIREBASE_CONFIG);
     }
     firebaseAuth = getAuth(firebaseApp);
     firestoreDb = getFirestore(firebaseApp);
     return { app: firebaseApp, auth: firebaseAuth, isConfigured: true };
   } catch (error) {
-    console.error('Error al inicializar Firebase:', error);
-    return { app: null, auth: null, isConfigured: false };
+    console.error('Error al inicializar Firebase SGCUPT:', error);
+    // Si ya fue inicializado
+    firebaseApp = getApp();
+    firebaseAuth = getAuth(firebaseApp);
+    firestoreDb = getFirestore(firebaseApp);
+    return { app: firebaseApp, auth: firebaseAuth, isConfigured: true };
   }
 }
 
-// Inicializar al cargar módulo
+// Inicializar inmediatamente
 initFirebase();
 
 export function isFirebaseConfigured(): boolean {
-  return Boolean(firebaseApp && firebaseAuth);
-}
-
-export function saveFirebaseConfig(config: FirebaseConfig): boolean {
-  if (typeof window === 'undefined') return false;
-  try {
-    localStorage.setItem(STORAGE_KEY_FIREBASE, JSON.stringify(config));
-    initFirebase(config);
-    return true;
-  } catch (e) {
-    console.error('Error guardando configuración de Firebase:', e);
-    return false;
-  }
-}
-
-export function clearFirebaseConfig(): void {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(STORAGE_KEY_FIREBASE);
-  firebaseApp = null;
-  firebaseAuth = null;
-  firestoreDb = null;
+  return true; // Configurado nativamente con el proyecto SGCUPT
 }
 
 /**
- * Registro de un nuevo usuario en Firebase Auth + Firestore
+ * Registro de un nuevo funcionario en Firebase Auth + Firestore
  */
 export async function registerWithFirebase(
   email: string,
@@ -131,11 +86,9 @@ export async function registerWithFirebase(
     avatar?: string;
   }
 ): Promise<UserProfile> {
-  if (!firebaseAuth) {
-    throw new Error('Firebase Auth no está configurado. Por favor ingrese las credenciales de Firebase del SGC.');
-  }
+  const auth = firebaseAuth || getAuth();
 
-  const credential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+  const credential = await createUserWithEmailAndPassword(auth, email, password);
   const user = credential.user;
 
   // Actualizar nombre visible en Auth
@@ -160,7 +113,7 @@ export async function registerWithFirebase(
     avatar: profileData.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
   };
 
-  // Guardar datos institucionales extendidos en Firestore si está disponible
+  // Guardar datos institucionales extendidos en Firestore
   if (firestoreDb) {
     try {
       const userRef = doc(firestoreDb, 'users', user.uid);
@@ -171,7 +124,7 @@ export async function registerWithFirebase(
         sgcStatus: 'activo',
       }, { merge: true });
     } catch (fsErr) {
-      console.warn('Aviso: No se pudo escribir en Firestore (puede requerir reglas de seguridad), los datos se preservan localmente:', fsErr);
+      console.warn('Aviso: Firestore en modo restringido; perfil preservado en sesión local:', fsErr);
     }
   }
 
@@ -179,14 +132,12 @@ export async function registerWithFirebase(
 }
 
 /**
- * Inicio de sesión con correo y contraseña en Firebase Auth
+ * Inicio de sesión con correo institucional y contraseña en Firebase Auth
  */
 export async function loginWithFirebase(email: string, password: string): Promise<UserProfile> {
-  if (!firebaseAuth) {
-    throw new Error('Firebase Auth no está configurado. Ingrese las credenciales de Firebase del SGC.');
-  }
+  const auth = firebaseAuth || getAuth();
 
-  const credential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+  const credential = await signInWithEmailAndPassword(auth, email, password);
   const user = credential.user;
 
   // Intentar leer perfil completo desde Firestore
@@ -198,7 +149,7 @@ export async function loginWithFirebase(email: string, password: string): Promis
         const data = snap.data();
         return {
           id: user.uid,
-          name: data.name || user.displayName || user.email?.split('@')[0] || 'Usuario UPT',
+          name: data.name || user.displayName || user.email?.split('@')[0] || 'Funcionario UPT',
           email: user.email || email,
           charge: data.charge || 'Funcionario SGC',
           department: data.department || 'Oficina Institucional',
@@ -209,11 +160,10 @@ export async function loginWithFirebase(email: string, password: string): Promis
         };
       }
     } catch (fsErr) {
-      console.warn('No se pudo leer de Firestore, utilizando datos básicos de sesión:', fsErr);
+      console.warn('Lectura Firestore:', fsErr);
     }
   }
 
-  // Fallback si no está en Firestore: construir perfil institucional
   return {
     id: user.uid,
     name: user.displayName || user.email?.split('@')[0] || 'Funcionario UPT',
@@ -231,21 +181,17 @@ export async function loginWithFirebase(email: string, password: string): Promis
  * Cierre de sesión en Firebase
  */
 export async function logoutFirebase(): Promise<void> {
-  if (firebaseAuth) {
-    try {
-      await signOut(firebaseAuth);
-    } catch (err) {
-      console.error('Error al cerrar sesión en Firebase:', err);
-    }
+  const auth = firebaseAuth || getAuth();
+  if (auth) {
+    await signOut(auth);
   }
 }
 
 /**
- * Escuchador de estado de autenticación de Firebase
+ * Escuchador de estado de autenticación
  */
 export function subscribeToFirebaseAuth(callback: (user: FirebaseUser | null) => void): (() => void) {
-  if (!firebaseAuth) {
-    return () => {};
-  }
-  return onAuthStateChanged(firebaseAuth, callback);
+  const auth = firebaseAuth || getAuth();
+  if (!auth) return () => {};
+  return onAuthStateChanged(auth, callback);
 }
