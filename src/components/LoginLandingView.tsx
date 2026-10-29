@@ -109,7 +109,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full relative flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden select-none">
+    <div className="h-screen max-h-screen w-full relative flex flex-col justify-center items-center px-4 py-2 font-sans overflow-hidden select-none">
       {/* BARRA SUPERIOR INSTITUCIONAL: PORTAL OFICIAL UPT • SGC */}
       <div className="fixed top-0 left-0 right-0 px-6 py-2.5 z-20 flex justify-between items-center bg-black/25 backdrop-blur-md border-b border-white/10 text-white text-xs">
         <div className="flex items-center gap-2">
@@ -133,11 +133,11 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         }}
       />
       {/* CONTENEDOR PRINCIPAL FLOTANTE */}
-      <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto py-6 sm:py-8 mt-6 sm:mt-8">
+      <div className="relative z-10 w-full max-w-[880px] xl:max-w-[920px] mx-auto my-auto pt-5 pb-1">
         
         {/* TARJETA CENTRAL: Glassmorphism translúcido de alta definición */}
         <div 
-          className="relative pt-8 pb-8 sm:pb-10 px-6 sm:px-10"
+          className="relative py-4 sm:py-5 px-6 sm:px-8"
           style={{
             background: 'rgba(255, 255, 255, 0.28)',
             backdropFilter: 'blur(8px) saturate(130%)',
@@ -148,23 +148,23 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
           }}
         >
           {/* ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-2">
             <img 
               src="/upt_escudo_oficial.png" 
               alt="Escudo Oficial Universidad Privada de Tacna - Veritas et Vita" 
-              className="h-36 sm:h-44 md:h-48 w-auto object-contain filter drop-shadow-[0_8px_18px_rgba(0,0,0,0.16)]"
+              className="h-20 sm:h-24 md:h-26 w-auto object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.14)]"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             {/* LADO IZQUIERDO: TÍTULO, SELLOS ISO FORMALES Y MEDALLAS CONCÉNTRICAS */}
             <div className="flex flex-col justify-between pr-0 md:pr-8 pb-6 md:pb-0 border-b md:border-b-0 md:border-r border-white/60">
             <div>
-              <h1 className="text-2xl sm:text-[30px] lg:text-[34px] font-black text-slate-900 leading-[1.14] tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight">
                 Sistema de <br />
                 Gestión de la Calidad
               </h1>
-              <div className="text-xl sm:text-2xl font-black text-[#1E3F5D] mt-1 tracking-tight flex items-center gap-2">
+              <div className="text-lg sm:text-xl font-black text-[#1E3F5D] mt-0.5 tracking-tight flex items-center gap-2">
                 <span>SGC UPT</span>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-[#9C7D0F]/15 text-[#9C7D0F] border border-[#9C7D0F]/30">
                   VERITAS ET VITA
@@ -172,10 +172,10 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
               </div>
 
               {/* 4. BADGES ISO: Tarjetas rectangulares con 'Norma de Calidad', logotipo formal ISO y colores sincronizados */}
-              <div className="mt-6 flex items-center gap-3">
+              <div className="mt-3 flex items-center gap-2.5">
                 {/* ISO 21001:2018 */}
-                <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/90 border border-[#9C7D0F]/30 shadow-xs hover:border-[#1E3F5D] transition-colors">
-                  <svg className="w-7 h-7 text-[#1E3F5D] shrink-0" viewBox="0 0 100 100" fill="currentColor">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/90 border border-[#9C7D0F]/30 shadow-xs hover:border-[#1E3F5D] transition-colors">
+                  <svg className="w-6 h-6 text-[#1E3F5D] shrink-0" viewBox="0 0 100 100" fill="currentColor">
                     <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="6" />
                     <ellipse cx="50" cy="50" rx="20" ry="45" fill="none" stroke="currentColor" strokeWidth="4" />
                     <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="5" />
@@ -189,8 +189,8 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                 </div>
 
                 {/* ISO 9001:2015 */}
-                <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/90 border border-[#9C7D0F]/30 shadow-xs hover:border-[#1E3F5D] transition-colors">
-                  <svg className="w-7 h-7 text-[#1E3F5D] shrink-0" viewBox="0 0 100 100" fill="currentColor">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/90 border border-[#9C7D0F]/30 shadow-xs hover:border-[#1E3F5D] transition-colors">
+                  <svg className="w-6 h-6 text-[#1E3F5D] shrink-0" viewBox="0 0 100 100" fill="currentColor">
                     <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="6" />
                     <ellipse cx="50" cy="50" rx="20" ry="45" fill="none" stroke="currentColor" strokeWidth="4" />
                     <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="5" />
@@ -206,13 +206,13 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
             </div>
 
             {/* 5. INDICADORES INFERIORES: Medallas con anillo concéntrico oro rectoral (#9C7D0F) y azul (#1E3F5D) */}
-            <div className="mt-8 flex items-center gap-8">
+            <div className="mt-4 flex items-center gap-6">
               {/* Medalla 98 */}
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-white/90 p-1 shadow-md border-2 border-[#1E3F5D]/25 ring-4 ring-[#1E3F5D]/10">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 p-1 shadow-md border-2 border-[#1E3F5D]/25 ring-2 ring-[#1E3F5D]/10">
                   <div className="w-full h-full rounded-full border border-[#1E3F5D]/30 flex flex-col items-center justify-center p-1 bg-white/60">
                     <FileText className="w-4 h-4 text-[#1E3F5D] mb-0.5" />
-                    <span className="text-2xl font-black text-[#1E3F5D] leading-none">98</span>
+                    <span className="text-lg sm:text-xl font-black text-[#1E3F5D] leading-none">98</span>
                   </div>
                 </div>
                 <span className="text-[11px] font-bold text-slate-800 mt-2 max-w-[90px] leading-tight">
@@ -222,10 +222,10 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
               {/* Medalla 61 */}
               <div className="flex flex-col items-center text-center">
-                <div className="w-20 h-20 rounded-full bg-white/90 p-1 shadow-md border-2 border-[#9C7D0F]/35 ring-4 ring-[#9C7D0F]/15">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 p-1 shadow-md border-2 border-[#9C7D0F]/35 ring-2 ring-[#9C7D0F]/15">
                   <div className="w-full h-full rounded-full border border-[#9C7D0F]/40 flex flex-col items-center justify-center p-1 bg-white/60">
                     <TrendingUp className="w-4 h-4 text-[#9C7D0F] mb-0.5" />
-                    <span className="text-2xl font-black text-[#1E3F5D] leading-none">61</span>
+                    <span className="text-lg sm:text-xl font-black text-[#1E3F5D] leading-none">61</span>
                   </div>
                 </div>
                 <span className="text-[11px] font-bold text-slate-800 mt-2 max-w-[90px] leading-tight">
@@ -235,7 +235,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
             </div>
 
             {/* Pie de acreditación institucional: Oficina Gestión de la Calidad */}
-            <div className="mt-8 pt-3 border-t border-slate-300/50 flex items-center justify-start text-xs text-slate-700 font-semibold tracking-wide">
+            <div className="mt-4 pt-2 border-t border-slate-300/50 flex items-center justify-start text-[11px] text-slate-700 font-semibold tracking-wide">
               <span>Oficina Gestión de la Calidad</span>
             </div>
           </div>
@@ -270,7 +270,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
               </div>
 
               {/* Pill Badge: 🟢 16 Oficinas Conectadas */}
-              <div className="mt-3.5 mb-3 flex justify-start">
+              <div className="mt-2 mb-2 flex justify-start">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-[#9C7D0F]/20 text-slate-800 text-xs font-bold shadow-2xs">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
                   <span>16 Oficinas Conectadas</span>
@@ -295,7 +295,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
               {/* 6. FORMULARIO: Con colores sincronizados de Stitch (#1E3F5D y #9C7D0F) */}
               {activeTab === 'login' ? (
-                <form onSubmit={handleLoginSubmit} className="space-y-3.5">
+                <form onSubmit={handleLoginSubmit} className="space-y-2">
                   {/* Campo Correo Institucional con @upt.pe fijo a la derecha */}
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-700 mb-1">
@@ -310,7 +310,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                           setEmailUsername(val);
                         }}
                         placeholder="usuario"
-                        className="w-full pl-4 pr-20 py-2.5 rounded-xl bg-white/75 border border-white/90 text-xs font-semibold text-slate-900 shadow-inner focus:outline-none focus:bg-white focus:border-[#1E3F5D] focus:ring-2 focus:ring-[#1E3F5D]/20 transition-all"
+                        className="w-full pl-3.5 pr-20 py-1.5 rounded-xl bg-white/75 border border-white/90 text-xs font-semibold text-slate-900 shadow-inner focus:outline-none focus:bg-white focus:border-[#1E3F5D] focus:ring-2 focus:ring-[#1E3F5D]/20 transition-all"
                       />
                       <span className="absolute right-3.5 text-xs font-bold text-[#1E3F5D]/70 pointer-events-none select-none">
                         @upt.pe
@@ -328,7 +328,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-2.5 pr-10 rounded-xl bg-white/75 border border-white/90 text-xs font-mono text-slate-900 shadow-inner focus:outline-none focus:bg-white focus:border-[#1E3F5D] focus:ring-2 focus:ring-[#1E3F5D]/20 transition-all"
+                        className="w-full px-3.5 py-1.5 pr-10 rounded-xl bg-white/75 border border-white/90 text-xs font-mono text-slate-900 shadow-inner focus:outline-none focus:bg-white focus:border-[#1E3F5D] focus:ring-2 focus:ring-[#1E3F5D]/20 transition-all"
                       />
                       <button
                         type="button"
@@ -342,7 +342,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
                   {/* Chips de Acceso Rápido de Oficinas */}
                   <div>
-                    <div className="text-[11px] font-semibold text-slate-700 mb-1.5 flex items-center justify-between">
+                    <div className="text-[10px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
                       <span>Acceso rápido de oficinas:</span>
                       <span className="text-[10px] font-bold text-[#9C7D0F]">SGC ISO</span>
                     </div>
@@ -380,7 +380,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#1E3F5D] to-[#132B42] hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer group border-t border-white/20"
+                      className="w-full py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#1E3F5D] to-[#132B42] hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer group border-t border-white/20"
                     >
                       <span>Ingresar a Mi Oficina</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -467,7 +467,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
               )}
 
               {/* MESA DE AYUDA SGC */}
-              <div className="mt-4 pt-3 border-t border-slate-300/40 text-center">
+              <div className="mt-2.5 pt-2 border-t border-slate-300/40 text-center">
                 <div className="text-[10px] font-bold text-[#1E3F5D] uppercase tracking-wider mb-1">
                   Mesa de Ayuda SGC
                 </div>

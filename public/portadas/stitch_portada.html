@@ -53,6 +53,13 @@
     }
   </script>
   <style>
+    html, body {
+      height: 100vh !important;
+      max-height: 100vh !important;
+      overflow: hidden !important;
+      margin: 0;
+      padding: 0;
+    }
     /* Estilos Glassmorphism de alta definición translúcido */
     .glass-card {
       background: rgba(255, 255, 255, 0.32);
@@ -125,7 +132,7 @@
     }
   </style>
 </head>
-<body class="relative min-h-screen w-full flex flex-col justify-between font-inter text-slate-800 antialiased overflow-x-hidden selection:bg-granate selection:text-white">
+<body class="relative h-screen max-h-screen w-full flex flex-col justify-between font-inter text-slate-800 antialiased overflow-hidden selection:bg-granate selection:text-white">
 
   <!-- CAPA DE FONDO: FOTOGRAFÍA ARQUITECTÓNICA DE CAMPUS NÍTIDA Y NATURAL -->
   <div class="fixed inset-0 w-full h-full -z-20 overflow-hidden">
@@ -140,7 +147,7 @@
   <div class="fixed inset-0 w-full h-full -z-10 hero-bg-overlay pointer-events-none"></div>
 
   <!-- BARRA DE INFORMACIÓN SUPERIOR (MINIMALISTA) -->
-  <header class="w-full px-8 py-3.5 flex justify-between items-center z-10">
+  <header class="w-full px-6 py-2 flex-shrink-0 flex justify-between items-center z-10">
     <div class="flex items-center gap-3">
       <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
       <span class="text-xs font-semibold tracking-wider uppercase text-white/95 drop-shadow-sm font-outfit">
@@ -161,43 +168,43 @@
   </header>
 
   <!-- CONTENEDOR PRINCIPAL CENTRAL CON ESCUDO SOBRESALIENTE -->
-  <main class="w-full max-w-6xl mx-auto px-4 sm:px-6 my-auto pt-16 pb-12 z-10 flex flex-col items-center">
+  <main class="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 my-auto flex-1 flex flex-col justify-center items-center z-10 overflow-hidden py-1">
 
     <!-- CONTENEDOR RELATIVO PARA PERMITIR QUE EL ESCUDO SOBRESALGA DE FORMA ELEGANTE -->
     <div class="relative w-full">
       
       <!-- TARJETA CENTRAL DE CRISTAL ESMERILADO (GLASSMORPHISM) -->
-      <div class="glass-card w-full pt-8 pb-10 px-6 sm:px-10 md:px-12">
+      <div class="glass-card w-full py-3.5 px-6 sm:px-8 max-h-[calc(100vh-80px)] flex flex-col justify-center">
         
         <!-- ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL -->
-        <div class="flex justify-center mb-6">
+        <div class="flex justify-center mb-2">
           <div class="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
             <img 
               src="/upt_escudo_oficial.png" 
               alt="Escudo Heráldico UPT" 
-              class="w-32 h-36 sm:w-40 sm:h-44 md:w-44 md:h-48 object-contain filter drop-shadow-xl"
+              class="w-20 h-24 sm:w-24 sm:h-28 object-contain filter drop-shadow-xl"
             />
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center">
         
         <!-- ================= LADO IZQUIERDO: INFORMACIÓN INSTITUCIONAL, NORMAS Y MÉTRICAS ================= -->
-        <div class="lg:col-span-6 flex flex-col justify-center space-y-7 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-8 lg:pb-0 lg:pr-8">
+        <div class="lg:col-span-6 flex flex-col justify-center space-y-3.5 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-3 lg:pb-0 lg:pr-6">
           
           <!-- Encabezado de la Universidad y del Sistema -->
           <div class="space-y-2 text-center lg:text-left">
-            <h1 class="font-cinzel text-2xl sm:text-3xl lg:text-3xl font-extrabold text-uptblue tracking-wide leading-tight">
+            <h1 class="font-cinzel text-xl sm:text-2xl font-extrabold text-uptblue tracking-wide leading-tight">
               UNIVERSIDAD PRIVADA DE TACNA
             </h1>
             
             <div class="h-1 w-24 bg-gradient-to-r from-granate to-gold mx-auto lg:mx-0 rounded-full my-2"></div>
             
-            <h2 class="font-outfit text-xl sm:text-2xl font-bold text-granate tracking-tight">
+            <h2 class="font-outfit text-base sm:text-lg font-bold text-granate tracking-tight">
               Sistema de Gestión de la Calidad (SGC)
             </h2>
             
-            <p class="text-sm text-slate-600 leading-relaxed font-normal pt-1">
+            <p class="text-xs text-slate-600 leading-normal font-normal pt-0.5 line-clamp-2">
               Plataforma rectora institucional para la planificación, auditoría, control de procesos y mejora continua de la excelencia formativa universitaria.
             </p>
           </div>
@@ -206,9 +213,9 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             
             <!-- Insignia ISO 21001:2018 -->
-            <div class="iso-badge rounded-xl p-3.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
-              <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center border border-gold/40 flex-shrink-0 text-gold-light">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="iso-badge rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
+              <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-gold/40 flex-shrink-0 text-gold-light">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
               </div>
@@ -223,9 +230,9 @@
             </div>
 
             <!-- Insignia ISO 9001:2015 -->
-            <div class="iso-badge rounded-xl p-3.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
-              <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center border border-gold/40 flex-shrink-0 text-gold-light">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="iso-badge rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
+              <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-gold/40 flex-shrink-0 text-gold-light">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
               </div>
@@ -249,9 +256,9 @@
             <div class="grid grid-cols-2 gap-4">
               
               <!-- Medallón 1: Procedimientos -->
-              <div class="glass-subcard rounded-2xl p-4 flex items-center space-x-3.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
-                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-granate to-granate-dark text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-outer">
-                  <span class="text-lg font-black font-outfit leading-none">98</span>
+              <div class="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
+                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-granate to-granate-dark text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-outer">
+                  <span class="text-base font-black font-outfit leading-none">98</span>
                   <span class="text-[9px] uppercase tracking-tighter opacity-80">Docs</span>
                 </div>
                 <div>
@@ -261,9 +268,9 @@
               </div>
 
               <!-- Medallón 2: Indicadores -->
-              <div class="glass-subcard rounded-2xl p-4 flex items-center space-x-3.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
-                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-uptblue to-uptblue-dark text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-blue">
-                  <span class="text-lg font-black font-outfit leading-none">61</span>
+              <div class="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
+                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-uptblue to-uptblue-dark text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-blue">
+                  <span class="text-base font-black font-outfit leading-none">61</span>
                   <span class="text-[9px] uppercase tracking-tighter opacity-80">Kpi</span>
                 </div>
                 <div>
@@ -285,11 +292,9 @@
         <!-- ================= LADO DERECHO: FORMULARIO DE AUTENTICACIÓN ================= -->
         <div class="lg:col-span-6 flex flex-col justify-center">
           
-          <div class="glass-subcard rounded-2xl p-6 sm:p-7 border border-white/80 shadow-md">
+          <div class="glass-subcard rounded-2xl p-4 sm:p-5 border border-white/80 shadow-md">
             
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h3 class="text-lg font-bold text-uptblue font-outfit">
+            <div class="flex items-center justify-between mb-2.5"><div><h3 class="text-base font-bold text-uptblue font-outfit">
                   Acceso a Funcionarios y Auditores
                 </h3>
                 <p class="text-xs text-slate-500">
@@ -304,7 +309,7 @@
             </div>
 
             <!-- SELECTOR RÁPIDO CON CHIPS DE DEPENDENCIAS CLAVE -->
-            <div class="mb-5">
+            <div class="mb-2.5">
               <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 font-outfit">
                 Dependencia Operativa Clave
               </label>
@@ -331,7 +336,7 @@
             </div>
 
             <!-- FORMULARIO DE ACCESO -->
-            <form class="space-y-4" onsubmit="event.preventDefault(); alert('Iniciando sesión segura en SGC UPT...');">
+            <form class="space-y-2.5" onsubmit="event.preventDefault(); alert('Iniciando sesión segura en SGC UPT...');">
               
               <!-- Campo de Usuario con terminación fija @upt.pe -->
               <div>
@@ -350,7 +355,7 @@
                     name="username" 
                     placeholder="cgarcia.calidad" 
                     value="cgarcia.calidad"
-                    class="glass-input w-full pl-10 pr-24 py-2.5 text-sm text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                    class="glass-input w-full pl-10 pr-24 py-1.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
                     required
                   >
                   <!-- Terminación fija @upt.pe -->
@@ -384,7 +389,7 @@
                     name="password" 
                     placeholder="••••••••••••" 
                     value="Tacna2024Calidad*"
-                    class="glass-input w-full pl-10 pr-10 py-2.5 text-sm text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                    class="glass-input w-full pl-10 pr-10 py-1.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
                     required
                   >
                   <button type="button" class="absolute right-0 inset-y-0 pr-3 flex items-center text-slate-400 hover:text-slate-600" onclick="togglePassword()">
@@ -411,7 +416,7 @@
               <div class="pt-2">
                 <button 
                   type="submit" 
-                  class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-granate to-granate-dark hover:from-granate-hover hover:to-granate-dark text-white font-outfit font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:shadow-granate/30 transition-all duration-200 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0"
+                  class="w-full py-2.5 px-5 rounded-xl bg-gradient-to-r from-granate to-granate-dark hover:from-granate-hover hover:to-granate-dark text-white font-outfit font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:shadow-granate/30 transition-all duration-200 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0"
                 >
                   <span>Ingresar a Mi Oficina</span>
                   <span class="text-base font-bold">&rarr;</span>
@@ -421,7 +426,7 @@
             </form>
 
             <!-- ALTERNAR A REGISTRAR NUEVO FUNCIONARIO -->
-            <div class="mt-5 pt-4 border-t border-slate-200/80 text-center flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+            <div class="mt-2.5 pt-2 border-t border-slate-200/80 text-center flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
               <span class="text-slate-500">¿Nuevo miembro en el equipo de calidad?</span>
               <a 
                 href="#registrar" 
@@ -435,7 +440,7 @@
           </div>
 
           <!-- Mensaje de soporte técnico institucional -->
-          <div class="mt-4 pt-3 border-t border-slate-300/40 text-center">
+          <div class="mt-2 pt-2 border-t border-slate-300/40 text-center">
             <div class="text-[11px] font-semibold text-uptblue uppercase tracking-wider mb-1">Mesa de Ayuda SGC</div>
             <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
               <a href="mailto:autoevaluacion@upt.edu.pe" class="text-uptblue font-medium hover:underline">autoevaluacion@upt.edu.pe</a>
@@ -457,7 +462,7 @@
   </main>
 
   <!-- PIE DE PÁGINA INSTITUCIONAL -->
-  <footer class="w-full px-6 py-4 z-10 bg-black/40 backdrop-blur-md border-t border-white/10 text-white/80 text-xs flex flex-col md:flex-row justify-between items-center gap-3">
+  <footer class="w-full px-6 py-2 flex-shrink-0 z-10 bg-black/40 backdrop-blur-md border-t border-white/10 text-white/80 text-xs flex flex-col md:flex-row justify-between items-center gap-3">
     <div class="flex items-center space-x-4">
       <span class="font-cinzel font-semibold tracking-wider text-gold-light">
         UNIVERSIDAD PRIVADA DE TACNA &bull; UPT
