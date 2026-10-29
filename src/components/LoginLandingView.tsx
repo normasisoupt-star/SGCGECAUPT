@@ -109,14 +109,16 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   };
 
   return (
-    <div 
-      className="min-h-screen w-full relative flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden bg-cover bg-center bg-no-repeat select-none"
-      style={{ 
-        backgroundImage: `url('/upt_campus_fachada.jpg')`,
-        filter: 'brightness(0.95)'
-      }}
-    >
-      {/* 3. FONDO GENERAL: Sin viñeteado oscuro ni desenfoque excesivo */}
+    <div className="min-h-screen w-full relative flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden select-none">
+      {/* FONDO GENERAL: Fotografía oficial del campus UPT Capanique con luz natural */}
+      <div 
+        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat -z-10"
+        style={{ 
+          backgroundImage: `url('/upt_campus_fachada.jpg')`,
+        }}
+      />
+      {/* Sutil veladura diurna para contraste sin oscurecer */}
+      <div className="fixed inset-0 w-full h-full bg-white/10 backdrop-brightness-[0.98] -z-10 pointer-events-none" />
       
       {/* CONTENEDOR PRINCIPAL FLOTANTE */}
       <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto pt-20 sm:pt-24">
