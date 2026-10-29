@@ -37,14 +37,6 @@ const OFFICE_DIRECTORY = [
   { name: 'Oficina de Personal', charge: 'Jefe de Personal', code: 'PS.01', proc: ['PS.01.01.01', 'PS.01.01.02', 'PS.01.01.03', 'PS.01.01.04', 'PS.01.01.05', 'PS.01.01.06', 'PS.01.01.07'] },
 ];
 
-const QUICK_CHIPS = [
-  { label: 'OPLA', code: 'PE.01', role: 'opla', desc: 'Oficina de Planificación y Calidad Académica (Proceso Estratégico PE.01)' },
-  { label: 'GECA', code: 'PE.02', role: 'geca', desc: 'Oficina de Gestión de la Calidad (Proceso Estratégico PE.02)' },
-  { label: 'APHU', code: 'PS.01', role: 'aphu', desc: 'Oficina de Administración de Personal (Proceso de Soporte PS.01)' },
-  { label: 'TEIN', code: 'PS.04', role: 'tein', desc: 'Oficina de Tecnologías de Información (Proceso de Soporte PS.04)' },
-  { label: 'VRAC', code: 'PM.01', role: 'vrac', desc: 'Vicerrectorado Académico (Proceso Misional PM.01)' },
-];
-
 export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   onLogin,
   activeUser,
@@ -53,9 +45,8 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   onRegisterUser,
 }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [selectedChipRole, setSelectedChipRole] = useState<string>('opla');
-  const [emailUsername, setEmailUsername] = useState<string>('cgarcia.calidad');
-  const [password, setPassword] = useState('Tacna2024Calidad*');
+  const [emailUsername, setEmailUsername] = useState<string>('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberSession, setRememberSession] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,18 +61,6 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [regOfficeIndex, setRegOfficeIndex] = useState(0);
   const [regRole, setRegRole] = useState<UserRole>('colaborador');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
-
-  const currentChip = QUICK_CHIPS.find(c => c.role === selectedChipRole) || QUICK_CHIPS[0];
-
-  const handleSelectQuickOffice = (chip: typeof QUICK_CHIPS[0]) => {
-    setSelectedChipRole(chip.role);
-    const found = users.find(u => u.role === chip.role);
-    if (found) {
-      setEmailUsername(found.email ? found.email.replace('@upt.pe', '') : found.role);
-    } else {
-      setEmailUsername(`${chip.role}.calidad`);
-    }
-  };
 
   const getFullLoginEmail = () => {
     const trimmed = emailUsername.trim().toLowerCase();
@@ -424,7 +403,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         {activeTab === 'login' ? 'Acceso a Funcionarios y Auditores' : 'Registro de Nuevo Funcionario'}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        {activeTab === 'login' ? 'Seleccione su dependencia operativa institucional' : 'Complete sus datos para incorporarse al SGC'}
+                        {activeTab === 'login' ? 'Ingrese con su cuenta de correo institucional' : 'Complete sus datos para incorporarse al SGC'}
                       </p>
                     </div>
                     <span className="p-2 rounded-lg bg-slate-100 text-[#0d2d3f] border border-slate-200">
@@ -452,35 +431,6 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
                   {activeTab === 'login' ? (
                     <div>
-                      {/* SELECTOR RÁPIDO CON CHIPS DE DEPENDENCIAS CLAVE */}
-                      <div className="mb-2.5">
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 font-outfit">
-                          Dependencia Operativa Clave
-                        </label>
-                        <div className="flex flex-wrap gap-1.5" id="chips-container">
-                          {QUICK_CHIPS.map(chip => {
-                            const isSelected = selectedChipRole === chip.role;
-                            return (
-                              <button
-                                key={chip.role}
-                                type="button"
-                                onClick={() => handleSelectQuickOffice(chip)}
-                                className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer ${
-                                  isSelected 
-                                    ? 'bg-[#0F2942] text-white border-[#0F2942] shadow-sm' 
-                                    : 'border-slate-300 text-slate-700 bg-white hover:bg-slate-50'
-                                }`}
-                              >
-                                {chip.label} <span className={`text-[10px] font-mono ${isSelected ? 'text-[#F3E5AB]' : 'opacity-75'}`}>{chip.code}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-1.5 italic">
-                          {currentChip.desc}
-                        </p>
-                      </div>
-
                       {/* FORMULARIO DE ACCESO CON FIREBASE AUTH */}
                       <form className="space-y-3 sm:space-y-3.5" onSubmit={handleLoginSubmit}>
                         
@@ -500,7 +450,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                                 const val = e.target.value;
                                 setEmailUsername(val);
                               }}
-                              placeholder="cgarcia.calidad o usuario@upt.pe" 
+                              placeholder="usuario@upt.pe o usuario" 
                               className="glass-input w-full pl-10 pr-24 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
                               required
                             />
