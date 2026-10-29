@@ -37,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Mapa de Procesos (13)',
       icon: Network,
       badge: '94 procs',
-      badgeColor: 'bg-indigo-50 text-indigo-700 font-semibold',
+      badgeColor: 'bg-[#0b4967]/10 text-[#0b4967] font-semibold',
     },
     {
       id: 'documents' as NavTab,
@@ -51,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Tablero de Indicadores',
       icon: LineChart,
       badge: 'Metas',
-      badgeColor: 'bg-emerald-50 text-emerald-700 font-semibold',
+      badgeColor: 'bg-[#9C7D0F]/15 text-[#9C7D0F] font-bold',
     },
     {
       id: 'capa' as NavTab,
@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 space-y-6">
         <div>
           <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            SGOE - UPT TACNA
+            SGC &bull; UPT TACNA
           </div>
           <nav className="space-y-1">
             {navItems.map((item) => {
@@ -89,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => onSelectTab(item.id)}
                   className={'w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer ' + (
                     isActive
-                      ? 'bg-red-800 text-white font-semibold shadow-md shadow-red-800/20'
+                      ? 'bg-[#0d2d3f] text-white font-semibold shadow-sm border-l-4 border-[#9C7D0F]'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   )}
                 >

@@ -50,11 +50,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 shadow-xs before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[2px] before:bg-gradient-to-r before:from-[#0d2d3f] before:via-[#e63b2e] before:to-[#9C7D0F]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Identidad Institucional UPT */}
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-800 via-rose-700 to-amber-600 flex items-center justify-center text-white shadow-md shadow-red-700/20">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0d2d3f] to-[#001826] border border-[#9C7D0F]/40 flex items-center justify-center text-[#F3E5AB] shadow-md shadow-[#0d2d3f]/25">
             <GraduationCap className="w-6 h-6" />
           </div>
           <div>
@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
                 UNIVERSIDAD PRIVADA DE TACNA
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-50 text-red-700 border border-red-200 uppercase tracking-wider">
+              <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#0d2d3f]/10 text-[#0d2d3f] border border-[#0d2d3f]/20 uppercase tracking-wider font-outfit">
                 GECA
               </span>
             </div>
@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onToggleScopeMode('my_office')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 scopeMode === 'my_office'
-                  ? 'bg-blue-900 text-white shadow-2xs'
+                  ? 'bg-[#0d2d3f] text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-200'
               }`}
               title={`Mostrar únicamente procesos, procedimientos, indicadores y auditoría de: ${activeUser.officeName || activeUser.department}`}
@@ -95,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => onToggleScopeMode('all')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 scopeMode === 'all'
-                  ? 'bg-slate-900 text-white shadow-2xs'
+                  ? 'bg-[#0d2d3f] text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-200'
               }`}
               title="Mostrar todo el catálogo institucional consolidado del SGC UPT"
@@ -212,15 +212,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Botón Rápido de Cerrar Sesión en Header */}
+          {/* Botón de Retorno a la Portada Oficial Stitch */}
           {onLogout && (
             <button
               type="button"
               onClick={onLogout}
-              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition-colors cursor-pointer shrink-0"
-              title="Cerrar sesión"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-[#0d2d3f] hover:bg-slate-100 border border-slate-200 transition-all cursor-pointer shrink-0"
+              title="Volver a la Portada SGC UPT"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline font-outfit">Ver Portada</span>
             </button>
           )}
         </div>

@@ -56,11 +56,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Saludo Institucional UPT */}
-      <div className="bg-gradient-to-r from-red-950 via-slate-900 to-red-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#0d2d3f] via-[#10344c] to-[#001826] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border-t-2 border-[#9C7D0F]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-red-200 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-red-300" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[#F3E5AB] text-xs font-semibold font-outfit">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
               <span>Universidad Privada de Tacna &bull; Oficina de Gestión de la Calidad (GECA)</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
@@ -74,7 +74,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => onNavigate('process_map')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-700 hover:bg-red-600 text-white font-bold text-sm shadow-md shadow-red-900/25 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#9C7D0F] hover:bg-[#b59214] text-white font-bold text-sm shadow-md shadow-black/20 transition-all cursor-pointer font-outfit"
             >
               <Network className="w-4 h-4" />
               <span>Ver Mapa de Procesos (13)</span>
@@ -94,21 +94,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div 
           onClick={() => onNavigate('documents')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-red-200 transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-[#0d2d3f]/30 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Documentos Vigentes</span>
-            <div className="w-9 h-9 rounded-xl bg-red-50 text-red-700 flex items-center justify-center group-hover:bg-red-700 group-hover:text-white transition-colors">
+            <div className="w-9 h-9 rounded-xl bg-[#0d2d3f]/10 text-[#0d2d3f] flex items-center justify-center group-hover:bg-[#0d2d3f] group-hover:text-white transition-colors">
               <FileText className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-3xl font-extrabold text-slate-900">{activeDocs}</span>
-            <span className="text-xs text-slate-500">de {documents.length} en Lista Maestra</span>
+            <span className="text-xs text-slate-500">de 93 en Lista Maestra Oficial</span>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>{reviewDocs} en revisión &bull; {draftDocs} borradores</span>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 transition-all" />
+            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#0d2d3f] transition-all" />
           </div>
         </div>
 
@@ -143,8 +143,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-slate-900">12</span>
-            <span className="text-xs text-blue-700 font-medium">Indicadores oficiales UPT</span>
+            <span className="text-3xl font-extrabold text-slate-900 font-outfit">61</span>
+            <span className="text-xs text-[#0b4967] font-semibold">Indicadores Oficiales UPT</span>
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Seguimiento POI, Calidad e I+D+i</span>
@@ -178,12 +178,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-700" />
+                <AlertCircle className="w-5 h-5 text-[#0d2d3f]" />
                 <h2 className="font-bold text-slate-900 text-base">Acciones Correctivas en Curso (RG08.PE.02)</h2>
               </div>
               <button 
                 onClick={() => onNavigate('capa')}
-                className="text-xs text-red-700 hover:text-red-900 font-bold cursor-pointer"
+                className="text-xs text-[#0d2d3f] hover:text-red-900 font-bold cursor-pointer"
               >
                 Ver todas &rarr;
               </button>
@@ -205,7 +205,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold tracking-wider bg-slate-900 text-white font-sans shadow-2xs">{nc.code}</span>
                         <span className={'px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase ' + (
-                          nc.severity === 'mayor' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                          nc.severity === 'mayor' ? 'bg-red-100 text-[#0d2d3f]' : 'bg-amber-100 text-amber-700'
                         )}>
                           {nc.severity}
                         </span>
