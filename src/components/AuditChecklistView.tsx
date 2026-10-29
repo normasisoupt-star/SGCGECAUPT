@@ -1020,7 +1020,7 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
                       setNewResponsible('Jefe de la Oficina de Tecnología de Información');
                     }
                   }}
-                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-xs font-bold rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f]"
                 >
                   <option value="PE.01">PE.01 - Planeamiento Institucional</option>
                   <option value="PE.02">PE.02 - Gestión de la Calidad</option>
@@ -1041,7 +1041,7 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
                   type="text"
                   value={newOffice}
                   onChange={(e) => setNewOffice(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f]"
                   required
                 />
               </div>
@@ -1055,7 +1055,7 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
                     type="date"
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f]"
                     required
                   />
                 </div>
@@ -1068,7 +1068,7 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
                     value={newSchedule}
                     onChange={(e) => setNewSchedule(e.target.value)}
                     placeholder="09:00 - 12:00"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f]"
                     required
                   />
                 </div>
@@ -1082,7 +1082,7 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
                   type="text"
                   value={newAuditor}
                   onChange={(e) => setNewAuditor(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f]"
                   required
                 />
               </div>
@@ -1096,7 +1096,7 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
                   value={newClauses}
                   onChange={(e) => setNewClauses(e.target.value)}
                   placeholder="Ej: 7.2, 8.2 & 8.3, 8.5.1.3"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] font-mono"
                   required
                 />
               </div>
@@ -1159,7 +1159,7 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
                   max="2035"
                   value={newYearInput}
                   onChange={(e) => setNewYearInput(parseInt(e.target.value, 10) || 2027)}
-                  className="w-full px-3.5 py-2.5 text-sm font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
+                  className="w-full px-3.5 py-2.5 text-sm font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50"
                   required
                 />
               </div>

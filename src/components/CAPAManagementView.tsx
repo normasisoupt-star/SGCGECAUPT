@@ -217,7 +217,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold tracking-wide text-amber-950 bg-amber-100 border border-amber-300 font-sans">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold tracking-wide text-[#0d2d3f] bg-[#0d2d3f]/10 border border-[#0d2d3f]/20 font-outfit">
               RG08.PE.02
             </span>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -236,7 +236,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
         ) : (
           <button
             onClick={onOpenNewModal}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0d2d3f] hover:bg-[#001826] text-white font-bold text-sm shadow-md shadow-[#0d2d3f]/20 border border-[#9C7D0F]/30 transition-all cursor-pointer self-start sm:self-auto font-outfit"
           >
             <Plus className="w-4 h-4" />
             <span>Reportar No Conformidad (RG08)</span>

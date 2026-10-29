@@ -427,7 +427,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-2xs">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold tracking-wider bg-blue-900 text-white font-sans shadow-2xs">
+            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold tracking-wider bg-[#0d2d3f] text-white font-outfit border border-[#9C7D0F]/40 shadow-xs">
               RG04.PE.02
             </span>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
@@ -466,7 +466,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               placeholder="Buscar por código, nombre, responsable..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
+              className="w-full pl-10 pr-4 py-2.5 text-xs rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50/50"
             />
           </div>
         </div>
@@ -573,7 +573,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               onClick={() => setViewMode('tablero')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 viewMode === 'tablero'
-                  ? 'bg-blue-900 text-white shadow-2xs'
+                  ? 'bg-[#0d2d3f] text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -585,7 +585,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               onClick={() => setViewMode('evolucion')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                 viewMode === 'evolucion'
-                  ? 'bg-blue-900 text-white shadow-2xs'
+                  ? 'bg-[#0d2d3f] text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -830,7 +830,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#0d2d3f]"
           >
             <option value="ALL">Todos los Estados</option>
             <option value="validado_conforme">🟢 Conforme (Validado Calidad)</option>
@@ -1346,7 +1346,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 <select
                   value={period}
                   onChange={(e) => setPeriod(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold bg-white"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] font-semibold bg-white"
                 >
                   <option value="2026 - Evaluación Anual">2026 - Evaluación Anual</option>
                   <option value="2026 - Semestre I">2026 - Semestre I</option>
@@ -1377,7 +1377,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                         placeholder="Ej. 16"
                         value={numerator}
                         onChange={(e) => setNumerator(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold bg-white"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] font-mono font-bold bg-white"
                       />
                     </div>
 
@@ -1393,7 +1393,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                         placeholder="Ej. 20"
                         value={denominator}
                         onChange={(e) => setDenominator(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold bg-white"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] font-mono font-bold bg-white"
                       />
                     </div>
 
@@ -1421,7 +1421,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                       required
                       value={directValue}
                       onChange={(e) => setDirectValue(e.target.value === '' ? '' : parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold bg-white"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] font-mono font-bold bg-white"
                     />
                   </div>
                 )}
@@ -1721,7 +1721,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                           placeholder="Ej. Evidencia contrastada con el Plan Operativo 2026. Conforme."
                           value={validationComment}
                           onChange={(e) => setValidationComment(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] font-medium"
                         />
                       </div>
 
@@ -1894,7 +1894,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                   max="2035"
                   value={newYearInput}
                   onChange={(e) => setNewYearInput(parseInt(e.target.value, 10) || 2027)}
-                  className="w-full px-3.5 py-2.5 text-sm font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
+                  className="w-full px-3.5 py-2.5 text-sm font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50"
                   required
                 />
                 <span className="text-[11px] text-slate-500 mt-1 block">
