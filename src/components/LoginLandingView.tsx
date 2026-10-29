@@ -182,9 +182,9 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     UNIVERSIDAD PRIVADA DE TACNA
                   </h1>
                   
-                  <div className="h-1 w-24 bg-gradient-to-r from-[#800020] to-[#D4AF37] mx-auto lg:mx-0 rounded-full my-2" />
+                  <div className="h-1 w-24 bg-gradient-to-r from-[#0d2d3f] via-[#e63b2e] to-[#D4AF37] mx-auto lg:mx-0 rounded-full my-2" />
                   
-                  <h2 className="font-outfit text-base sm:text-lg font-bold text-[#800020] tracking-tight">
+                  <h2 className="font-outfit text-base sm:text-lg font-bold text-[#0d2d3f] tracking-tight">
                     Sistema de Gestión de la Calidad (SGC)
                   </h2>
                   
@@ -241,7 +241,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     
                     {/* Medallón 1: Procedimientos */}
                     <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#800020] to-[#500014] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-outer">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0d2d3f] to-[#001826] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-outer">
                         <span className="text-base font-black font-outfit leading-none">98</span>
                         <span className="text-[9px] uppercase tracking-tighter opacity-80">Docs</span>
                       </div>
@@ -253,7 +253,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
                     {/* Medallón 2: Indicadores */}
                     <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0F2942] to-[#071624] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-blue">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0b4967] to-[#001725] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-blue">
                         <span className="text-base font-black font-outfit leading-none">61</span>
                         <span className="text-[9px] uppercase tracking-tighter opacity-80">Kpi</span>
                       </div>
@@ -288,7 +288,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         {activeTab === 'login' ? 'Seleccione su dependencia operativa institucional' : 'Complete sus datos para incorporarse al SGC'}
                       </p>
                     </div>
-                    <span className="p-2 rounded-lg bg-[#800020]/10 text-[#800020]">
+                    <span className="p-2 rounded-lg bg-slate-100 text-[#0d2d3f] border border-slate-200">
                       <Lock className="w-5 h-5" />
                     </span>
                   </div>
@@ -365,7 +365,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             />
                             {/* Terminación fija @upt.pe */}
                             <div className="absolute right-0 inset-y-0 pr-3.5 flex items-center pointer-events-none">
-                              <span className="text-xs font-bold text-[#800020] bg-[#800020]/10 px-2.5 py-1 rounded-md border border-[#800020]/20 font-mono">
+                              <span className="text-xs font-bold text-[#0d2d3f] bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 font-mono font-bold">
                                 @upt.pe
                               </span>
                             </div>
@@ -378,7 +378,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             <label className="block text-xs font-bold text-slate-700 font-outfit">
                               Contraseña de Acceso
                             </label>
-                            <a href="#recuperar" onClick={(e) => { e.preventDefault(); alert('Para restablecer su clave comuníquese con la Mesa de Ayuda SGC (anexo 443).'); }} className="text-[11px] font-medium text-[#800020] hover:underline">
+                            <a href="#recuperar" onClick={(e) => { e.preventDefault(); alert('Para restablecer su clave comuníquese con la Mesa de Ayuda SGC (anexo 443).'); }} className="text-[11px] font-medium text-[#0d2d3f] hover:text-[#e63b2e] hover:underline">
                               ¿Olvidó su clave?
                             </a>
                           </div>
@@ -411,7 +411,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                               type="checkbox" 
                               checked={rememberSession} 
                               onChange={(e) => setRememberSession(e.target.checked)}
-                              className="w-4 h-4 text-[#800020] rounded border-slate-300 focus:ring-[#800020] cursor-pointer" 
+                              className="w-4 h-4 text-[#0d2d3f] rounded border-slate-300 focus:ring-[#0d2d3f] cursor-pointer" 
                             />
                             <span className="text-xs text-slate-600">Sesión autenticada en este equipo</span>
                           </label>
@@ -424,7 +424,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         <div className="pt-2">
                           <button 
                             type="submit" 
-                            className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#800020] to-[#500014] hover:brightness-110 text-white font-outfit font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:shadow-[#800020]/30 transition-all duration-200 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                            className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#0d2d3f] to-[#001826] hover:brightness-110 text-white font-outfit font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:shadow-[#0d2d3f]/30 transition-all duration-200 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                           >
                             <span>Ingresar a Mi Oficina</span>
                             <ArrowRight className="w-4 h-4" />
@@ -438,7 +438,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         <span className="text-slate-500">¿Nuevo miembro en el equipo de calidad?</span>
                         <button 
                           type="button"
-                          className="font-semibold text-[#0F2942] hover:text-[#800020] transition-colors underline decoration-dotted font-outfit cursor-pointer"
+                          className="font-semibold text-[#0F2942] hover:text-[#e63b2e] transition-colors underline decoration-dotted font-outfit cursor-pointer"
                           onClick={() => { setActiveTab('register'); setStatusMessage(null); }}
                         >
                           Registrar Nuevo Funcionario &rarr;
@@ -516,7 +516,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         <div className="pt-2">
                           <button
                             type="submit"
-                            className="w-full py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#800020] to-[#500014] hover:brightness-110 text-white font-outfit font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                            className="w-full py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#0d2d3f] to-[#001826] hover:brightness-110 text-white font-outfit font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <UserPlus className="w-4 h-4" />
                             <span>Completar Registro Institucional</span>
@@ -527,7 +527,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                       <div className="mt-2.5 pt-2 border-t border-slate-200 text-center">
                         <button
                           type="button"
-                          className="text-xs font-semibold text-[#0F2942] hover:text-[#800020] transition-colors underline decoration-dotted font-outfit cursor-pointer"
+                          className="text-xs font-semibold text-[#0F2942] hover:text-[#e63b2e] transition-colors underline decoration-dotted font-outfit cursor-pointer"
                           onClick={() => { setActiveTab('login'); setStatusMessage(null); }}
                         >
                           &larr; Volver al Inicio de Sesión

@@ -62,9 +62,7 @@ export function App() {
   const [isOpenNewDocModal, setIsOpenNewDocModal] = useState(false);
   const [isOpenNewCapaModal, setIsOpenNewCapaModal] = useState(false);
   const [scopeMode, setScopeMode] = useState<'my_office' | 'all'>('my_office');
-  const [isLoggedOut, setIsLoggedOut] = useState(() => {
-    return sessionStorage.getItem('upt_sgc_logged_in') !== 'true';
-  });
+  const [isLoggedOut, setIsLoggedOut] = useState(true);
 
   const refreshAll = () => {
     setDocuments(getDocuments());
