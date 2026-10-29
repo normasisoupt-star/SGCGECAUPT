@@ -48,6 +48,28 @@ interface IndicatorsViewProps {
   onToggleScopeMode?: (mode: 'my_office' | 'all') => void;
 }
 
+const OFFICE_SHORT_NAMES: Record<string, string> = {
+  "Jefe de la Oficina de Planeamiento y Desarrollo": "OPLA - Planeamiento y Desarrollo",
+  "Jefe de la Oficina de Gestión de la Calidad": "GECA - Gestión de la Calidad",
+  "Vicerrector Académico": "VRAC - Vicerrectorado Académico",
+  "Jefe de la Oficina de Tecnología de Información": "TEIN - Tecnología de Información",
+  "Jefe del Área de Potencial Humano": "APHU - Potencial Humano",
+  "Director General de Administración": "DIGA - Dirección General de Administración",
+  "Jefe de la Oficina de Admisión y Marketing": "ADMA - Admisión y Marketing",
+  "Jefe de la Oficina de Biblioteca y Servicios Académicos": "BISA - Biblioteca y Servicios Académicos",
+  "Jefe de la Oficina de Bienestar Universitario": "OBUN - Bienestar Universitario",
+  "Jefe de la Oficina de Gestión de Procesos Académicos y Docencia": "GPAD - Procesos Académicos y Docencia",
+  "Director de la Escuela de Posgrado": "ESPG - Escuela de Posgrado",
+  "Jefe de la Oficina de Relaciones Nacionales e Internacionales": "RENI - Relaciones Nacionales e Internacionales",
+  "Jefe de la Oficina de Responsabilidad Social Universitaria": "RESU - Responsabilidad Social Universitaria",
+  "Vicerrectorado de Investigación / PITT": "PITT - Innovación y Transferencia",
+  "Vicerrectorado de Investigación / EDUN": "EDUN - Fondo Editorial",
+  "Comité de Seguridad y Salud en el Trabajo": "CSST - Seguridad y Salud",
+  "Asesoría Jurídica y Legal": "AJUR - Asesoría Jurídica",
+  "Director de Escuela": "ESCU - Direcciones de Escuela",
+  "Coordinador de Incubadora": "INCU - Incubadora de Empresas"
+};
+
 export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   indicators,
   documents,
@@ -61,6 +83,17 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'ALL' | 'PE' | 'PM' | 'PS'>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'validado_conforme' | 'pendiente_validacion' | 'observado'>('ALL');
+  const [selectedOfficeFilter, setSelectedOfficeFilter] = useState<string>('ALL');
+
+  // Dependencias para Filtro de Responsabilidad (Fase 4: 61 KPIs)
+  const responsibleOffices = useMemo(() => {
+    const set = new Set(indicators.map((i) => i.responsible));
+    return Array.from(set).sort((a, b) => {
+      const labelA = OFFICE_SHORT_NAMES[a] || a;
+      const labelB = OFFICE_SHORT_NAMES[b] || b;
+      return labelA.localeCompare(labelB);
+    });
+  }, [indicators]);
 
   // Estados para Gobernanza de Años y Vista
   const [years, setYears] = useState<EvaluationYear[]>(() => getEvaluationYears());
@@ -129,8 +162,8 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       totalScore += score;
       counted += 1;
 
-      if (score >= 90) greenCount += 1;
-      else if (score >= 70) amberCount += 1;
+      if (score >= 85) greenCount += 1;
+      else if (score >= 60) amberCount += 1;
       else redCount += 1;
 
       if (ind.processCode.startsWith('PE')) {
@@ -293,7 +326,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       }
     }
 
-    return matchesSearch && matchesCategory && matchesStatus && matchesScope;
+    const matchesOffice = 
+      selectedOfficeFilter === 'ALL' || 
+      ind.responsible === selectedOfficeFilter;
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesScope && matchesOffice;
   });
 
   // Apertura del modal de registro
@@ -730,20 +767,20 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </div>
         </div>
 
-        {/* Semáforo de Cumplimiento */}
+        {/* Semáforo de Cumplimiento Oficial UPT (Fase 4: 61 KPIs) */}
         <div className="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-4">
             <span className="flex items-center gap-1.5 text-emerald-300 font-bold">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              {globalScoreData.greenCount} En Meta (≥90%)
+              {globalScoreData.greenCount} Óptimo (≥85%)
             </span>
             <span className="flex items-center gap-1.5 text-amber-300 font-bold">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-              {globalScoreData.amberCount} En Seguimiento (70%-89%)
+              {globalScoreData.amberCount} En Seguimiento (60%-84%)
             </span>
             <span className="flex items-center gap-1.5 text-rose-300 font-bold">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
-              {globalScoreData.redCount} Críticos (&lt;70%)
+              {globalScoreData.redCount} Requiere CAPA (&lt;60%)
             </span>
           </div>
           <span className="text-slate-400 text-[11px]">
@@ -825,18 +862,59 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 pr-2">
-          <span className="text-[11px] font-bold text-slate-500">Filtrar por Auditoría:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#0d2d3f]"
-          >
-            <option value="ALL">Todos los Estados</option>
-            <option value="validado_conforme">🟢 Conforme (Validado Calidad)</option>
-            <option value="pendiente_validacion">🟡 Pendiente de Validación</option>
-            <option value="observado">🔴 Observado</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-3 pr-2 w-full sm:w-auto justify-end">
+          {/* Filtro de Responsabilidad por Oficina (Fase 4: 61 KPIs) */}
+          <div className="flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-slate-500" />
+            <span className="text-[11px] font-bold text-slate-600 hidden md:inline">Dependencia:</span>
+            <select
+              value={selectedOfficeFilter}
+              onChange={(e) => setSelectedOfficeFilter(e.target.value)}
+              className="text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#0d2d3f] max-w-[240px] truncate"
+              title="Filtrar indicadores por oficina o área responsable"
+            >
+              <option value="ALL">Todas las Dependencias ({indicators.length})</option>
+              {responsibleOffices.map((off) => {
+                const count = indicators.filter(i => i.responsible === off).length;
+                const label = OFFICE_SHORT_NAMES[off] || off;
+                return (
+                  <option key={off} value={off}>
+                    {label} ({count})
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
+          {/* Filtro por Auditoría */}
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#0d2d3f]"
+            >
+              <option value="ALL">Todos los Estados</option>
+              <option value="validado_conforme">🟢 Conforme (Validado Calidad)</option>
+              <option value="pendiente_validacion">🟡 Pendiente de Validación</option>
+              <option value="observado">🔴 Observado</option>
+            </select>
+          </div>
+
+          {/* Botón rápido para limpiar filtros */}
+          {(selectedOfficeFilter !== 'ALL' || statusFilter !== 'ALL' || categoryFilter !== 'ALL' || searchTerm !== '') && (
+            <button
+              onClick={() => {
+                setSelectedOfficeFilter('ALL');
+                setStatusFilter('ALL');
+                setCategoryFilter('ALL');
+                setSearchTerm('');
+              }}
+              className="text-[11px] font-bold text-rose-600 hover:text-rose-800 underline decoration-rose-300 cursor-pointer ml-1"
+            >
+              Limpiar
+            </button>
+          )}
         </div>
       </div>
 
@@ -849,34 +927,74 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           const canRegister = isProcessOwner(ind);
           const canAudit = isAuditorOrQuality || isAdmin;
 
+          // Cálculo de Rendimiento y Semaforización Automatizada (Fase 4: 61 KPIs)
+          const targetMatch = ind.target.match(/(\d+(\.\d+)?)/);
+          const targetVal = targetMatch ? parseFloat(targetMatch[1]) : 85;
+          let score = 0;
+          if (ind.expectedTrend === 'Descendente' || ind.target.includes('≤') || ind.target.includes('<=')) {
+            score = ind.currentValue <= targetVal ? 100 : Math.max(0, Math.round((targetVal / Math.max(ind.currentValue, 0.1)) * 100));
+          } else {
+            score = Math.min(100, Math.round((ind.currentValue / Math.max(targetVal, 1)) * 100));
+          }
+
+          const isOptimal = score >= 85;
+          const isWarning = score >= 60 && score < 85;
+          const isCritical = score < 60;
+
           return (
             <div
               key={ind.code}
-              className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4 hover:shadow-md"
+              className={`bg-white rounded-3xl border p-5 shadow-xs transition-all flex flex-col justify-between space-y-4 hover:shadow-md ${
+                isCritical 
+                  ? 'border-rose-300 ring-1 ring-rose-100 hover:border-rose-400' 
+                  : 'border-slate-200 hover:border-slate-300'
+              }`}
             >
               <div className="space-y-3">
                 {/* Cabecera del Indicador */}
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black tracking-wider bg-slate-900 text-white font-mono shadow-2xs">
-                    {ind.code}
-                  </span>
-                  <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-black tracking-wider bg-slate-900 text-white font-mono shadow-2xs">
+                      {ind.code}
+                    </span>
+                    {/* Badge de Semaforización Automatizada Visible (Fase 4: 61 KPIs) */}
+                    {isOptimal && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>🟢 Óptimo ({score}%)</span>
+                      </span>
+                    )}
+                    {isWarning && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <span>🟡 En Seguimiento ({score}%)</span>
+                      </span>
+                    )}
+                    {isCritical && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-800 border border-rose-300 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                        <span>🔴 Requiere CAPA ({score}%)</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {status === 'validado_conforme' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200" title="Validado conforme por Calidad (GECA)">
                         <CheckCircle className="w-3 h-3 text-emerald-600" />
-                        <span>Validado Calidad</span>
+                        <span className="hidden sm:inline">Validado</span>
                       </span>
                     )}
                     {status === 'pendiente_validacion' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300" title="Pendiente de validación formal">
                         <Clock className="w-3 h-3 text-amber-600" />
-                        <span>Por Validar</span>
+                        <span className="hidden sm:inline">Por Validar</span>
                       </span>
                     )}
                     {status === 'observado' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-300" title="Observado por auditoría de calidad">
                         <AlertTriangle className="w-3 h-3 text-rose-600" />
-                        <span>Observado</span>
+                        <span className="hidden sm:inline">Observado</span>
                       </span>
                     )}
                   </div>
@@ -947,6 +1065,52 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                       <span className="text-slate-900 font-bold">{ind.responsible}</span>
                     </span>
                   </div>
+                </div>
+
+                {/* Micro-Gráfico Sparkline de Rendimiento vs Meta con Porcentaje de Logro (Fase 4: 61 KPIs) */}
+                <div className={`p-2.5 rounded-2xl border transition-all ${
+                  isOptimal
+                    ? 'bg-emerald-50/50 border-emerald-200/70'
+                    : isWarning
+                    ? 'bg-amber-50/50 border-amber-200/70'
+                    : 'bg-rose-50/60 border-rose-200'
+                }`}>
+                  <div className="flex items-center justify-between text-[11px] mb-1.5">
+                    <span className="font-bold text-slate-700 flex items-center gap-1">
+                      {isOptimal ? (
+                        <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : isWarning ? (
+                        <TrendingUp className="w-3.5 h-3.5 text-amber-600" />
+                      ) : (
+                        <TrendingDown className="w-3.5 h-3.5 text-rose-600" />
+                      )}
+                      <span>Cumplimiento vs Meta</span>
+                    </span>
+                    <span className={`font-black text-xs ${
+                      isOptimal ? 'text-emerald-700' : isWarning ? 'text-amber-700' : 'text-rose-700'
+                    }`}>
+                      {score}% de logro
+                    </span>
+                  </div>
+                  {/* Micro-gráfico / Barra de Rendimiento (Sparkline) */}
+                  <div className="w-full bg-slate-200/80 h-2 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        isOptimal
+                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
+                          : isWarning
+                          ? 'bg-gradient-to-r from-amber-400 to-amber-500'
+                          : 'bg-gradient-to-r from-rose-500 to-red-600'
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(score, 3))}%` }}
+                    />
+                  </div>
+                  {isCritical && (
+                    <div className="text-[10px] text-rose-700 font-semibold flex items-center gap-1 mt-1.5 leading-tight">
+                      <AlertTriangle className="w-3 h-3 text-rose-600 shrink-0" />
+                      <span>Alerta Crítica: Requiere plan de acción o apertura de CAPA.</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
