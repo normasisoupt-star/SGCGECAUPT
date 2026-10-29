@@ -173,8 +173,8 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
     return matchesSeverity && matchesSearch && matchesScope;
   });
 
-  // Conteo por Fases PDCA
-  const pdcaCounts = {
+  // Conteo por Fases PHVA
+  const phvaCounts = {
     plan: filteredNCs.filter(nc => nc.status === 'abierta' || nc.status === 'analisis_causa').length,
     do: filteredNCs.filter(nc => nc.status === 'plan_aprobado' || nc.status === 'en_implementacion').length,
     check: filteredNCs.filter(nc => nc.status === 'en_verificacion').length,
@@ -227,7 +227,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
   };
 
   // Transición rápida entre fases PDCA
-  const handleAdvancePDCAStep = (nc: NonConformity, nextStatus: NonConformityStatus) => {
+  const handleAdvancePHVAStep = (nc: NonConformity, nextStatus: NonConformityStatus) => {
     const updatedNC: NonConformity = {
       ...nc,
       status: nextStatus,
@@ -337,7 +337,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
     alert('No Conformidad cerrada eficazmente en el SGC UPT (ISO 21001 Cl. 10.2).');
   };
 
-  const renderPDCACard = (nc: NonConformity, stage: 'plan' | 'do' | 'check' | 'act') => {
+  const renderPHVACard = (nc: NonConformity, stage: 'plan' | 'do' | 'check' | 'act') => {
     const sev = SEVERITY_CONFIG[nc.severity];
     const completedActions = nc.actions.filter(a => a.status === 'completada').length;
     const totalActions = nc.actions.length;
@@ -409,7 +409,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
           </div>
         </div>
 
-        {/* Acciones y Transición de Fases PDCA */}
+        {/* Acciones y Transición de Fases PHVA */}
         <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-1 text-[11px]">
           <button
             type="button"
@@ -427,22 +427,22 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
               {stage === 'plan' && (
                 <button
                   type="button"
-                  onClick={() => handleAdvancePDCAStep(nc, 'en_implementacion')}
+                  onClick={() => handleAdvancePHVAStep(nc, 'en_implementacion')}
                   className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[10px] shadow-2xs transition-colors cursor-pointer"
                   title="Avanzar a la fase de Hacer (Ejecución de Acciones)"
                 >
-                  <span>A Hacer (D)</span>
+                  <span>A Hacer (H)</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               )}
               {stage === 'do' && (
                 <button
                   type="button"
-                  onClick={() => handleAdvancePDCAStep(nc, 'en_verificacion')}
+                  onClick={() => handleAdvancePHVAStep(nc, 'en_verificacion')}
                   className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-700 hover:bg-purple-800 text-white rounded-lg font-bold text-[10px] shadow-2xs transition-colors cursor-pointer"
                   title="Enviar a Verificación formal por Calidad"
                 >
-                  <span>A Verificar (C)</span>
+                  <span>A Verificar (V)</span>
                   <ArrowRight className="w-3 h-3" />
                 </button>
               )}
@@ -456,7 +456,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
                   className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold text-[10px] shadow-2xs transition-colors cursor-pointer"
                   title="Auditar eficacia y cerrar hallazgo"
                 >
-                  <span>Cerrar (A)</span>
+                  <span>Cerrar y Actuar (A)</span>
                   <ShieldCheck className="w-3 h-3" />
                 </button>
               )}
@@ -488,10 +488,10 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
             </span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900 mt-1">
-            Auditorías y Gestión de No Conformidades (CAPA - PDCA)
+            Auditorías y Gestión de No Conformidades (CAPA - PHVA)
           </h1>
           <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-            Gestión del ciclo de mejora continua en la Universidad Privada de Tacna mediante el <strong>Tablero Interactivo de Fases PDCA</strong>, <strong>análisis de causa raíz (Ishikawa / 5 Porqués)</strong> y <strong>dictamen formal de eficacia</strong>.
+            Gestión del ciclo de mejora continua en la Universidad Privada de Tacna mediante el <strong>Tablero Interactivo de Fases PHVA</strong>, <strong>análisis de causa raíz (Ishikawa / 5 Porqués)</strong> y <strong>dictamen formal de eficacia</strong>.
           </p>
         </div>
 
@@ -515,7 +515,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
         </div>
       </div>
 
-      {/* TARJETA DE RESUMEN PDCA (4 FASES DEL CICLO DE MEJORA) */}
+      {/* TARJETA DE RESUMEN PHVA (4 FASES DEL CICLO DE MEJORA) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Fase P - Planificar */}
         <div className="bg-gradient-to-br from-blue-900 to-[#0d2d3f] text-white p-4 rounded-3xl border border-blue-700/40 shadow-xs relative overflow-hidden">
@@ -525,11 +525,11 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
               <span>1. Planificar (P)</span>
             </span>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/10 text-white">
-              {pdcaCounts.plan}
+              {phvaCounts.plan}
             </span>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black">{pdcaCounts.plan}</div>
+            <div className="text-2xl font-black">{phvaCounts.plan}</div>
             <div className="text-[10px] text-blue-200/80 mt-0.5">Detección y Causa Raíz</div>
           </div>
         </div>
@@ -539,14 +539,14 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-black uppercase tracking-wider text-amber-200 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-              <span>2. Hacer (D)</span>
+              <span>2. Hacer (H)</span>
             </span>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/10 text-white">
-              {pdcaCounts.do}
+              {phvaCounts.do}
             </span>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black">{pdcaCounts.do}</div>
+            <div className="text-2xl font-black">{phvaCounts.do}</div>
             <div className="text-[10px] text-amber-200/80 mt-0.5">Acciones en Ejecución</div>
           </div>
         </div>
@@ -556,14 +556,14 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-black uppercase tracking-wider text-purple-200 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-              <span>3. Verificar (C)</span>
+              <span>3. Verificar (V)</span>
             </span>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/10 text-white">
-              {pdcaCounts.check}
+              {phvaCounts.check}
             </span>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black">{pdcaCounts.check}</div>
+            <div className="text-2xl font-black">{phvaCounts.check}</div>
             <div className="text-[10px] text-purple-200/80 mt-0.5">Auditoría de Eficacia</div>
           </div>
         </div>
@@ -576,11 +576,11 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
               <span>4. Actuar (A)</span>
             </span>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/10 text-white">
-              {pdcaCounts.act}
+              {phvaCounts.act}
             </span>
           </div>
           <div className="mt-2">
-            <div className="text-2xl font-black">{pdcaCounts.act}</div>
+            <div className="text-2xl font-black">{phvaCounts.act}</div>
             <div className="text-[10px] text-emerald-200/80 mt-0.5">Cierre y Estandarización</div>
           </div>
         </div>
@@ -601,7 +601,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
               }`}
             >
               <Columns className="w-3.5 h-3.5" />
-              <span>Tablero PDCA (4 Fases)</span>
+              <span>Tablero PHVA (4 Fases)</span>
             </button>
             <button
               type="button"
@@ -680,7 +680,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
                 </span>
               </div>
               <span className="text-xs font-black px-2 py-0.5 rounded-full bg-blue-100 text-blue-900">
-                {pdcaCounts.plan}
+                {phvaCounts.plan}
               </span>
             </div>
             <p className="text-[10px] text-slate-500 px-1">Detección del hallazgo y determinación de causa raíz</p>
@@ -688,8 +688,8 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
             <div className="space-y-3">
               {filteredNCs
                 .filter((nc) => nc.status === 'abierta' || nc.status === 'analisis_causa')
-                .map((nc) => renderPDCACard(nc, 'plan'))}
-              {pdcaCounts.plan === 0 && (
+                .map((nc) => renderPHVACard(nc, 'plan'))}
+              {phvaCounts.plan === 0 && (
                 <div className="p-6 text-center text-xs text-slate-400 bg-white/60 rounded-2xl border border-dashed border-slate-200">
                   Sin hallazgos en fase de Planificación.
                 </div>
@@ -703,11 +703,11 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                 <span className="font-black text-xs uppercase tracking-wider text-amber-950">
-                  Hacer (D)
+                  Hacer (H)
                 </span>
               </div>
               <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
-                {pdcaCounts.do}
+                {phvaCounts.do}
               </span>
             </div>
             <p className="text-[10px] text-slate-500 px-1">Ejecución de acciones correctivas y compromisos</p>
@@ -715,8 +715,8 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
             <div className="space-y-3">
               {filteredNCs
                 .filter((nc) => nc.status === 'plan_aprobado' || nc.status === 'en_implementacion')
-                .map((nc) => renderPDCACard(nc, 'do'))}
-              {pdcaCounts.do === 0 && (
+                .map((nc) => renderPHVACard(nc, 'do'))}
+              {phvaCounts.do === 0 && (
                 <div className="p-6 text-center text-xs text-slate-400 bg-white/60 rounded-2xl border border-dashed border-slate-200">
                   Sin acciones en fase de Ejecución.
                 </div>
@@ -730,11 +730,11 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
                 <span className="font-black text-xs uppercase tracking-wider text-purple-950">
-                  Verificar (C)
+                  Verificar (V)
                 </span>
               </div>
               <span className="text-xs font-black px-2 py-0.5 rounded-full bg-purple-100 text-purple-900">
-                {pdcaCounts.check}
+                {phvaCounts.check}
               </span>
             </div>
             <p className="text-[10px] text-slate-500 px-1">Auditoría formal de eficacia y contraste de evidencias</p>
@@ -742,8 +742,8 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
             <div className="space-y-3">
               {filteredNCs
                 .filter((nc) => nc.status === 'en_verificacion')
-                .map((nc) => renderPDCACard(nc, 'check'))}
-              {pdcaCounts.check === 0 && (
+                .map((nc) => renderPHVACard(nc, 'check'))}
+              {phvaCounts.check === 0 && (
                 <div className="p-6 text-center text-xs text-slate-400 bg-white/60 rounded-2xl border border-dashed border-slate-200">
                   Sin hallazgos en fase de Verificación.
                 </div>
@@ -761,7 +761,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
                 </span>
               </div>
               <span className="text-xs font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900">
-                {pdcaCounts.act}
+                {phvaCounts.act}
               </span>
             </div>
             <p className="text-[10px] text-slate-500 px-1">Cierre formal eficaz, estandarización y lecciones</p>
@@ -769,8 +769,8 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
             <div className="space-y-3">
               {filteredNCs
                 .filter((nc) => nc.status === 'cerrada')
-                .map((nc) => renderPDCACard(nc, 'act'))}
-              {pdcaCounts.act === 0 && (
+                .map((nc) => renderPHVACard(nc, 'act'))}
+              {phvaCounts.act === 0 && (
                 <div className="p-6 text-center text-xs text-slate-400 bg-white/60 rounded-2xl border border-dashed border-slate-200">
                   Sin hallazgos cerrados todavía.
                 </div>
@@ -1049,7 +1049,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
                   type="submit"
                   className="px-5 py-2.5 text-xs font-bold text-white bg-[#0d2d3f] hover:bg-[#001826] rounded-xl shadow-xs transition-colors cursor-pointer border border-[#9C7D0F]/40"
                 >
-                  Registrar No Conformidad (Fase P)
+                  Registrar No Conformidad (Fase P - Planificar)
                 </button>
               </div>
             </form>
