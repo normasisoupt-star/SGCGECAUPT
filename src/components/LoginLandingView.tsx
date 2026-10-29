@@ -148,10 +148,6 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
           {/* LADO IZQUIERDO: TÍTULO, SELLOS ISO FORMALES Y MEDALLAS CONCÉNTRICAS */}
           <div className="flex flex-col justify-between pr-0 md:pr-8 pb-6 md:pb-0 border-b md:border-b-0 md:border-r border-white/60">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1E3F5D]/10 border border-[#1E3F5D]/20 text-[#1E3F5D] text-[10px] font-bold tracking-wider uppercase mb-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#9C7D0F]"></span>
-                Acreditación & Calidad ISO
-              </div>
               <h1 className="text-2xl sm:text-[30px] lg:text-[34px] font-black text-slate-900 leading-[1.14] tracking-tight">
                 Sistema de <br />
                 Gestión de la Calidad
@@ -163,7 +159,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                 </span>
               </div>
 
-              {/* 4. BADGES ISO: Tarjetas rectangulares con logotipo formal ISO y colores sincronizados con Stitch (#1E3F5D / #9C7D0F) */}
+              {/* 4. BADGES ISO: Tarjetas rectangulares con 'Norma de Calidad', logotipo formal ISO y colores sincronizados */}
               <div className="mt-6 flex items-center gap-3">
                 {/* ISO 21001:2018 */}
                 <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/90 border border-[#9C7D0F]/30 shadow-xs hover:border-[#1E3F5D] transition-colors">
@@ -175,8 +171,8 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     <line x1="15" y1="72" x2="85" y2="72" stroke="currentColor" strokeWidth="4" />
                   </svg>
                   <div className="leading-tight text-left">
-                    <div className="text-xs font-black text-[#1E3F5D] tracking-wider leading-none">ISO</div>
-                    <div className="text-[11px] font-bold text-[#1E3F5D] mt-0.5 tracking-tight">21001:2018</div>
+                    <div className="text-[10px] font-bold text-[#9C7D0F] uppercase tracking-wider">Norma de Calidad</div>
+                    <div className="text-xs font-black text-[#1E3F5D] tracking-tight">ISO 21001:2018</div>
                   </div>
                 </div>
 
@@ -190,8 +186,8 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     <line x1="15" y1="72" x2="85" y2="72" stroke="currentColor" strokeWidth="4" />
                   </svg>
                   <div className="leading-tight text-left">
-                    <div className="text-xs font-black text-[#1E3F5D] tracking-wider leading-none">ISO</div>
-                    <div className="text-[11px] font-bold text-[#1E3F5D] mt-0.5 tracking-tight">9001:2015</div>
+                    <div className="text-[10px] font-bold text-[#9C7D0F] uppercase tracking-wider">Norma de Calidad</div>
+                    <div className="text-xs font-black text-[#1E3F5D] tracking-tight">ISO 9001:2015</div>
                   </div>
                 </div>
               </div>
