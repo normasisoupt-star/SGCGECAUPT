@@ -19,20 +19,14 @@ interface LoginLandingViewProps {
 }
 
 const OFFICE_DIRECTORY = [
-  { name: 'Oficina de Planeamiento y Desarrollo (OPLA)', code: 'opla', role: 'opla' as UserRole, proc: ['PE.01'] as ProcessLevel0[], charge: 'Jefe de OPLA' },
-  { name: 'Oficina de Gestión de la Calidad y Acreditación (GECA)', code: 'geca', role: 'geca' as UserRole, proc: ['PE.02', 'PE.03'] as ProcessLevel0[], charge: 'Jefe de la Oficina de Gestión de la Calidad' },
-  { name: 'Área de Personal y Recursos Humanos (APHU)', code: 'aphu', role: 'aphu' as UserRole, proc: ['PS.01'] as ProcessLevel0[], charge: 'Jefe de Personal / Recursos Humanos' },
-  { name: 'Oficina de Tecnologías de Información (TEIN)', code: 'tein', role: 'tein' as UserRole, proc: ['PS.04'] as ProcessLevel0[], charge: 'Jefe de Tecnologías de Información' },
-  { name: 'Dirección de Escuela / Decanatos (GPAD)', code: 'director_escuela', role: 'director_escuela' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Director de Escuela Profesional' },
-  { name: 'Vicerrectorado Académico (VRAC)', code: 'vrac', role: 'vrac' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Vicerrector Académico' },
-  { name: 'Vicerrectorado de Investigación (VRIN)', code: 'vrin', role: 'vrin' as UserRole, proc: ['PM.02'] as ProcessLevel0[], charge: 'Vicerrector de Investigación' },
-  { name: 'Dirección General de Administración (DIGA)', code: 'diga', role: 'diga' as UserRole, proc: ['PS.03', 'PS.05'] as ProcessLevel0[], charge: 'Director General de Administración' },
-  { name: 'Responsabilidad Social Universitaria (RESU)', code: 'resu', role: 'resu' as UserRole, proc: ['PM.03'] as ProcessLevel0[], charge: 'Jefe de RSU' },
-  { name: 'Centros de Información y Biblioteca (BISA)', code: 'bisa', role: 'bisa' as UserRole, proc: ['PS.02'] as ProcessLevel0[], charge: 'Jefe de Biblioteca y Centros de Información' },
-  { name: 'Oficina de Admisión (ADMA)', code: 'adma', role: 'adma' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Jefe de Admisión' },
-  { name: 'Oficina de Bienestar Universitario (OBUN)', code: 'obun', role: 'obun' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Jefe de Bienestar Universitario' },
-  { name: 'Escuela de Postgrado (ESPG)', code: 'espg', role: 'espg' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Director de Postgrado' },
-  { name: 'Equipo Auditor Interno SGC', code: 'auditor', role: 'auditor' as UserRole, proc: [] as ProcessLevel0[], charge: 'Auditor Líder ISO 21001 / ISO 9001' },
+  { name: 'Oficina de Planeamiento y Desarrollo (OPLA)', code: 'opla', role: 'opla' as UserRole, proc: ['PE.01'] as ProcessLevel0[], charge: 'Jefe de OPLA', defaultUser: 'opla' },
+  { name: 'Oficina de Gestión de la Calidad (GECA)', code: 'geca', role: 'geca' as UserRole, proc: ['PE.02', 'PE.03'] as ProcessLevel0[], charge: 'Jefe de Gestión de la Calidad', defaultUser: 'calidad' },
+  { name: 'Área de Personal y Recursos Humanos (APHU)', code: 'aphu', role: 'aphu' as UserRole, proc: ['PS.01'] as ProcessLevel0[], charge: 'Jefe de Personal / RRHH', defaultUser: 'personal' },
+  { name: 'Oficina de Tecnologías de Información (TEIN)', code: 'tein', role: 'tein' as UserRole, proc: ['PS.04'] as ProcessLevel0[], charge: 'Jefe de Tecnologías de Información', defaultUser: 'sistemas' },
+  { name: 'Vicerrectorado Académico (VRAC)', code: 'vrac', role: 'vrac' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Vicerrector Académico', defaultUser: 'vrac' },
+  { name: 'Vicerrectorado de Investigación (VRIN)', code: 'vrin', role: 'vrin' as UserRole, proc: ['PM.02'] as ProcessLevel0[], charge: 'Vicerrector de Investigación', defaultUser: 'investigacion' },
+  { name: 'Dirección General de Administración (DIGA)', code: 'diga', role: 'diga' as UserRole, proc: ['PS.03', 'PS.05'] as ProcessLevel0[], charge: 'Director General de Administración', defaultUser: 'diga' },
+  { name: 'Dirección de Escuela / Decanatos (GPAD)', code: 'director_escuela', role: 'director_escuela' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Director de Escuela', defaultUser: 'escuela' },
 ];
 
 export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
@@ -44,7 +38,14 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   
   // Login State
-  const [selectedUserId, setSelectedUserId] = useState<string>(activeUser?.id || users[0]?.id || '');
+  const initialUser = activeUser || users[0];
+  const [selectedUserId, setSelectedUserId] = useState<string>(initialUser?.id || '');
+  const [emailUsername, setEmailUsername] = useState<string>(() => {
+    if (initialUser?.email) {
+      return initialUser.email.replace('@upt.pe', '');
+    }
+    return 'calidad';
+  });
   const [password, setPassword] = useState('••••••••••••');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -56,12 +57,13 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [regRole, setRegRole] = useState<UserRole>('colaborador');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const currentUser = users.find(u => u.id === selectedUserId) || activeUser || users[0];
+  const currentUser = users.find(u => u.id === selectedUserId) || initialUser;
 
   const handleSelectQuickOffice = (roleKey: string) => {
     const found = users.find(u => u.role === roleKey);
     if (found) {
       setSelectedUserId(found.id);
+      setEmailUsername(found.email ? found.email.replace('@upt.pe', '') : found.role);
     }
   };
 
@@ -109,38 +111,42 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   return (
     <div 
       className="min-h-screen w-full relative flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans overflow-x-hidden bg-cover bg-center bg-no-repeat select-none"
-      style={{ backgroundImage: `url('/upt_campus_fachada.jpg')` }}
+      style={{ 
+        backgroundImage: `url('/upt_campus_fachada.jpg')`,
+        filter: 'brightness(0.95)'
+      }}
     >
-      {/* Capa de desenfoque suave idéntica al mockup */}
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-[4px]"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/15 pointer-events-none"></div>
-
+      {/* 3. FONDO GENERAL: Sin viñeteado oscuro ni desenfoque excesivo */}
+      
       {/* CONTENEDOR PRINCIPAL FLOTANTE */}
-      <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto pt-14 sm:pt-16">
+      <div className="relative z-10 w-full max-w-[940px] mx-auto my-auto pt-20 sm:pt-24">
         
-        {/* ESCUDO OFICIAL UPT SUPERPUESTO EXACTAMENTE EN EL BORDE SUPERIOR */}
-        <div className="absolute -top-10 sm:-top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        {/* 1. ESCUDO UPT SUPERIOR: Mucho más grande (triple de tamaño), centrado horizontalmente y sobresaliendo (top: -70px) */}
+        <div className="absolute -top-16 sm:-top-24 md:-top-28 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
           <img 
             src="/upt_escudo_oficial.png" 
             alt="Escudo Oficial Universidad Privada de Tacna - Veritas et Vita" 
-            className="h-32 sm:h-40 md:h-44 w-auto object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.25)]"
+            className="h-44 sm:h-52 md:h-60 w-auto object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.3)] filter contrast-105"
           />
         </div>
 
-        {/* TARJETA GLASSMORPHISM TRANSLÚCIDA CONTINUA (Idéntica a media_1793227531358.png) */}
+        {/* 2. TARJETA CENTRAL: Glassmorphism real con estilos exactos */}
         <div 
-          className="rounded-[28px] border border-white/80 shadow-[0_20px_50px_rgba(0,0,0,0.15)] overflow-hidden grid grid-cols-1 md:grid-cols-2 pt-14 sm:pt-16 pb-8 sm:pb-9 px-6 sm:px-10 relative"
+          className="overflow-hidden grid grid-cols-1 md:grid-cols-2 pt-16 sm:pt-20 pb-8 sm:pb-10 px-6 sm:px-10 relative"
           style={{
             background: 'rgba(255, 255, 255, 0.45)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            border: '1px solid rgba(255, 255, 255, 0.6)',
+            borderRadius: '20px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
           }}
         >
           
-          {/* LADO IZQUIERDO: TÍTULO, SELLOS ISO Y MEDALLONES CIRCULARES */}
-          <div className="flex flex-col justify-between pr-0 md:pr-6 pb-6 md:pb-0 border-b md:border-b-0 md:border-r border-white/60">
+          {/* LADO IZQUIERDO: TÍTULO, SELLOS ISO FORMALES Y MEDALLAS CONCÉNTRICAS */}
+          <div className="flex flex-col justify-between pr-0 md:pr-8 pb-6 md:pb-0 border-b md:border-b-0 md:border-r border-white/60">
             <div>
-              <h1 className="text-2xl sm:text-[28px] lg:text-[32px] font-black text-slate-900 leading-[1.18] tracking-tight">
+              <h1 className="text-2xl sm:text-[30px] lg:text-[34px] font-black text-slate-900 leading-[1.14] tracking-tight">
                 Sistema de <br />
                 Gestión de la Calidad
               </h1>
@@ -148,63 +154,75 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                 SGC UPT
               </div>
 
-              {/* SELLOS OFICIALES ISO (Diseño gemelo al mockup) */}
-              <div className="mt-5 sm:mt-6 flex items-center gap-3">
-                {/* ISO 21001 */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-[#0284c7] shadow-2xs">
-                  <div className="w-7 h-7 rounded-full bg-[#0369a1] text-white flex items-center justify-center font-black text-[9px] tracking-tighter">
-                    ISO
-                  </div>
+              {/* 4. BADGES ISO: Tarjetas rectangulares con logotipo formal ISO y texto azul marino oscuro */}
+              <div className="mt-6 flex items-center gap-3">
+                {/* ISO 21001:2018 */}
+                <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/85 border border-[#bfdbfe] shadow-xs">
+                  <svg className="w-7 h-7 text-[#0f2942] shrink-0" viewBox="0 0 100 100" fill="currentColor">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="6" />
+                    <ellipse cx="50" cy="50" rx="20" ry="45" fill="none" stroke="currentColor" strokeWidth="4" />
+                    <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="5" />
+                    <line x1="15" y1="28" x2="85" y2="28" stroke="currentColor" strokeWidth="4" />
+                    <line x1="15" y1="72" x2="85" y2="72" stroke="currentColor" strokeWidth="4" />
+                  </svg>
                   <div className="leading-tight text-left">
-                    <div className="text-[11px] font-black text-[#0369a1]">ISO</div>
-                    <div className="text-[10px] font-bold text-[#0284c7]">21001:2018</div>
+                    <div className="text-xs font-black text-[#0f2942] tracking-wider leading-none">ISO</div>
+                    <div className="text-[11px] font-bold text-[#0f2942] mt-0.5 tracking-tight">21001:2018</div>
                   </div>
                 </div>
 
-                {/* ISO 9001 */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-[#1e40af] shadow-2xs">
-                  <div className="w-7 h-7 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center font-black text-[9px] tracking-tighter">
-                    ISO
-                  </div>
+                {/* ISO 9001:2015 */}
+                <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white/85 border border-[#bfdbfe] shadow-xs">
+                  <svg className="w-7 h-7 text-[#0f2942] shrink-0" viewBox="0 0 100 100" fill="currentColor">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="6" />
+                    <ellipse cx="50" cy="50" rx="20" ry="45" fill="none" stroke="currentColor" strokeWidth="4" />
+                    <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="5" />
+                    <line x1="15" y1="28" x2="85" y2="28" stroke="currentColor" strokeWidth="4" />
+                    <line x1="15" y1="72" x2="85" y2="72" stroke="currentColor" strokeWidth="4" />
+                  </svg>
                   <div className="leading-tight text-left">
-                    <div className="text-[11px] font-black text-[#1e3a8a]">ISO</div>
-                    <div className="text-[10px] font-bold text-[#1d4ed8]">9001:2015</div>
+                    <div className="text-xs font-black text-[#0f2942] tracking-wider leading-none">ISO</div>
+                    <div className="text-[11px] font-bold text-[#0f2942] mt-0.5 tracking-tight">9001:2015</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* MEDALLONES CIRCULARES INSTITUCIONALES (Diseño exacto al mockup) */}
-            <div className="mt-7 flex items-center gap-8">
-              {/* Medallón 98 */}
+            {/* 5. INDICADORES INFERIORES: Medallas circulares limpias con doble borde concéntrico sutil y sombra suave (sin festoneado) */}
+            <div className="mt-8 flex items-center gap-8">
+              {/* Medalla 98 */}
               <div className="flex flex-col items-center text-center">
-                <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-white/80 border-2 border-dashed border-slate-300 shadow-sm flex flex-col items-center justify-center p-2">
-                  <FileText className="w-4 h-4 text-slate-600 mb-0.5" />
-                  <div className="text-xl sm:text-2xl font-black text-slate-900 leading-none">98</div>
+                <div className="w-20 h-20 rounded-full bg-white/90 p-1 shadow-md border border-slate-200">
+                  <div className="w-full h-full rounded-full border border-slate-300/80 flex flex-col items-center justify-center p-1">
+                    <FileText className="w-4 h-4 text-slate-700 mb-0.5" />
+                    <span className="text-2xl font-black text-slate-900 leading-none">98</span>
+                  </div>
                 </div>
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 mt-1.5 max-w-[85px] leading-tight">
+                <span className="text-[11px] font-bold text-slate-800 mt-2 max-w-[90px] leading-tight">
                   Procedimientos vigentes
                 </span>
               </div>
 
-              {/* Medallón 61 */}
+              {/* Medalla 61 */}
               <div className="flex flex-col items-center text-center">
-                <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-white/80 border-2 border-dashed border-slate-300 shadow-sm flex flex-col items-center justify-center p-2">
-                  <TrendingUp className="w-4 h-4 text-slate-600 mb-0.5" />
-                  <div className="text-xl sm:text-2xl font-black text-slate-900 leading-none">61</div>
+                <div className="w-20 h-20 rounded-full bg-white/90 p-1 shadow-md border border-slate-200">
+                  <div className="w-full h-full rounded-full border border-slate-300/80 flex flex-col items-center justify-center p-1">
+                    <TrendingUp className="w-4 h-4 text-slate-700 mb-0.5" />
+                    <span className="text-2xl font-black text-slate-900 leading-none">61</span>
+                  </div>
                 </div>
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 mt-1.5 max-w-[85px] leading-tight">
+                <span className="text-[11px] font-bold text-slate-800 mt-2 max-w-[90px] leading-tight">
                   Indicadores monitoreados
                 </span>
               </div>
             </div>
           </div>
 
-          {/* LADO DERECHO: FORMULARIO Y PÍLDORAS */}
+          {/* LADO DERECHO: FORMULARIO LIMPIO */}
           <div className="flex flex-col justify-between pl-0 md:pl-6 pt-4 md:pt-0">
             <div>
               {/* Pestañas Iniciar Sesión / Registrar */}
-              <div className="flex items-center gap-5 border-b border-slate-300/60 pb-2">
+              <div className="flex items-center gap-6 border-b border-slate-300/60 pb-2">
                 <button
                   type="button"
                   onClick={() => { setActiveTab('login'); setStatusMessage(null); }}
@@ -253,26 +271,32 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                 </div>
               )}
 
-              {/* VISTA LOGIN */}
+              {/* 6. LIMPIEZA DEL FORMULARIO: Sin desplegable de roles, terminación @upt.pe fija a la derecha */}
               {activeTab === 'login' ? (
-                <form onSubmit={handleLoginSubmit} className="space-y-3">
-                  {/* Correo Institucional */}
+                <form onSubmit={handleLoginSubmit} className="space-y-3.5">
+                  {/* Campo Correo Institucional con @upt.pe fijo a la derecha */}
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                       Correo Institucional
                     </label>
-                    <div className="relative">
+                    <div className="relative flex items-center">
                       <input
                         type="text"
-                        value={currentUser?.email || ''}
-                        readOnly
-                        placeholder="@upt.pe"
-                        className="w-full px-4 py-2 rounded-xl bg-white/70 border border-white/80 text-xs font-medium text-slate-900 shadow-inner focus:outline-none focus:bg-white/90"
+                        value={emailUsername}
+                        onChange={(e) => {
+                          const val = e.target.value.replace('@upt.pe', '');
+                          setEmailUsername(val);
+                        }}
+                        placeholder="usuario"
+                        className="w-full pl-4 pr-20 py-2.5 rounded-xl bg-white/70 border border-white/80 text-xs font-semibold text-slate-900 shadow-inner focus:outline-none focus:bg-white"
                       />
+                      <span className="absolute right-3.5 text-xs font-bold text-slate-500 pointer-events-none select-none">
+                        @upt.pe
+                      </span>
                     </div>
                   </div>
 
-                  {/* Contraseña */}
+                  {/* Campo Contraseña */}
                   <div>
                     <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                       Contraseña
@@ -282,19 +306,19 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-2 pr-10 rounded-xl bg-white/70 border border-white/80 text-xs font-mono text-slate-900 shadow-inner focus:outline-none focus:bg-white/90"
+                        className="w-full px-4 py-2.5 pr-10 rounded-xl bg-white/70 border border-white/80 text-xs font-mono text-slate-900 shadow-inner focus:outline-none focus:bg-white"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </div>
 
-                  {/* Acceso Rápido de Oficinas (Gemelo al mockup) */}
+                  {/* Chips de Acceso Rápido de Oficinas (Sin desplegable de roles) */}
                   <div>
                     <div className="text-[11px] font-semibold text-slate-700 mb-1.5">
                       Acceso rápido de oficinas:
@@ -329,26 +353,11 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Dropdown de Todas las Dependencias */}
-                  <div>
-                    <select
-                      value={currentUser?.id}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
-                      className="w-full text-xs font-medium px-3 py-1.5 rounded-lg bg-white/60 border border-white/80 text-slate-800 focus:outline-none focus:bg-white cursor-pointer"
-                    >
-                      {users.map(u => (
-                        <option key={u.id} value={u.id}>
-                          {u.officeName || u.department} — {u.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Botón Rojo Carmesí Redondeado (Píldora Idéntica al Mockup) */}
+                  {/* 6. BOTÓN PRINCIPAL: Granate institucional (#800020) con esquinas ligeramente redondeadas (rounded-xl) */}
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full py-2.5 px-6 rounded-full bg-[#800020] hover:bg-[#600018] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                      className="w-full py-3 px-6 rounded-xl bg-[#800020] hover:bg-[#660019] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer group"
                     >
                       <span>Ingresar a Mi Oficina</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -356,7 +365,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                   </div>
                 </form>
               ) : (
-                /* VISTA REGISTRO */
+                /* REGISTRO DE NUEVO FUNCIONARIO */
                 <form onSubmit={handleRegisterSubmit} className="space-y-2.5">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
@@ -425,7 +434,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                   <div className="pt-1.5">
                     <button
                       type="submit"
-                      className="w-full py-2 px-6 rounded-full bg-[#800020] hover:bg-[#600018] text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-2.5 px-6 rounded-xl bg-[#800020] hover:bg-[#660019] text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
                       <span>Completar Registro Institucional</span>
