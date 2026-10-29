@@ -62,3 +62,86 @@ body {
   background: #94a3b8;
 }
 
+
+
+/* PORTADA STITCH PROTOTYPE COMPATIBILITY */
+.font-cinzel {
+  font-family: 'Cinzel', Georgia, serif;
+}
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.text-uptblue {
+  color: #0F2942;
+}
+.bg-uptblue {
+  background-color: #0F2942;
+}
+.text-granate {
+  color: #800020;
+}
+.bg-granate {
+  background-color: #800020;
+}
+.text-gold {
+  color: #D4AF37;
+}
+.text-gold-light {
+  color: #F3E5AB;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 
+    0 20px 45px -10px rgba(15, 41, 66, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+    0 8px 20px -4px rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+}
+
+.glass-subcard {
+  background: rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(15, 41, 66, 0.15);
+  transition: all 0.25s ease;
+}
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: #800020;
+  box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.14);
+}
+
+.iso-badge {
+  background: linear-gradient(135deg, rgba(15, 41, 66, 0.92) 0%, rgba(22, 62, 99, 0.92) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 4px 12px rgba(15, 41, 66, 0.18);
+}
+
+.concentric-circle-outer {
+  box-shadow: 0 0 0 4px rgba(128, 0, 32, 0.1), 0 0 0 8px rgba(128, 0, 32, 0.05);
+}
+
+.concentric-circle-blue {
+  box-shadow: 0 0 0 4px rgba(15, 41, 66, 0.1), 0 0 0 8px rgba(15, 41, 66, 0.05);
+}
+
+.shield-float {
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35));
+  animation: subtleFloat 6s ease-in-out infinite alternate;
+}
+@keyframes subtleFloat {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-4px); }
+}

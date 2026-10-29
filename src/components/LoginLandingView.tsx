@@ -1,53 +1,58 @@
 import React, { useState } from 'react';
+import { UserProfile, UserRole, ProcessLevel0 } from '../types';
 import { 
-  ArrowRight, 
-  UserPlus, 
-  FileText, 
-  TrendingUp, 
+  CheckCircle2, 
+  AlertCircle, 
+  Lock, 
+  User, 
   Eye, 
   EyeOff, 
-  CheckCircle2, 
-  AlertCircle
+  ArrowRight,
+  ShieldCheck,
+  UserPlus
 } from 'lucide-react';
-import { UserProfile, UserRole, ProcessLevel0 } from '../types';
 
 interface LoginLandingViewProps {
-  users: UserProfile[];
-  activeUser: UserProfile;
   onLogin: (user: UserProfile) => void;
-  onRegisterUser: (user: Omit<UserProfile, 'id'>) => void;
+  activeUser?: UserProfile;
+  initialUser?: UserProfile;
+  users?: UserProfile[];
+  onRegisterUser: (newUser: Omit<UserProfile, 'id'>) => void;
 }
 
 const OFFICE_DIRECTORY = [
-  { name: 'Oficina de Planeamiento y Desarrollo (OPLA)', code: 'opla', role: 'opla' as UserRole, proc: ['PE.01'] as ProcessLevel0[], charge: 'Jefe de OPLA', defaultUser: 'opla' },
-  { name: 'Oficina de Gestión de la Calidad (GECA)', code: 'geca', role: 'geca' as UserRole, proc: ['PE.02', 'PE.03'] as ProcessLevel0[], charge: 'Jefe de Gestión de la Calidad', defaultUser: 'calidad' },
-  { name: 'Área de Personal y Recursos Humanos (APHU)', code: 'aphu', role: 'aphu' as UserRole, proc: ['PS.01'] as ProcessLevel0[], charge: 'Jefe de Personal / RRHH', defaultUser: 'personal' },
-  { name: 'Oficina de Tecnologías de Información (TEIN)', code: 'tein', role: 'tein' as UserRole, proc: ['PS.04'] as ProcessLevel0[], charge: 'Jefe de Tecnologías de Información', defaultUser: 'sistemas' },
-  { name: 'Vicerrectorado Académico (VRAC)', code: 'vrac', role: 'vrac' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Vicerrector Académico', defaultUser: 'vrac' },
-  { name: 'Vicerrectorado de Investigación (VRIN)', code: 'vrin', role: 'vrin' as UserRole, proc: ['PM.02'] as ProcessLevel0[], charge: 'Vicerrector de Investigación', defaultUser: 'investigacion' },
-  { name: 'Dirección General de Administración (DIGA)', code: 'diga', role: 'diga' as UserRole, proc: ['PS.03', 'PS.05'] as ProcessLevel0[], charge: 'Director General de Administración', defaultUser: 'diga' },
-  { name: 'Dirección de Escuela / Decanatos (GPAD)', code: 'director_escuela', role: 'director_escuela' as UserRole, proc: ['PM.01'] as ProcessLevel0[], charge: 'Director de Escuela', defaultUser: 'escuela' },
+  { name: 'Oficina de Planificación y Calidad Académica', charge: 'Jefe de OPLA', code: 'PE.01', proc: ['PE.01.01.01', 'PE.01.01.02', 'PE.01.02.01', 'PE.01.02.02', 'PE.01.02.03', 'PE.01.02.04', 'PE.01.02.05', 'PE.01.03.01', 'PE.01.04.01', 'PE.01.04.02', 'PE.01.04.03'] },
+  { name: 'Oficina de Gestión de la Calidad', charge: 'Jefe de Calidad (GECA)', code: 'PE.02', proc: ['PE.02.01.01', 'PE.02.01.02', 'PE.02.01.03', 'PE.02.01.04', 'PE.02.02.01', 'PE.02.03.01', 'PE.02.04.01', 'PE.02.04.02'] },
+  { name: 'Oficina de Seguridad y Gestión del Riesgo', charge: 'Responsable de Seguridad', code: 'PE.03', proc: ['PE.03.01.01', 'PE.03.02.01', 'PE.03.02.02', 'PE.03.02.03'] },
+  { name: 'Oficina de Cooperación y Relaciones Interinstitucionales', charge: 'Jefe de Cooperación', code: 'PE.04', proc: ['PE.04.01.01', 'PE.04.02.01'] },
+  { name: 'Vicerrectorado Académico', charge: 'Vicerrector Académico', code: 'PM.01', proc: ['PM.01.01.01', 'PM.01.01.02', 'PM.01.01.03', 'PM.01.01.04', 'PM.01.01.05', 'PM.01.02.01', 'PM.01.02.02', 'PM.01.02.03', 'PM.01.02.04', 'PM.01.02.05', 'PM.01.02.06', 'PM.01.02.07', 'PM.01.02.08', 'PM.01.02.09', 'PM.01.02.10', 'PM.01.03.01', 'PM.01.03.02', 'PM.01.03.03', 'PM.01.03.04', 'PM.01.03.05', 'PM.01.03.06'] },
+  { name: 'Dirección General de Administración', charge: 'Director de Administración', code: 'PS.02', proc: ['PS.02.01.01', 'PS.02.01.02', 'PS.02.01.03', 'PS.02.01.04', 'PS.02.01.05', 'PS.02.01.06', 'PS.02.01.07', 'PS.02.01.08', 'PS.02.01.09', 'PS.02.01.10', 'PS.02.01.11', 'PS.02.01.12', 'PS.02.01.13', 'PS.02.01.14', 'PS.02.01.15', 'PS.02.01.16', 'PS.02.01.17', 'PS.02.01.18', 'PS.02.01.19', 'PS.02.01.20', 'PS.02.01.21', 'PS.02.02.01', 'PS.02.02.02', 'PS.02.02.03', 'PS.02.02.04'] },
+  { name: 'Oficina de Tecnologías de Información', charge: 'Jefe de TI', code: 'PS.04', proc: ['PS.04.01.01', 'PS.04.01.02', 'PS.04.01.03', 'PS.04.01.04'] },
+  { name: 'Oficina de Personal', charge: 'Jefe de Personal', code: 'PS.01', proc: ['PS.01.01.01', 'PS.01.01.02', 'PS.01.01.03', 'PS.01.01.04', 'PS.01.01.05', 'PS.01.01.06', 'PS.01.01.07'] },
+];
+
+const QUICK_CHIPS = [
+  { label: 'OPLA', code: 'PE.01', role: 'opla', desc: 'Oficina de Planificación y Calidad Académica (Proceso Estratégico PE.01)' },
+  { label: 'GECA', code: 'PE.02', role: 'geca', desc: 'Oficina de Gestión de la Calidad (Proceso Estratégico PE.02)' },
+  { label: 'APHU', code: 'PS.01', role: 'aphu', desc: 'Oficina de Administración de Personal (Proceso de Soporte PS.01)' },
+  { label: 'TEIN', code: 'PS.04', role: 'tein', desc: 'Oficina de Tecnologías de Información (Proceso de Soporte PS.04)' },
+  { label: 'VRAC', code: 'PM.01', role: 'vrac', desc: 'Vicerrectorado Académico (Proceso Misional PM.01)' },
 ];
 
 export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
-  users,
-  activeUser,
   onLogin,
+  activeUser,
+  initialUser,
+  users = [],
   onRegisterUser,
 }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  
-  // Login State
-  const initialUser = activeUser || users[0];
-  const [selectedUserId, setSelectedUserId] = useState<string>(initialUser?.id || '');
-  const [emailUsername, setEmailUsername] = useState<string>(() => {
-    if (initialUser?.email) {
-      return initialUser.email.replace('@upt.pe', '');
-    }
-    return 'calidad';
-  });
-  const [password, setPassword] = useState('••••••••••••');
+  const [selectedUserId, setSelectedUserId] = useState<string>(activeUser?.id || initialUser?.id || (users[0]?.id || ''));
+  const [selectedChipRole, setSelectedChipRole] = useState<string>('opla');
+  const [emailUsername, setEmailUsername] = useState<string>('cgarcia.calidad');
+  const [password, setPassword] = useState('Tacna2024Calidad*');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberSession, setRememberSession] = useState(true);
 
   // Registration State
   const [regName, setRegName] = useState('');
@@ -57,13 +62,18 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [regRole, setRegRole] = useState<UserRole>('colaborador');
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const currentUser = users.find(u => u.id === selectedUserId) || initialUser;
+  const currentUser = users.find(u => u.id === selectedUserId) || activeUser || initialUser;
 
-  const handleSelectQuickOffice = (roleKey: string) => {
-    const found = users.find(u => u.role === roleKey);
+  const currentChip = QUICK_CHIPS.find(c => c.role === selectedChipRole) || QUICK_CHIPS[0];
+
+  const handleSelectQuickOffice = (chip: typeof QUICK_CHIPS[0]) => {
+    setSelectedChipRole(chip.role);
+    const found = users.find(u => u.role === chip.role);
     if (found) {
       setSelectedUserId(found.id);
       setEmailUsername(found.email ? found.email.replace('@upt.pe', '') : found.role);
+    } else {
+      setEmailUsername(`${chip.role}.calidad`);
     }
   };
 
@@ -89,7 +99,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       department: selectedOfficeDef.name,
       officeName: selectedOfficeDef.name,
       role: regRole,
-      processCodes: selectedOfficeDef.proc,
+      processCodes: [selectedOfficeDef.code as ProcessLevel0],
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
     };
 
@@ -109,385 +119,467 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   };
 
   return (
-    <div className="h-screen max-h-screen w-full relative flex flex-col justify-center items-center px-4 py-2 font-sans overflow-hidden select-none">
+    <div className="relative h-screen max-h-screen w-full flex flex-col justify-between font-inter text-slate-800 antialiased overflow-hidden select-none">
+      
+      {/* CAPA DE FONDO: FOTOGRAFÍA ARQUITECTÓNICA DE CAMPUS */}
+      <div className="fixed inset-0 w-full h-full -z-20 overflow-hidden">
+        <img 
+          src="/upt_campus_fachada.jpg" 
+          alt="Campus Universidad Privada de Tacna" 
+          className="w-full h-full object-cover object-center"
+        />
+      </div>
+
+      {/* OVERLAY SUTIL */}
+      <div className="fixed inset-0 w-full h-full -z-10 bg-white/[0.04] pointer-events-none" />
+
       {/* BARRA SUPERIOR INSTITUCIONAL: PORTAL OFICIAL UPT • SGC */}
-      <div className="fixed top-0 left-0 right-0 px-6 py-2.5 z-20 flex justify-between items-center bg-black/25 backdrop-blur-md border-b border-white/10 text-white text-xs">
-        <div className="flex items-center gap-2">
+      <header className="w-full px-6 py-2 flex-shrink-0 flex justify-between items-center z-10">
+        <div className="flex items-center gap-3">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-bold tracking-wider uppercase text-[11px] drop-shadow-sm font-sans">
+          <span className="text-xs font-semibold tracking-wider uppercase text-white/95 drop-shadow-sm font-outfit">
             PORTAL OFICIAL UPT &bull; SGC
           </span>
         </div>
-        <div className="flex items-center gap-4 text-[11px] text-white/90">
-          <span className="hidden sm:inline bg-white/15 px-2.5 py-0.5 rounded-full border border-white/20">
+        <div className="flex items-center gap-6 text-xs text-white/90 drop-shadow-sm">
+          <span className="hidden md:inline-flex items-center gap-1.5 bg-black/25 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#F3E5AB]" />
+            Entorno Seguro SSL 256-Bit
+          </span>
+          <span className="font-medium bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
             Tacna, Perú
           </span>
         </div>
-      </div>
+      </header>
 
-      {/* FONDO GENERAL: Fotografía oficial del campus UPT Capanique con luz natural */}
-      <div 
-        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat -z-10"
-        style={{ 
-          backgroundImage: `url('/upt_campus_fachada.jpg')`,
-        }}
-      />
-      {/* CONTENEDOR PRINCIPAL FLOTANTE */}
-      <div className="relative z-10 w-full max-w-[880px] xl:max-w-[920px] mx-auto my-auto pt-5 pb-1">
+      {/* CONTENEDOR PRINCIPAL CENTRAL */}
+      <main className="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 my-auto flex-1 flex flex-col justify-center items-center z-10 overflow-hidden py-1">
         
-        {/* TARJETA CENTRAL: Glassmorphism translúcido de alta definición */}
-        <div 
-          className="relative py-6 sm:py-8 px-6 sm:px-8 lg:px-10"
-          style={{
-            background: 'rgba(255, 255, 255, 0.28)',
-            backdropFilter: 'blur(8px) saturate(130%)',
-            WebkitBackdropFilter: 'blur(8px) saturate(130%)',
-            border: '1px solid rgba(255, 255, 255, 0.65)',
-            borderRadius: '24px',
-            boxShadow: '0 20px 45px rgba(0,0,0,0.12)',
-          }}
-        >
-          {/* ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL */}
-          <div className="flex justify-center mb-3 sm:mb-4">
-            <img 
-              src="/upt_escudo_oficial.png" 
-              alt="Escudo Oficial Universidad Privada de Tacna - Veritas et Vita" 
-              className="h-24 sm:h-28 md:h-32 w-auto object-contain filter drop-shadow-[0_8px_18px_rgba(0,0,0,0.16)]"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-            {/* LADO IZQUIERDO: TÍTULO, SELLOS ISO FORMALES Y MEDALLAS CONCÉNTRICAS */}
-            <div className="flex flex-col justify-between pr-0 md:pr-8 pb-6 md:pb-0 border-b md:border-b-0 md:border-r border-white/60">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight">
-                Sistema de <br />
-                Gestión de la Calidad
-              </h1>
-              <div className="text-lg sm:text-xl font-black text-[#1E3F5D] mt-0.5 tracking-tight flex items-center gap-2">
-                <span>SGC UPT</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-[#9C7D0F]/15 text-[#9C7D0F] border border-[#9C7D0F]/30">
-                  VERITAS ET VITA
-                </span>
-              </div>
-
-              {/* 4. BADGES ISO: Tarjetas rectangulares con 'Norma de Calidad', logotipo formal ISO y colores sincronizados */}
-              <div className="mt-3 flex items-center gap-2.5">
-                {/* ISO 21001:2018 */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/90 border border-[#9C7D0F]/30 shadow-xs hover:border-[#1E3F5D] transition-colors">
-                  <svg className="w-6 h-6 text-[#1E3F5D] shrink-0" viewBox="0 0 100 100" fill="currentColor">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="6" />
-                    <ellipse cx="50" cy="50" rx="20" ry="45" fill="none" stroke="currentColor" strokeWidth="4" />
-                    <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="5" />
-                    <line x1="15" y1="28" x2="85" y2="28" stroke="currentColor" strokeWidth="4" />
-                    <line x1="15" y1="72" x2="85" y2="72" stroke="currentColor" strokeWidth="4" />
-                  </svg>
-                  <div className="leading-tight text-left">
-                    <div className="text-[10px] font-bold text-[#9C7D0F] uppercase tracking-wider">Norma de Calidad</div>
-                    <div className="text-xs font-black text-[#1E3F5D] tracking-tight">ISO 21001:2018</div>
-                  </div>
-                </div>
-
-                {/* ISO 9001:2015 */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/90 border border-[#9C7D0F]/30 shadow-xs hover:border-[#1E3F5D] transition-colors">
-                  <svg className="w-6 h-6 text-[#1E3F5D] shrink-0" viewBox="0 0 100 100" fill="currentColor">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="6" />
-                    <ellipse cx="50" cy="50" rx="20" ry="45" fill="none" stroke="currentColor" strokeWidth="4" />
-                    <line x1="5" y1="50" x2="95" y2="50" stroke="currentColor" strokeWidth="5" />
-                    <line x1="15" y1="28" x2="85" y2="28" stroke="currentColor" strokeWidth="4" />
-                    <line x1="15" y1="72" x2="85" y2="72" stroke="currentColor" strokeWidth="4" />
-                  </svg>
-                  <div className="leading-tight text-left">
-                    <div className="text-[10px] font-bold text-[#9C7D0F] uppercase tracking-wider">Norma de Calidad</div>
-                    <div className="text-xs font-black text-[#1E3F5D] tracking-tight">ISO 9001:2015</div>
-                  </div>
-                </div>
+        <div className="relative w-full">
+          
+          {/* TARJETA CENTRAL DE CRISTAL ESMERILADO (GLASSMORPHISM) */}
+          <div className="glass-card w-full py-6 sm:py-8 px-6 sm:px-8 lg:px-10 max-h-[calc(100vh-70px)] flex flex-col justify-center">
+            
+            {/* ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL */}
+            <div className="flex justify-center mb-3 sm:mb-4">
+              <div className="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
+                <img 
+                  src="/upt_escudo_oficial.png" 
+                  alt="Escudo Heráldico UPT" 
+                  className="w-24 h-28 sm:w-28 sm:h-32 lg:w-32 lg:h-36 object-contain filter drop-shadow-xl"
+                />
               </div>
             </div>
 
-            {/* 5. INDICADORES INFERIORES: Medallas con anillo concéntrico oro rectoral (#9C7D0F) y azul (#1E3F5D) */}
-            <div className="mt-4 flex items-center gap-6">
-              {/* Medalla 98 */}
-              <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 p-1 shadow-md border-2 border-[#1E3F5D]/25 ring-2 ring-[#1E3F5D]/10">
-                  <div className="w-full h-full rounded-full border border-[#1E3F5D]/30 flex flex-col items-center justify-center p-1 bg-white/60">
-                    <FileText className="w-4 h-4 text-[#1E3F5D] mb-0.5" />
-                    <span className="text-lg sm:text-xl font-black text-[#1E3F5D] leading-none">98</span>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center">
+              
+              {/* ================= LADO IZQUIERDO: INFORMACIÓN INSTITUCIONAL, NORMAS Y MÉTRICAS ================= */}
+              <div className="lg:col-span-6 flex flex-col justify-between space-y-4 lg:space-y-5 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-4 lg:pb-0 lg:pr-8">
+                
+                {/* Encabezado de la Universidad y del Sistema */}
+                <div className="space-y-2 text-center lg:text-left">
+                  <h1 className="font-cinzel text-xl sm:text-2xl font-extrabold text-[#0F2942] tracking-wide leading-tight">
+                    UNIVERSIDAD PRIVADA DE TACNA
+                  </h1>
+                  
+                  <div className="h-1 w-24 bg-gradient-to-r from-[#800020] to-[#D4AF37] mx-auto lg:mx-0 rounded-full my-2" />
+                  
+                  <h2 className="font-outfit text-base sm:text-lg font-bold text-[#800020] tracking-tight">
+                    Sistema de Gestión de la Calidad (SGC)
+                  </h2>
+                  
+                  <p className="text-xs text-slate-600 leading-normal font-normal pt-0.5 line-clamp-2">
+                    Plataforma rectora institucional para la planificación, auditoría, control de procesos y mejora continua de la excelencia formativa universitaria.
+                  </p>
+                </div>
+
+                {/* INSIGNIAS NORMATIVAS RECTANGULARES LIMPIAS (ISO 21001 e ISO 9001) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  
+                  {/* Insignia ISO 21001:2018 */}
+                  <div className="iso-badge rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-[#D4AF37]/40 flex-shrink-0 text-[#F3E5AB]">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold tracking-wider text-[#F3E5AB] font-outfit uppercase">Norma de Calidad</span>
+                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
+                      </div>
+                      <div className="text-sm font-extrabold text-white tracking-wide font-cinzel">ISO 21001:2018</div>
+                      <div className="text-[11px] text-slate-300 truncate">Organizaciones Educativas</div>
+                    </div>
+                  </div>
+
+                  {/* Insignia ISO 9001:2015 */}
+                  <div className="iso-badge rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-[#D4AF37]/40 flex-shrink-0 text-[#F3E5AB]">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold tracking-wider text-[#F3E5AB] font-outfit uppercase">Norma Calidad</span>
+                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
+                      </div>
+                      <div className="text-sm font-extrabold text-white tracking-wide font-cinzel">ISO 9001:2015</div>
+                      <div className="text-[11px] text-slate-300 truncate">Gestión de la Calidad</div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* MEDALLONES CIRCULARES CON DOBLE ANILLO CONCÉNTRICO */}
+                <div className="pt-2">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-3 text-center lg:text-left font-outfit">
+                    Alcance del Sistema por Procesos Institucionales
+                  </span>
+                  <div className="grid grid-cols-2 gap-4">
+                    
+                    {/* Medallón 1: Procedimientos */}
+                    <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#800020] to-[#500014] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-outer">
+                        <span className="text-base font-black font-outfit leading-none">98</span>
+                        <span className="text-[9px] uppercase tracking-tighter opacity-80">Docs</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-[#0F2942] font-outfit">Procedimientos</div>
+                        <div className="text-xs text-slate-500">Mapeados y estandarizados</div>
+                      </div>
+                    </div>
+
+                    {/* Medallón 2: Indicadores */}
+                    <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0F2942] to-[#071624] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-blue">
+                        <span className="text-base font-black font-outfit leading-none">61</span>
+                        <span className="text-[9px] uppercase tracking-tighter opacity-80">Kpi</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-[#0F2942] font-outfit">Indicadores</div>
+                        <div className="text-xs text-slate-500">Métricas de desempeño</div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-                <span className="text-[11px] font-bold text-slate-800 mt-2 max-w-[90px] leading-tight">
-                  Procedimientos vigentes
-                </span>
+
+                {/* Pie de créditos y certificación */}
+                <div className="pt-2 flex items-center justify-start text-xs text-slate-600 border-t border-slate-200/60 font-medium">
+                  <span>Oficina Gestión de la Calidad</span>
+                </div>
+
               </div>
 
-              {/* Medalla 61 */}
-              <div className="flex flex-col items-center text-center">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 p-1 shadow-md border-2 border-[#9C7D0F]/35 ring-2 ring-[#9C7D0F]/15">
-                  <div className="w-full h-full rounded-full border border-[#9C7D0F]/40 flex flex-col items-center justify-center p-1 bg-white/60">
-                    <TrendingUp className="w-4 h-4 text-[#9C7D0F] mb-0.5" />
-                    <span className="text-lg sm:text-xl font-black text-[#1E3F5D] leading-none">61</span>
+              {/* ================= LADO DERECHO: FORMULARIO DE ACCESO Y REGISTRO ================= */}
+              <div className="lg:col-span-6 flex flex-col justify-center">
+                
+                <div className="glass-subcard rounded-2xl p-5 sm:p-6 border border-white/80 shadow-md">
+                  
+                  {/* Encabezado del Formulario con selector opcional */}
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-bold text-[#0F2942] font-outfit">
+                        {activeTab === 'login' ? 'Acceso a Funcionarios y Auditores' : 'Registro de Nuevo Funcionario'}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        {activeTab === 'login' ? 'Seleccione su dependencia operativa institucional' : 'Complete sus datos para incorporarse al SGC'}
+                      </p>
+                    </div>
+                    <span className="p-2 rounded-lg bg-[#800020]/10 text-[#800020]">
+                      <Lock className="w-5 h-5" />
+                    </span>
                   </div>
-                </div>
-                <span className="text-[11px] font-bold text-slate-800 mt-2 max-w-[90px] leading-tight">
-                  Indicadores monitoreados
-                </span>
-              </div>
-            </div>
 
-            {/* Pie de acreditación institucional: Oficina Gestión de la Calidad */}
-            <div className="mt-4 pt-2 border-t border-slate-300/50 flex items-center justify-start text-[11px] text-slate-700 font-semibold tracking-wide">
-              <span>Oficina Gestión de la Calidad</span>
-            </div>
-          </div>
-
-          {/* LADO DERECHO: FORMULARIO LIMPIO */}
-          <div className="flex flex-col justify-between pl-0 md:pl-6 pt-4 md:pt-0">
-            <div>
-              {/* Pestañas Iniciar Sesión / Registrar */}
-              <div className="flex items-center gap-6 border-b border-slate-300/60 pb-2">
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab('login'); setStatusMessage(null); }}
-                  className={`text-xs font-bold transition-all cursor-pointer relative pb-1.5 ${
-                    activeTab === 'login'
-                      ? 'text-[#1E3F5D] after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#1E3F5D]'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Iniciar Sesión
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setActiveTab('register'); setStatusMessage(null); }}
-                  className={`text-xs font-bold transition-all cursor-pointer relative pb-1.5 ${
-                    activeTab === 'register'
-                      ? 'text-[#1E3F5D] after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-[#1E3F5D]'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  Registrar Nuevo Funcionario
-                </button>
-              </div>
-
-              {/* Pill Badge: 🟢 16 Oficinas Conectadas */}
-              <div className="mt-2 mb-2 flex justify-start">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-[#9C7D0F]/20 text-slate-800 text-xs font-bold shadow-2xs">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-                  <span>16 Oficinas Conectadas</span>
-                </div>
-              </div>
-
-              {/* Mensajes de Alerta */}
-              {statusMessage && (
-                <div className={`mb-3 p-2.5 rounded-xl text-xs flex items-center gap-2 shadow-xs ${
-                  statusMessage.type === 'success'
-                    ? 'bg-emerald-100/90 text-emerald-950 border border-emerald-300'
-                    : 'bg-rose-100/90 text-rose-950 border border-rose-300'
-                }`}>
-                  {statusMessage.type === 'success' ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />
+                  {/* Alerta de Estado */}
+                  {statusMessage && (
+                    <div className={`mb-3 p-2.5 rounded-xl text-xs flex items-center gap-2 shadow-xs ${
+                      statusMessage.type === 'success'
+                        ? 'bg-emerald-100/90 text-emerald-950 border border-emerald-300'
+                        : 'bg-rose-100/90 text-rose-950 border border-rose-300'
+                    }`}>
+                      {statusMessage.type === 'success' ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-rose-700 shrink-0" />
+                      )}
+                      <span>{statusMessage.text}</span>
+                    </div>
                   )}
-                  <span>{statusMessage.text}</span>
-                </div>
-              )}
 
-              {/* 6. FORMULARIO: Con colores sincronizados de Stitch (#1E3F5D y #9C7D0F) */}
-              {activeTab === 'login' ? (
-                <form onSubmit={handleLoginSubmit} className="space-y-2">
-                  {/* Campo Correo Institucional con @upt.pe fijo a la derecha */}
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                      Correo Institucional
-                    </label>
-                    <div className="relative flex items-center">
-                      <input
-                        type="text"
-                        value={emailUsername}
-                        onChange={(e) => {
-                          const val = e.target.value.replace('@upt.pe', '');
-                          setEmailUsername(val);
-                        }}
-                        placeholder="usuario"
-                        className="w-full pl-3.5 pr-20 py-1.5 rounded-xl bg-white/75 border border-white/90 text-xs font-semibold text-slate-900 shadow-inner focus:outline-none focus:bg-white focus:border-[#1E3F5D] focus:ring-2 focus:ring-[#1E3F5D]/20 transition-all"
-                      />
-                      <span className="absolute right-3.5 text-xs font-bold text-[#1E3F5D]/70 pointer-events-none select-none">
-                        @upt.pe
-                      </span>
-                    </div>
-                  </div>
+                  {activeTab === 'login' ? (
+                    <div>
+                      {/* SELECTOR RÁPIDO CON CHIPS DE DEPENDENCIAS CLAVE */}
+                      <div className="mb-2.5">
+                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 font-outfit">
+                          Dependencia Operativa Clave
+                        </label>
+                        <div className="flex flex-wrap gap-1.5" id="chips-container">
+                          {QUICK_CHIPS.map(chip => {
+                            const isSelected = selectedChipRole === chip.role;
+                            return (
+                              <button
+                                key={chip.role}
+                                type="button"
+                                onClick={() => handleSelectQuickOffice(chip)}
+                                className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer ${
+                                  isSelected 
+                                    ? 'bg-[#0F2942] text-white border-[#0F2942] shadow-sm' 
+                                    : 'border-slate-300 text-slate-700 bg-white hover:bg-slate-50'
+                                }`}
+                              >
+                                {chip.label} <span className={`text-[10px] font-mono ${isSelected ? 'text-[#F3E5AB]' : 'opacity-75'}`}>{chip.code}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-1.5 italic">
+                          {currentChip.desc}
+                        </p>
+                      </div>
 
-                  {/* Campo Contraseña */}
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                      Contraseña
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-3.5 py-1.5 pr-10 rounded-xl bg-white/75 border border-white/90 text-xs font-mono text-slate-900 shadow-inner focus:outline-none focus:bg-white focus:border-[#1E3F5D] focus:ring-2 focus:ring-[#1E3F5D]/20 transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
-                      >
-                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </div>
+                      {/* FORMULARIO DE ACCESO */}
+                      <form className="space-y-3 sm:space-y-3.5" onSubmit={handleLoginSubmit}>
+                        
+                        {/* Campo de Usuario con terminación fija @upt.pe */}
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1 font-outfit">
+                            Usuario Institucional UPT
+                          </label>
+                          <div className="relative flex items-center rounded-xl overflow-hidden shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                              <User className="w-4 h-4" />
+                            </div>
+                            <input 
+                              type="text" 
+                              value={emailUsername}
+                              onChange={(e) => {
+                                const val = e.target.value.replace('@upt.pe', '');
+                                setEmailUsername(val);
+                              }}
+                              placeholder="cgarcia.calidad" 
+                              className="glass-input w-full pl-10 pr-24 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                              required
+                            />
+                            {/* Terminación fija @upt.pe */}
+                            <div className="absolute right-0 inset-y-0 pr-3.5 flex items-center pointer-events-none">
+                              <span className="text-xs font-bold text-[#800020] bg-[#800020]/10 px-2.5 py-1 rounded-md border border-[#800020]/20 font-mono">
+                                @upt.pe
+                              </span>
+                            </div>
+                          </div>
+                        </div>
 
-                  {/* Chips de Acceso Rápido de Oficinas */}
-                  <div>
-                    <div className="text-[10px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
-                      <span>Acceso rápido de oficinas:</span>
-                      <span className="text-[10px] font-bold text-[#9C7D0F]">SGC ISO</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        { label: 'OPLA', code: 'PE.01', role: 'opla' },
-                        { label: 'GECA', code: 'PE.02', role: 'geca' },
-                        { label: 'APHU', code: 'PS.01', role: 'aphu' },
-                        { label: 'TEIN', code: 'PS.04', role: 'tein' },
-                        { label: 'VRAC', code: 'PM.01', role: 'vrac' },
-                      ].map(chip => {
-                        const isSelected = currentUser?.role === chip.role;
-                        return (
-                          <button
-                            key={chip.role}
-                            type="button"
-                            onClick={() => handleSelectQuickOffice(chip.role)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border flex items-center gap-1 shadow-2xs ${
-                              isSelected
-                                ? 'bg-[#1E3F5D] text-white border-[#1E3F5D] scale-105 shadow-sm'
-                                : 'bg-white/75 hover:bg-white text-slate-700 border-white/80'
-                            }`}
+                        {/* Campo de Contraseña */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-xs font-bold text-slate-700 font-outfit">
+                              Contraseña de Acceso
+                            </label>
+                            <a href="#recuperar" onClick={(e) => { e.preventDefault(); alert('Para restablecer su clave comuníquese con la Mesa de Ayuda SGC (anexo 443).'); }} className="text-[11px] font-medium text-[#800020] hover:underline">
+                              ¿Olvidó su clave?
+                            </a>
+                          </div>
+                          <div className="relative flex items-center rounded-xl overflow-hidden shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                              <Lock className="w-4 h-4" />
+                            </div>
+                            <input 
+                              type={showPassword ? 'text' : 'password'}
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="••••••••••••" 
+                              className="glass-input w-full pl-10 pr-10 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                              required
+                            />
+                            <button 
+                              type="button" 
+                              className="absolute right-0 inset-y-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Recordar sesión y Token MFA */}
+                        <div className="flex items-center justify-between pt-1">
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={rememberSession} 
+                              onChange={(e) => setRememberSession(e.target.checked)}
+                              className="w-4 h-4 text-[#800020] rounded border-slate-300 focus:ring-[#800020] cursor-pointer" 
+                            />
+                            <span className="text-xs text-slate-600">Sesión autenticada en este equipo</span>
+                          </label>
+                          <span className="text-[11px] font-semibold text-[#0F2942] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                            MFA UPT Activo
+                          </span>
+                        </div>
+
+                        {/* BOTÓN PRINCIPAL EN GRANATE VINO (#800020) */}
+                        <div className="pt-2">
+                          <button 
+                            type="submit" 
+                            className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#800020] to-[#500014] hover:brightness-110 text-white font-outfit font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:shadow-[#800020]/30 transition-all duration-200 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                           >
-                            <span>{chip.label}</span>
-                            <span className={`text-[10px] font-mono ${isSelected ? 'text-[#fdd666]' : 'text-slate-500'}`}>
-                              {chip.code}
-                            </span>
+                            <span>Ingresar a Mi Oficina</span>
+                            <ArrowRight className="w-4 h-4" />
                           </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                        </div>
 
-                  {/* BOTÓN PRINCIPAL: Azul Institucional Stitch (#1E3F5D) con esquinas redondeadas (rounded-xl) */}
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#1E3F5D] to-[#132B42] hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer group border-t border-white/20"
-                    >
-                      <span>Ingresar a Mi Oficina</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                /* REGISTRO DE NUEVO FUNCIONARIO */
-                <form onSubmit={handleRegisterSubmit} className="space-y-2.5">
-                  <div className="grid grid-cols-2 gap-2">
+                      </form>
+
+                      {/* ALTERNAR A REGISTRAR NUEVO FUNCIONARIO */}
+                      <div className="mt-3 pt-2.5 border-t border-slate-200/80 text-center flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+                        <span className="text-slate-500">¿Nuevo miembro en el equipo de calidad?</span>
+                        <button 
+                          type="button"
+                          className="font-semibold text-[#0F2942] hover:text-[#800020] transition-colors underline decoration-dotted font-outfit cursor-pointer"
+                          onClick={() => { setActiveTab('register'); setStatusMessage(null); }}
+                        >
+                          Registrar Nuevo Funcionario &rarr;
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* FORMULARIO DE REGISTRO */
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Nombres y Apellidos *</label>
-                      <input
-                        type="text"
-                        placeholder="Ej. Mg. Carlos Albarracín"
-                        value={regName}
-                        onChange={(e) => setRegName(e.target.value)}
-                        required
-                        className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1E3F5D]"
-                      />
+                      <form className="space-y-2.5" onSubmit={handleRegisterSubmit}>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Nombres y Apellidos *</label>
+                            <input
+                              type="text"
+                              placeholder="Ej. Mg. Carlos Albarracín"
+                              value={regName}
+                              onChange={(e) => setRegName(e.target.value)}
+                              required
+                              className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Cargo o Puesto</label>
+                            <input
+                              type="text"
+                              placeholder="Ej. Especialista de Calidad"
+                              value={regCharge}
+                              onChange={(e) => setRegCharge(e.target.value)}
+                              className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Correo Institucional (@upt.pe) *</label>
+                          <input
+                            type="text"
+                            placeholder="usuario@upt.pe"
+                            value={regEmail}
+                            onChange={(e) => setRegEmail(e.target.value)}
+                            required
+                            className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Oficina Asignada *</label>
+                          <select
+                            value={regOfficeIndex}
+                            onChange={(e) => setRegOfficeIndex(Number(e.target.value))}
+                            className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none cursor-pointer font-medium"
+                          >
+                            {OFFICE_DIRECTORY.map((off, idx) => (
+                              <option key={off.code} value={idx}>
+                                {off.name} {off.proc.length > 0 ? `[${off.proc.join(', ')}]` : ''}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Rol en el SGC</label>
+                          <select
+                            value={regRole}
+                            onChange={(e) => setRegRole(e.target.value as UserRole)}
+                            className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none cursor-pointer font-medium"
+                          >
+                            <option value="colaborador">Colaborador Administrativo</option>
+                            <option value="director_escuela">Dueño de Proceso</option>
+                            <option value="auditor">Auditor Interno</option>
+                          </select>
+                        </div>
+
+                        <div className="pt-2">
+                          <button
+                            type="submit"
+                            className="w-full py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#800020] to-[#500014] hover:brightness-110 text-white font-outfit font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                          >
+                            <UserPlus className="w-4 h-4" />
+                            <span>Completar Registro Institucional</span>
+                          </button>
+                        </div>
+                      </form>
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-200 text-center">
+                        <button
+                          type="button"
+                          className="text-xs font-semibold text-[#0F2942] hover:text-[#800020] transition-colors underline decoration-dotted font-outfit cursor-pointer"
+                          onClick={() => { setActiveTab('login'); setStatusMessage(null); }}
+                        >
+                          &larr; Volver al Inicio de Sesión
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Cargo o Puesto</label>
-                      <input
-                        type="text"
-                        placeholder="Ej. Especialista de Calidad"
-                        value={regCharge}
-                        onChange={(e) => setRegCharge(e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1E3F5D]"
-                      />
-                    </div>
-                  </div>
+                  )}
 
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Correo Institucional (@upt.pe) *</label>
-                    <input
-                      type="text"
-                      placeholder="usuario@upt.pe"
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      required
-                      className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1E3F5D]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Oficina Asignada *</label>
-                    <select
-                      value={regOfficeIndex}
-                      onChange={(e) => setRegOfficeIndex(Number(e.target.value))}
-                      className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1E3F5D] cursor-pointer font-medium"
-                    >
-                      {OFFICE_DIRECTORY.map((off, idx) => (
-                        <option key={off.code} value={idx}>
-                          {off.name} {off.proc.length > 0 ? `[${off.proc.join(', ')}]` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-700 mb-0.5">Rol en el SGC</label>
-                    <select
-                      value={regRole}
-                      onChange={(e) => setRegRole(e.target.value as UserRole)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-white/70 border border-white/80 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-[#1E3F5D] cursor-pointer font-medium"
-                    >
-                      <option value="colaborador">Colaborador Administrativo</option>
-                      <option value="director_escuela">Dueño de Proceso</option>
-                      <option value="auditor">Auditor Interno</option>
-                    </select>
-                  </div>
-
-                  <div className="pt-1.5">
-                    <button
-                      type="submit"
-                      className="w-full py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#1E3F5D] to-[#132B42] hover:brightness-110 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border-t border-white/20"
-                    >
-                      <UserPlus className="w-3.5 h-3.5" />
-                      <span>Completar Registro Institucional</span>
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* MESA DE AYUDA SGC */}
-              <div className="mt-2.5 pt-2 border-t border-slate-300/40 text-center">
-                <div className="text-[10px] font-bold text-[#1E3F5D] uppercase tracking-wider mb-1">
-                  Mesa de Ayuda SGC
                 </div>
-                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-slate-700">
-                  <a href="mailto:autoevaluacion@upt.edu.pe" className="text-[#1E3F5D] font-medium hover:underline">
-                    autoevaluacion@upt.edu.pe
-                  </a>
-                  <span className="text-slate-400">&bull;</span>
-                  <a href="https://www.upt.edu.pe" target="_blank" rel="noreferrer" className="text-[#1E3F5D] font-medium hover:underline">
-                    www.upt.edu.pe
-                  </a>
-                  <span className="text-slate-400">&bull;</span>
-                  <span className="text-[#9C7D0F] font-bold">051-427212 (443)</span>
+
+                {/* Mensaje de soporte técnico institucional (Mesa de Ayuda) */}
+                <div className="mt-3 pt-2.5 border-t border-slate-300/40 text-center">
+                  <div className="text-[11px] font-semibold text-[#0F2942] uppercase tracking-wider mb-1">Mesa de Ayuda SGC</div>
+                  <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
+                    <a href="mailto:autoevaluacion@upt.edu.pe" className="text-[#0F2942] font-medium hover:underline">autoevaluacion@upt.edu.pe</a>
+                    <span className="text-slate-400">&bull;</span>
+                    <a href="https://www.upt.edu.pe" target="_blank" rel="noreferrer" className="text-[#0F2942] font-medium hover:underline">www.upt.edu.pe</a>
+                    <span className="text-slate-400">&bull;</span>
+                    <span className="text-[#D4AF37] font-bold">051-427212 (443)</span>
+                  </div>
                 </div>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
-      </div>
+
+      </main>
+
+      {/* PIE DE PÁGINA INSTITUCIONAL */}
+      <footer className="w-full px-6 py-2 flex-shrink-0 z-10 bg-black/40 backdrop-blur-md border-t border-white/10 text-white/80 text-xs flex flex-col md:flex-row justify-between items-center gap-3">
+        <div className="flex items-center space-x-4">
+          <span className="font-cinzel font-semibold tracking-wider text-[#F3E5AB]">
+            UNIVERSIDAD PRIVADA DE TACNA &bull; UPT
+          </span>
+          <span className="hidden sm:inline text-white/40">|</span>
+          <span className="hidden sm:inline text-slate-300">
+            RUC: 20147816828
+          </span>
+        </div>
+        
+        <div className="flex items-center space-x-6 text-[11px] text-slate-300">
+          <span className="hover:text-white transition-colors cursor-pointer">Política de la Calidad</span>
+          <span className="hover:text-white transition-colors cursor-pointer">Mapa de Procesos</span>
+          <span className="hover:text-white transition-colors cursor-pointer">Objetivos ISO 21001 / 9001</span>
+          <span className="hover:text-white transition-colors cursor-pointer">Intranet Institucional</span>
+        </div>
+      </footer>
+
     </div>
-  </div>
   );
 };
