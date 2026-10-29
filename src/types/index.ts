@@ -91,7 +91,7 @@ export interface ISODocument {
 }
 
 export type NonConformitySeverity = 'mayor' | 'menor' | 'observacion';
-export type NonConformityStatus = 'abierta' | 'analisis_causa' | 'plan_aprobado' | 'en_implementacion' | 'cerrada';
+export type NonConformityStatus = 'abierta' | 'analisis_causa' | 'plan_aprobado' | 'en_implementacion' | 'en_verificacion' | 'cerrada';
 
 export interface CorrectiveAction {
   id: string;
@@ -112,6 +112,13 @@ export interface WhyAnalysis {
   rootCause: string;
 }
 
+export interface IshikawaAnalysis {
+  method?: string;       // Métodos / Procedimientos
+  people?: string;       // Personal / Competencias
+  materials?: string;    // Recursos / Infraestructura / TI
+  measurement?: string;  // Medición / Indicadores / Control
+}
+
 export interface NonConformity {
   id: string;
   code: string;
@@ -128,10 +135,18 @@ export interface NonConformity {
   assignedTo: string;
   createdBy: string;
   whyAnalysis?: WhyAnalysis;
+  ishikawaAnalysis?: IshikawaAnalysis;
   actions: CorrectiveAction[];
   verificationDate?: string;
   verifiedBy?: string;
   verificationNotes?: string;
+  // Firmas y evidencias Fase 5
+  auditorSignature?: string;
+  auditorSignedAt?: string;
+  auditedSignature?: string;
+  auditedSignedAt?: string;
+  evidenceName?: string;
+  evidenceUrl?: string;
 }
 
 export interface IndicatorMeasurement {
