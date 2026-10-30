@@ -364,20 +364,13 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             href={SHAREPOINT_LISTA_MAESTRA_DOCX}
             target="_blank"
             rel="noopener noreferrer"
-            title="Abrir Lista Maestra de Documentos Internos_21_09.docx oficial en SharePoint institucional UPT"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-2xs transition-colors cursor-pointer"
-          >
-            <ExternalLink className="w-4 h-4 text-blue-600" />
-            <span>SharePoint Docx (21/09)</span>
-          </a>
-
-          <button
-            onClick={handleExportCSV}
+            title="Abrir Lista Maestra oficial de Documentos Internos (Word .docx) en SharePoint institucional UPT"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-2xs transition-colors cursor-pointer"
           >
-            <Download className="w-4 h-4 text-slate-500" />
-            <span>Exportar Lista Maestra</span>
-          </button>
+            <FileText className="w-4 h-4 text-blue-600" />
+            <span>Abrir Lista Maestra Oficial (.docx)</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+          </a>
 
           {canCreate && (
             <button
