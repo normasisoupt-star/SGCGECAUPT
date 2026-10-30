@@ -74,12 +74,15 @@ const PdfPageItem: React.FC<PdfPageItemProps> = ({
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        const displayWidth = viewport.width / pixelRatio;
-        const displayHeight = viewport.height / pixelRatio;
+        const displayWidth = Math.round(viewport.width / pixelRatio);
+        const displayHeight = Math.round(viewport.height / pixelRatio);
         canvas.style.width = `${displayWidth}px`;
         canvas.style.height = `${displayHeight}px`;
 
-        setPageSize({ width: displayWidth, height: displayHeight });
+        setPageSize((prev) => {
+          if (prev && prev.width === displayWidth && prev.height === displayHeight) return prev;
+          return { width: displayWidth, height: displayHeight };
+        });
 
         const renderContext = {
           canvasContext: context,
@@ -246,14 +249,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         const target = initialPage && initialPage >= effectiveStart && initialPage <= effectiveEnd ? initialPage : effectiveStart;
         setSingleCurrentPage(target);
         setLoading(false);
-        if (target > effectiveStart) {
-          setTimeout(() => {
-            const el = document.getElementById(`pdf-page-${target}`);
-            if (el) {
-              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }, 450);
-        }
       })
       .catch((err: Error) => {
         if (isCancelled) return;
@@ -270,14 +265,18 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         // ignore
       }
     };
-  }, [resolvedPdfUrl, effectiveStart, reloadKey, initialPage, effectiveEnd]);
+  }, [resolvedPdfUrl, reloadKey]);
 
-  // Jump to specific page
+  // Salto a página específica estrictamente dentro del contenedor del PDF (sin sacudir el modal ni la pantalla)
   const scrollToPage = (pageNum: number) => {
     if (viewMode === 'all') {
+      const container = containerRef.current;
       const el = document.getElementById(`pdf-page-${pageNum}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (el && container) {
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const targetScroll = container.scrollTop + (elRect.top - containerRect.top) - 16;
+        container.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
       }
     } else {
       setSingleCurrentPage(pageNum);
@@ -288,10 +287,13 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   };
 
   useEffect(() => {
-    if (initialPage && initialPage >= effectiveStart && initialPage <= effectiveEnd) {
-      scrollToPage(initialPage);
+    if (!loading && pdfDoc && initialPage && initialPage >= effectiveStart && initialPage <= effectiveEnd) {
+      const timer = setTimeout(() => {
+        scrollToPage(initialPage);
+      }, 250);
+      return () => clearTimeout(timer);
     }
-  }, [initialPage, effectiveStart, effectiveEnd]);
+  }, [loading, pdfDoc, initialPage, effectiveStart, effectiveEnd]);
 
   const zoomIn = () => setScale((prev) => Math.min(prev + 0.2, 3.0));
   const zoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.6));
@@ -506,10 +508,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
       {/* Área Principal de Visualización (Canvas HTML5 - Inmune a bloqueos) */}
       <div 
         ref={containerRef}
-        className="relative flex-1 w-full min-h-[580px] max-h-[720px] overflow-auto bg-slate-950/95 p-4 sm:p-6"
+        className="relative flex-1 w-full min-h-[360px] sm:min-h-[460px] max-h-[58vh] sm:max-h-[66vh] overflow-auto bg-slate-950/95 p-3 sm:p-6"
       >
         {loading && (
-          <div className="flex flex-col items-center justify-center min-h-[500px] text-white space-y-3">
+          <div className="flex flex-col items-center justify-center min-h-[320px] sm:min-h-[400px] text-white space-y-3">
             <Loader2 className="w-9 h-9 text-red-500 animate-spin" />
             <div className="text-sm font-semibold">Cargando páginas del procedimiento oficial...</div>
             <div className="text-xs text-slate-400">

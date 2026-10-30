@@ -691,8 +691,8 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
 
       {/* Modal 1: Visor Interactivo del Procedimiento Oficial UPT */}
       {readingDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl lg:max-w-6xl my-4 overflow-hidden flex flex-col max-h-[92vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-2 sm:p-4 overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl lg:max-w-6xl my-auto overflow-hidden flex flex-col h-[94vh] max-h-[94vh]">
             {/* Cabecera formato oficial SGC UPT */}
             <div className="px-6 py-4 bg-gradient-to-r from-[#0d2d3f] to-[#001826] border-b-2 border-[#9C7D0F] text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
@@ -838,7 +838,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                     {readingTab === 'pdf' && (
                       <div className="space-y-3">
                         <PdfViewer
-                          key={`${readingDoc.code}-${startPage}-${endPage}-${targetPdfPage || 'default'}`}
+                          key={`${readingDoc.code}-${startPage}-${endPage}`}
                           pdfUrl={getLocalPdfPath(readingDoc.code)}
                           startPage={startPage}
                           endPage={endPage}
