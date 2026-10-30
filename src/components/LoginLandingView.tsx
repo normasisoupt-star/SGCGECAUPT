@@ -169,7 +169,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
     setStatusMessage(null);
 
     if (!regName.trim() || !regEmail.trim()) {
-      setStatusMessage({ type: 'error', text: 'Por favor complete su nombre y correo institucional.' });
+      setStatusMessage({ type: 'error', text: 'Por favor complete su nombre y correo electrónico.' });
       return;
     }
 
@@ -228,7 +228,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         }, 1800);
         return;
       } else if (err.code === 'auth/email-already-in-use') {
-        errorText = 'Este correo institucional ya está registrado en Firebase. Inicia sesión con tu contraseña.';
+        errorText = 'Este correo ya está registrado en Firebase. Inicia sesión con tu contraseña.';
       } else if (err.code === 'auth/weak-password') {
         errorText = 'La contraseña debe tener al menos 6 caracteres.';
       } else if (err.code === 'auth/operation-not-allowed') {
@@ -409,7 +409,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         {activeTab === 'login' ? 'Acceso a Funcionarios y Auditores' : 'Registro de Nuevo Funcionario'}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        {activeTab === 'login' ? 'Ingrese con su cuenta de correo institucional' : 'Complete sus datos para incorporarse al SGC'}
+                        {activeTab === 'login' ? 'Ingrese con su cuenta de correo electrónico' : 'Complete sus datos para incorporarse al SGC'}
                       </p>
                     </div>
                     <span className="p-2 rounded-lg bg-slate-100 text-[#0d2d3f] border border-slate-200">
@@ -440,10 +440,10 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                       {/* FORMULARIO DE ACCESO CON FIREBASE AUTH */}
                       <form className="space-y-3 sm:space-y-3.5" onSubmit={handleLoginSubmit} autoComplete="off">
                         
-                        {/* Campo de Usuario con terminación fija @upt.pe */}
+                        {/* Campo de Correo Electrónico */}
                         <div>
                           <label className="block text-xs font-bold text-slate-700 mb-1 font-outfit">
-                            Usuario Institucional UPT
+                            Correo Electrónico
                           </label>
                           <div className="relative flex items-center rounded-xl overflow-hidden shadow-sm">
                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -458,17 +458,10 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                                 const val = e.target.value;
                                 setEmailUsername(val);
                               }}
-                              placeholder="Ingrese usuario o correo institucional" 
-                              className="glass-input w-full pl-10 pr-24 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                              placeholder="ejemplo@correo.com" 
+                              className="glass-input w-full pl-10 pr-4 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
                               required
                             />
-                            {!emailUsername.includes('@') && (
-                              <div className="absolute right-0 inset-y-0 pr-3.5 flex items-center pointer-events-none">
-                                <span className="text-xs font-bold text-[#0d2d3f] bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 font-mono font-bold">
-                                  @upt.pe
-                                </span>
-                              </div>
-                            )}
                           </div>
                         </div>
 
@@ -588,10 +581,10 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Correo Institucional (@upt.pe) *</label>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Correo Electrónico *</label>
                           <input
-                            type="text"
-                            placeholder="usuario@upt.pe"
+                            type="email"
+                            placeholder="ejemplo@correo.com"
                             value={regEmail}
                             onChange={(e) => setRegEmail(e.target.value)}
                             required
