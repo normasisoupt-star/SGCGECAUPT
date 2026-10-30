@@ -62,6 +62,7 @@ export function App() {
   const [isOpenNewDocModal, setIsOpenNewDocModal] = useState(false);
   const [isOpenNewCapaModal, setIsOpenNewCapaModal] = useState(false);
   const [scopeMode, setScopeMode] = useState<'my_office' | 'all'>('my_office');
+  const [selectedProcessFilter, setSelectedProcessFilter] = useState<string>('all');
   const [isLoggedOut, setIsLoggedOut] = useState(() => sessionStorage.getItem('upt_sgc_logged_in') !== 'true');
 
   const isAdmin = activeUser?.role === 'geca';
@@ -161,6 +162,7 @@ export function App() {
   };
 
   const handleSelectProcessFilter = (processCode: ProcessLevel0) => {
+    setSelectedProcessFilter(processCode);
     setActiveTab('documents');
   };
 
@@ -192,6 +194,9 @@ export function App() {
   const handleSelectTab = (tab: NavTab) => {
     if (!isAdmin && !['dashboard', 'process_map', 'documents'].includes(tab)) {
       return;
+    }
+    if (tab === 'documents') {
+      setSelectedProcessFilter('all');
     }
     setActiveTab(tab);
   };
@@ -229,6 +234,7 @@ export function App() {
               activeUser={activeUser}
               onNavigate={handleSelectTab}
               onOpenNewDoc={() => {
+                setSelectedProcessFilter('all');
                 setActiveTab('documents');
                 setIsOpenNewDocModal(true);
               }}
@@ -255,6 +261,8 @@ export function App() {
               onOpenNewModal={() => setIsOpenNewDocModal(true)}
               scopeMode={scopeMode}
               onToggleScopeMode={setScopeMode}
+              initialProcessFilter={selectedProcessFilter}
+              onProcessFilterChange={setSelectedProcessFilter}
             />
           )}
 

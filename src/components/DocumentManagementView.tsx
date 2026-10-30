@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText,
   Compass,
@@ -52,6 +52,8 @@ interface DocumentManagementViewProps {
   onOpenNewModal: () => void;
   scopeMode?: 'my_office' | 'all';
   onToggleScopeMode?: (mode: 'my_office' | 'all') => void;
+  initialProcessFilter?: string;
+  onProcessFilterChange?: (process: string) => void;
 }
 
 const STATUS_CONFIG: Record<DocumentStatus, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -109,11 +111,24 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   onOpenNewModal,
   scopeMode = 'all',
   onToggleScopeMode,
+  initialProcessFilter = 'all',
+  onProcessFilterChange,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedProcess, setSelectedProcess] = useState<string>('all');
+  const [selectedProcess, setSelectedProcess] = useState<string>(initialProcessFilter);
+
+  useEffect(() => {
+    setSelectedProcess(initialProcessFilter);
+  }, [initialProcessFilter]);
+
+  const handleProcessChange = (proc: string) => {
+    setSelectedProcess(proc);
+    if (onProcessFilterChange) {
+      onProcessFilterChange(proc);
+    }
+  };
 
   const [viewingDoc, setViewingDoc] = useState<ISODocument | null>(null);
   const [readingDoc, setReadingDoc] = useState<ISODocument | null>(null);
@@ -200,6 +215,9 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
     setSelectedType('all');
     setSelectedStatus('all');
     setSelectedProcess('all');
+    if (onProcessFilterChange) {
+      onProcessFilterChange('all');
+    }
   };
 
   const handleCreateDocument = (e: React.FormEvent) => {
@@ -464,7 +482,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           {/* Filtro por Proceso */}
           <select
             value={selectedProcess}
-            onChange={(e) => setSelectedProcess(e.target.value)}
+            onChange={(e) => handleProcessChange(e.target.value)}
             className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[210px]"
           >
             <option value="all">Todos los Procesos (13)</option>
@@ -536,6 +554,34 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Banner Informativo cuando se filtra por un Proceso específico */}
+      {selectedProcess !== 'all' && (
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#0d2d3f] text-white flex items-center justify-center font-bold text-xs shrink-0 font-outfit shadow-xs">
+              {selectedProcess}
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900">
+                Procedimientos filtrados por proceso: <span className="text-[#0d2d3f]">{selectedProcess} - {UPT_PROCESSES.find((p) => p.code === selectedProcess)?.name}</span>
+              </div>
+              <div className="text-[11px] text-slate-500">
+                Mostrando los {filteredDocs.length} procedimiento(s) y documentos de este proceso en la Lista Maestra.
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => handleProcessChange('all')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-300 font-semibold text-xs shadow-2xs transition-all cursor-pointer shrink-0"
+            title="Quitar filtro de proceso y ver la Lista Maestra completa"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+            <span>Ver Lista Maestra completa (Sin filtro)</span>
+          </button>
+        </div>
+      )}
 
       {/* Tabla Oficial Lista Maestra */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
