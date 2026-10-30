@@ -243,7 +243,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   };
 
   return (
-    <div className="relative h-screen max-h-screen w-full flex flex-col justify-between font-inter text-slate-800 antialiased overflow-hidden select-none">
+    <div className="relative min-h-screen w-full flex flex-col justify-between font-inter text-slate-800 antialiased overflow-x-hidden select-none">
       
       {/* CAPA DE FONDO: FOTOGRAFÍA ARQUITECTÓNICA DE CAMPUS */}
       <div className="fixed inset-0 w-full h-full -z-20 overflow-hidden">
@@ -276,21 +276,21 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         </div>
       </header>
 
-      {/* CONTENEDOR PRINCIPAL CENTRAL */}
-      <main className="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 my-auto flex-1 flex flex-col justify-center items-center z-10 overflow-hidden py-1">
+      {/* CONTENEDOR PRINCIPAL CENTRAL - ADAPTABLE A LAPTOPS Y PANTALLAS DE CUALQUIER RESOLUCIÓN */}
+      <main className="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 my-auto flex-1 flex flex-col justify-center items-center z-10 py-2 sm:py-4">
         
-        <div className="relative w-full">
+        <div className="relative w-full my-auto">
           
           {/* TARJETA CENTRAL DE CRISTAL ESMERILADO (GLASSMORPHISM) */}
-          <div className="glass-card w-full py-6 sm:py-8 px-6 sm:px-8 lg:px-10 max-h-[calc(100vh-70px)] flex flex-col justify-center">
+          <div className="glass-card w-full py-4 sm:py-6 px-5 sm:px-8 lg:px-10 shadow-2xl">
             
-            {/* ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL */}
-            <div className="flex justify-center mb-3 sm:mb-4">
+            {/* ESCUDO UPT TOTALMENTE ENVUELTO DENTRO DEL FONDO DE CRISTAL */}
+            <div className="flex justify-center mb-2 sm:mb-3">
               <div className="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
                 <img 
                   src="./upt_escudo_oficial.png" 
                   alt="Escudo Heráldico UPT" 
-                  className="w-24 h-28 sm:w-28 sm:h-32 lg:w-32 lg:h-36 object-contain filter drop-shadow-xl"
+                  className="w-16 h-20 sm:w-20 sm:h-24 lg:w-24 lg:h-28 object-contain filter drop-shadow-xl"
                 />
               </div>
             </div>
@@ -298,7 +298,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center">
               
               {/* ================= LADO IZQUIERDO: INFORMACIÓN INSTITUCIONAL, NORMAS Y MÉTRICAS ================= */}
-              <div className="lg:col-span-6 flex flex-col justify-between space-y-4 lg:space-y-5 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-4 lg:pb-0 lg:pr-8">
+              <div className="lg:col-span-6 flex flex-col justify-between space-y-3 sm:space-y-4 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-4 lg:pb-0 lg:pr-8">
                 
                 {/* Encabezado de la Universidad y del Sistema */}
                 <div className="space-y-2 text-center lg:text-left">
@@ -400,7 +400,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
               {/* ================= LADO DERECHO: FORMULARIO DE ACCESO Y REGISTRO ================= */}
               <div className="lg:col-span-6 flex flex-col justify-center">
                 
-                <div className="glass-subcard rounded-2xl p-5 sm:p-6 border border-white/80 shadow-md">
+                <div className="glass-subcard rounded-2xl p-4 sm:p-5 lg:p-6 border border-white/80 shadow-md">
                   
                   {/* Encabezado del Formulario con selector opcional */}
                   <div className="flex items-center justify-between mb-2.5">
