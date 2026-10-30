@@ -332,7 +332,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                         <span className="text-xs font-bold tracking-wider text-[#F3E5AB] font-outfit uppercase">Norma de Calidad</span>
                         <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
                       </div>
-                      <div className="text-sm font-extrabold text-white tracking-wide font-cinzel">ISO 21001:2018</div>
+                      <div className="text-sm font-extrabold text-white tracking-wide font-cinzel">ISO 21001:2025</div>
                       <div className="text-[11px] text-slate-300 truncate">Organizaciones Educativas</div>
                     </div>
                   </div>
