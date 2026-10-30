@@ -902,7 +902,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                           <div className="p-4 rounded-2xl bg-red-50/50 border border-red-100 space-y-2">
                             <h3 className="font-bold text-red-950 text-xs uppercase tracking-wider flex items-center gap-1.5">
                               <ShieldCheck className="w-4 h-4 text-red-700" />
-                              <span>1. Objetivo Oficial del Procedimiento</span>
+                              <span>1. {isManual ? 'Objetivo Oficial del Documento / Manual' : 'Objetivo Oficial del Procedimiento'}</span>
                             </h3>
                             <p className="text-xs text-slate-700 leading-relaxed font-medium">
                               {officialObj}
@@ -926,64 +926,68 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                           </div>
                         </div>
 
-                        {/* Sección de Acceso a Actividades Oficiales en PDF */}
-                        <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-red-50/40 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-red-800 text-white flex items-center justify-center shrink-0 shadow-xs">
-                              <BookOpen className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <div className="font-bold text-slate-900 text-xs">
-                                Actividades y Diagrama de Flujo del Procedimiento
+                        {/* Sección de Acceso a Actividades Oficiales en PDF (Sólo para Procedimientos, no en Manuales) */}
+                        {!isManual && (
+                          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-red-50/40 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-red-800 text-white flex items-center justify-center shrink-0 shadow-xs">
+                                <BookOpen className="w-5 h-5" />
                               </div>
-                              <div className="text-[11px] text-slate-500 mt-0.5">
-                                Consulte el desarrollo oficial de actividades directamente en la pestaña del visor PDF incrustado.
+                              <div>
+                                <div className="font-bold text-slate-900 text-xs">
+                                  Actividades y Diagrama de Flujo del Procedimiento
+                                </div>
+                                <div className="text-[11px] text-slate-500 mt-0.5">
+                                  Consulte el desarrollo oficial de actividades directamente en la pestaña del visor PDF incrustado.
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTargetPdfPage(activitiesPage);
+                                setReadingTab('pdf');
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-800 hover:bg-red-900 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs shrink-0"
+                              title={`Ir directamente a la página ${activitiesPage} de actividades del procedimiento`}
+                            >
+                              <BookOpen className="w-3.5 h-3.5" />
+                              <span>Ver Actividades en PDF (Pág. {activitiesPage})</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Sección 3: Registros y Formatos Vinculados (Sólo para Procedimientos, no en Manuales) */}
+                        {!isManual && (
+                          <div>
+                            <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                              <FileText className="w-4 h-4 text-emerald-700" />
+                              <span>3. Registros y Formatos Oficiales Vinculados (RG)</span>
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                              <div className="p-3 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center justify-between">
+                                <div>
+                                  <div className="font-bold text-emerald-950">RG04.PE.02 Lista Maestra de Documentos</div>
+                                  <div className="text-[11px] text-emerald-700">Control de vigencia y revisiones</div>
+                                </div>
+                                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Oficial</span>
+                              </div>
+                              <div className="p-3 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center justify-between">
+                                <div>
+                                  <div className="font-bold text-emerald-950">RG08.PE.02 Registro de No Conformidad</div>
+                                  <div className="text-[11px] text-emerald-700">En caso de desvíos en el procedimiento</div>
+                                </div>
+                                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Oficial</span>
                               </div>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setTargetPdfPage(activitiesPage);
-                              setReadingTab('pdf');
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-800 hover:bg-red-900 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs shrink-0"
-                            title={`Ir directamente a la página ${activitiesPage} de actividades del procedimiento`}
-                          >
-                            <BookOpen className="w-3.5 h-3.5" />
-                            <span>Ver Actividades en PDF (Pág. {activitiesPage})</span>
-                          </button>
-                        </div>
+                        )}
 
-                        {/* Sección 3: Registros y Formatos Vinculados */}
-                        <div>
-                          <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                            <FileText className="w-4 h-4 text-emerald-700" />
-                            <span>3. Registros y Formatos Oficiales Vinculados (RG)</span>
-                          </h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                            <div className="p-3 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center justify-between">
-                              <div>
-                                <div className="font-bold text-emerald-950">RG04.PE.02 Lista Maestra de Documentos</div>
-                                <div className="text-[11px] text-emerald-700">Control de vigencia y revisiones</div>
-                              </div>
-                              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Oficial</span>
-                            </div>
-                            <div className="p-3 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center justify-between">
-                              <div>
-                                <div className="font-bold text-emerald-950">RG08.PE.02 Registro de No Conformidad</div>
-                                <div className="text-[11px] text-emerald-700">En caso de desvíos en el procedimiento</div>
-                              </div>
-                              <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Oficial</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Sección 4: Historial de Cambios */}
+                        {/* Sección: Historial de Cambios */}
                         <div>
                           <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5">
                             <History className="w-4 h-4 text-slate-600" />
-                            <span>4. Control de Cambios del Documento (Anexo 1 UPT)</span>
+                            <span>{isManual ? '3. Control de Cambios del Documento (Anexo 1 UPT)' : '4. Control de Cambios del Documento (Anexo 1 UPT)'}</span>
                           </h3>
                           <div className="space-y-2">
                             {readingDoc.changeLog && readingDoc.changeLog.length > 0 ? (
