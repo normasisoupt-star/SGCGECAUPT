@@ -48,6 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const isAdmin = activeUser.role === 'geca';
 
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 shadow-xs before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[2px] before:bg-gradient-to-r before:from-[#0d2d3f] before:via-[#e63b2e] before:to-[#9C7D0F]">
@@ -84,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'bg-[#0d2d3f] text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-200'
               }`}
-              title={`Mostrar únicamente procesos, procedimientos, indicadores y auditoría de: ${activeUser.officeName || activeUser.department}`}
+              title={`Mostrar únicamente procesos, procedimientos y registros de: ${activeUser.officeName || activeUser.department}`}
             >
               <Building2 className="w-3.5 h-3.5 text-blue-300" />
               <span>Mi Oficina</span>
@@ -110,7 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer"
-              title="Cambiar de dependencia / oficina"
+              title={isAdmin ? "Cambiar de dependencia / oficina (Admin)" : "Ver perfil de usuario"}
             >
               <img
                 src={activeUser.avatar}
@@ -133,67 +134,109 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="absolute right-0 mt-2 w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95"
                 onMouseLeave={() => setDropdownOpen(false)}
               >
-                <div className="px-5 py-3 border-b border-slate-100">
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                    <span>Dependencias Universitarias UPT</span>
-                    <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold">
-                      {users.length} Oficinas
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Selecciona tu oficina para acceder directamente a tu espacio de trabajo y ver solo tus procesos, metas y auditorías.
-                  </p>
-                </div>
+                {isAdmin ? (
+                  <>
+                    <div className="px-5 py-3 border-b border-slate-100">
+                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>Dependencias Universitarias UPT</span>
+                        <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                          {users.length} Oficinas
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                        Modo Administrador: Selecciona cualquier oficina para supervisar su catálogo y espacio de trabajo.
+                      </p>
+                    </div>
 
-                <div className="max-h-80 overflow-y-auto py-1 divide-y divide-slate-50">
-                  {users.map((u) => {
-                    const isSelected = u.id === activeUser.id;
-                    const badgeClass = ROLE_COLORS[u.role] || 'bg-slate-100 text-slate-700';
-                    return (
-                      <button
-                        key={u.id}
-                        onClick={() => {
-                          onSwitchUser(u);
-                          setDropdownOpen(false);
-                        }}
-                        className={'w-full px-4 py-2.5 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left cursor-pointer ' + (
-                          isSelected ? 'bg-blue-50/70 border-l-4 border-blue-900' : ''
-                        )}
-                      >
-                        <img
-                          src={u.avatar}
-                          alt={u.name}
-                          className="w-8 h-8 rounded-lg object-cover mt-0.5 shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-1">
-                            <span className="text-xs font-bold text-slate-900 truncate">{u.name}</span>
-                            {isSelected && (
-                              <Check className="w-3.5 h-3.5 text-blue-900 shrink-0" />
+                    <div className="max-h-80 overflow-y-auto py-1 divide-y divide-slate-50">
+                      {users.map((u) => {
+                        const isSelected = u.id === activeUser.id;
+                        const badgeClass = ROLE_COLORS[u.role] || 'bg-slate-100 text-slate-700';
+                        return (
+                          <button
+                            key={u.id}
+                            onClick={() => {
+                              onSwitchUser(u);
+                              setDropdownOpen(false);
+                            }}
+                            className={'w-full px-4 py-2.5 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left cursor-pointer ' + (
+                              isSelected ? 'bg-blue-50/70 border-l-4 border-blue-900' : ''
                             )}
-                          </div>
-                          <div className="text-[11px] text-slate-500 truncate">{u.charge}</div>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <span className={'inline-block px-2 py-0.5 text-[10px] font-bold rounded-md border ' + badgeClass}>
-                              {u.department}
-                            </span>
-                            {u.processCodes && u.processCodes.length > 0 && (
-                              <span className="text-[10px] font-mono text-slate-400 font-bold">
-                                [{u.processCodes.join(', ')}]
-                              </span>
-                            )}
-                          </div>
+                          >
+                            <img
+                              src={u.avatar}
+                              alt={u.name}
+                              className="w-8 h-8 rounded-lg object-cover mt-0.5 shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="text-xs font-bold text-slate-900 truncate">{u.name}</span>
+                                {isSelected && (
+                                  <Check className="w-3.5 h-3.5 text-blue-900 shrink-0" />
+                                )}
+                              </div>
+                              <div className="text-[11px] text-slate-500 truncate">{u.charge}</div>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className={'inline-block px-2 py-0.5 text-[10px] font-bold rounded-md border ' + badgeClass}>
+                                  {u.department}
+                                </span>
+                                {u.processCodes && u.processCodes.length > 0 && (
+                                  <span className="text-[10px] font-mono text-slate-400 font-bold">
+                                    [{u.processCodes.join(', ')}]
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={activeUser.avatar}
+                        alt={activeUser.name}
+                        className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-bold text-slate-900 leading-tight">
+                          {activeUser.name}
                         </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          {activeUser.charge}
+                        </div>
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                          <span className={'inline-block px-2 py-0.5 text-[10px] font-bold rounded-md border ' + (ROLE_COLORS[activeUser.role] || 'bg-slate-100 text-slate-700')}>
+                            {activeUser.department}
+                          </span>
+                          {activeUser.processCodes && activeUser.processCodes.length > 0 && (
+                            <span className="text-[10px] font-mono text-slate-500 font-bold bg-slate-100 px-1.5 py-0.5 rounded">
+                              Procesos: {activeUser.processCodes.join(', ')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+                      <div className="font-semibold text-slate-700 flex items-center justify-between">
+                        <span>Perfil de Oficina</span>
+                        <span className="text-[10px] bg-blue-100 text-[#0d2d3f] px-2 py-0.5 rounded-full font-bold">UPT Oficial</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Acceso activo a la consulta institucional de Mapa de Procesos y Lista Maestra de Documentos (RG04).
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Footer de la ventana: Cerrar Sesión */}
                 <div className="p-3 border-t border-slate-100 bg-slate-50/80 rounded-b-3xl flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span className="text-[11px] text-slate-500 font-medium">Sesión iniciada</span>
+                    <span className="text-[11px] text-slate-500 font-medium">Sesión activa</span>
                   </div>
                   <button
                     type="button"
