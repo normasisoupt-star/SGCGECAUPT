@@ -48,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const isAdmin = activeUser.role === 'geca';
+  const isAdmin = activeUser?.role === 'geca';
 
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 shadow-xs before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[2px] before:bg-gradient-to-r before:from-[#0d2d3f] before:via-[#e63b2e] before:to-[#9C7D0F]">
@@ -85,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   ? 'bg-[#0d2d3f] text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-200'
               }`}
-              title={`Mostrar únicamente procesos, procedimientos y registros de: ${activeUser.officeName || activeUser.department}`}
+              title={`Mostrar únicamente procesos, procedimientos y registros de: ${activeUser?.officeName || activeUser?.department || ''}`}
             >
               <Building2 className="w-3.5 h-3.5 text-blue-300" />
               <span>Mi Oficina</span>
@@ -114,16 +114,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               title={isAdmin ? "Cambiar de dependencia / oficina (Admin)" : "Ver perfil de usuario"}
             >
               <img
-                src={activeUser.avatar}
-                alt={activeUser.name}
+                src={activeUser?.avatar}
+                alt={activeUser?.name || 'Usuario'}
                 className="w-8 h-8 rounded-lg object-cover border border-white shadow-xs shrink-0"
               />
               <div className="text-left hidden lg:block max-w-[210px]">
                 <div className="text-xs font-bold text-slate-900 leading-tight truncate">
-                  {activeUser.name}
+                  {activeUser?.name}
                 </div>
                 <div className="text-[11px] text-slate-500 truncate">
-                  {activeUser.officeName || activeUser.department}
+                  {activeUser?.officeName || activeUser?.department}
                 </div>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
@@ -196,22 +196,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="p-5 space-y-4">
                     <div className="flex items-start gap-3">
                       <img
-                        src={activeUser.avatar}
-                        alt={activeUser.name}
+                        src={activeUser?.avatar}
+                        alt={activeUser?.name || 'Usuario'}
                         className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
                       />
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-bold text-slate-900 leading-tight">
-                          {activeUser.name}
+                          {activeUser?.name}
                         </div>
                         <div className="text-xs text-slate-500 mt-0.5">
-                          {activeUser.charge}
+                          {activeUser?.charge}
                         </div>
                         <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                          <span className={'inline-block px-2 py-0.5 text-[10px] font-bold rounded-md border ' + (ROLE_COLORS[activeUser.role] || 'bg-slate-100 text-slate-700')}>
-                            {activeUser.department}
+                          <span className={'inline-block px-2 py-0.5 text-[10px] font-bold rounded-md border ' + (ROLE_COLORS[activeUser?.role || 'colaborador'] || 'bg-slate-100 text-slate-700')}>
+                            {activeUser?.department}
                           </span>
-                          {activeUser.processCodes && activeUser.processCodes.length > 0 && (
+                          {activeUser?.processCodes && activeUser.processCodes.length > 0 && (
                             <span className="text-[10px] font-mono text-slate-500 font-bold bg-slate-100 px-1.5 py-0.5 rounded">
                               Procesos: {activeUser.processCodes.join(', ')}
                             </span>

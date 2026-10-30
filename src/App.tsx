@@ -62,7 +62,16 @@ export function App() {
   const [isOpenNewDocModal, setIsOpenNewDocModal] = useState(false);
   const [isOpenNewCapaModal, setIsOpenNewCapaModal] = useState(false);
   const [scopeMode, setScopeMode] = useState<'my_office' | 'all'>('my_office');
-  const [isLoggedOut, setIsLoggedOut] = useState(true);
+  const [isLoggedOut, setIsLoggedOut] = useState(() => sessionStorage.getItem('upt_sgc_logged_in') !== 'true');
+
+  const isAdmin = activeUser?.role === 'geca';
+
+  // Si el usuario no es Administrador, restringir la navegación a los 3 módulos permitidos
+  useEffect(() => {
+    if (!isAdmin && !['dashboard', 'process_map', 'documents'].includes(activeTab)) {
+      setActiveTab('dashboard');
+    }
+  }, [isAdmin, activeTab]);
 
   const refreshAll = () => {
     setDocuments(getDocuments());
@@ -179,15 +188,6 @@ export function App() {
       />
     );
   }
-
-  const isAdmin = activeUser?.role === 'geca';
-
-  // Si el usuario no es Administrador, restringir la navegación a los 3 módulos permitidos
-  useEffect(() => {
-    if (!isAdmin && !['dashboard', 'process_map', 'documents'].includes(activeTab)) {
-      setActiveTab('dashboard');
-    }
-  }, [isAdmin, activeTab]);
 
   const handleSelectTab = (tab: NavTab) => {
     if (!isAdmin && !['dashboard', 'process_map', 'documents'].includes(tab)) {

@@ -51,7 +51,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     ? Math.round((conformeCount / totalEvaluated) * 100) 
     : 0;
 
-  const isAdmin = activeUser.role === 'geca';
+  const isAdmin = activeUser?.role === 'geca';
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -64,7 +64,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Universidad Privada de Tacna &bull; Oficina de Gestión de la Calidad (GECA)</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              {activeUser.name}
+              {activeUser?.name || 'Funcionario UPT'}
             </h1>
             <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
               {isAdmin
