@@ -49,6 +49,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     ? Math.round((conformeCount / totalEvaluated) * 100) 
     : 0;
 
+  const isAdmin = activeUser.role === 'geca';
+
   const pendingActions = nonConformities
     .flatMap(nc => nc.actions.map(act => ({ ...act, ncCode: nc.code, ncTitle: nc.title })))
     .filter(act => act.status !== 'completada');
@@ -79,13 +81,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <Network className="w-4 h-4" />
               <span>Ver Mapa de Procesos (13)</span>
             </button>
-            <button
-              onClick={onOpenNewDoc}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-md border border-white/10 transition-all cursor-pointer"
-            >
-              <FilePlus className="w-4 h-4" />
-              <span>+ Nuevo Documento (RG04)</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={onOpenNewDoc}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-md border border-white/10 transition-all cursor-pointer"
+              >
+                <FilePlus className="w-4 h-4" />
+                <span>+ Nuevo Documento (RG04)</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -113,12 +117,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         <div 
-          onClick={() => onNavigate('capa')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-amber-200 transition-all cursor-pointer group"
+          onClick={() => isAdmin && onNavigate('capa')}
+          className={`bg-white p-5 rounded-2xl border border-slate-200 shadow-xs transition-all ${
+            isAdmin ? 'hover:shadow-md hover:border-amber-200 cursor-pointer group' : 'cursor-default'
+          }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">No Conformidades</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors">
+            <div className={`w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center transition-colors ${
+              isAdmin ? 'group-hover:bg-amber-600 group-hover:text-white' : ''
+            }`}>
               <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
@@ -128,17 +136,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>{closedCapas.length} cerradas eficazmente</span>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-all" />
+            {isAdmin && <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-all" />}
           </div>
         </div>
 
         <div 
-          onClick={() => onNavigate('indicators')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group"
+          onClick={() => isAdmin && onNavigate('indicators')}
+          className={`bg-white p-5 rounded-2xl border border-slate-200 shadow-xs transition-all ${
+            isAdmin ? 'hover:shadow-md hover:border-blue-200 cursor-pointer group' : 'cursor-default'
+          }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tablero Indicadores</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <div className={`w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center transition-colors ${
+              isAdmin ? 'group-hover:bg-blue-600 group-hover:text-white' : ''
+            }`}>
               <Clock className="w-5 h-5" />
             </div>
           </div>
@@ -148,17 +160,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>Seguimiento POI, Calidad e I+D+i</span>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-all" />
+            {isAdmin && <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-all" />}
           </div>
         </div>
 
         <div 
-          onClick={() => onNavigate('checklist')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all cursor-pointer group"
+          onClick={() => isAdmin && onNavigate('checklist')}
+          className={`bg-white p-5 rounded-2xl border border-slate-200 shadow-xs transition-all ${
+            isAdmin ? 'hover:shadow-md hover:border-emerald-200 cursor-pointer group' : 'cursor-default'
+          }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cumplimiento ISO 21001</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+            <div className={`w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center transition-colors ${
+              isAdmin ? 'group-hover:bg-emerald-600 group-hover:text-white' : ''
+            }`}>
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
@@ -168,7 +184,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
             <span>{conformeCount} de {totalEvaluated} cláusulas evaluadas</span>
-            <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-all" />
+            {isAdmin && <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-all" />}
           </div>
         </div>
       </div>
@@ -181,12 +197,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <AlertCircle className="w-5 h-5 text-[#0d2d3f]" />
                 <h2 className="font-bold text-slate-900 text-base">Acciones Correctivas en Curso (RG08.PE.02)</h2>
               </div>
-              <button 
-                onClick={() => onNavigate('capa')}
-                className="text-xs text-[#0d2d3f] hover:text-red-900 font-bold cursor-pointer"
-              >
-                Ver todas &rarr;
-              </button>
+              {isAdmin && (
+                <button 
+                  onClick={() => onNavigate('capa')}
+                  className="text-xs text-[#0d2d3f] hover:text-red-900 font-bold cursor-pointer"
+                >
+                  Ver todas &rarr;
+                </button>
+              )}
             </div>
 
             {openCapas.length === 0 ? (
@@ -198,8 +216,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {openCapas.slice(0, 3).map((nc) => (
                   <div 
                     key={nc.id}
-                    onClick={() => onNavigate('capa')}
-                    className="p-4 rounded-xl border border-slate-200/80 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-50 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    onClick={() => isAdmin && onNavigate('capa')}
+                    className={`p-4 rounded-xl border border-slate-200/80 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                      isAdmin ? 'hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer' : ''
+                    }`}
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -283,12 +303,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={() => onNavigate('logs')}
-            className="mt-6 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold text-center transition-colors cursor-pointer"
-          >
-            Ver historial completo de cambios
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => onNavigate('logs')}
+              className="mt-6 w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 text-xs font-semibold text-center transition-colors cursor-pointer"
+            >
+              Ver historial completo de cambios
+            </button>
+          )}
         </div>
       </div>
     </div>

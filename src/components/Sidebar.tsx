@@ -18,6 +18,7 @@ interface SidebarProps {
   onSelectTab: (tab: NavTab) => void;
   documentCount: number;
   openCapaCount: number;
+  isAdmin?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -25,6 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectTab,
   documentCount,
   openCapaCount,
+  isAdmin = false,
 }) => {
   const navItems = [
     {
@@ -72,6 +74,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
   ];
 
+  const availableNavItems = isAdmin
+    ? navItems
+    : navItems.filter((item) => ['dashboard', 'process_map', 'documents'].includes(item.id));
+
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
       <div className="p-4 space-y-6">
@@ -80,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             SGC &bull; UPT TACNA
           </div>
           <nav className="space-y-1">
-            {navItems.map((item) => {
+            {availableNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               return (

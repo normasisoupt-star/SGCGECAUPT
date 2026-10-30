@@ -128,7 +128,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   const [selectedGuideTopicId, setSelectedGuideTopicId] = useState<string | null>(null);
 
   const canApprove = activeUser.role === 'geca';
-  const canCreate = activeUser.role === 'geca' || activeUser.role === 'vrac' || activeUser.role === 'vrin' || activeUser.role === 'diga';
+  const canCreate = activeUser.role === 'geca';
   const isRectorado = activeUser.role === 'rectorado';
 
   const normalizedTerm = normalizeSearchText(searchTerm);

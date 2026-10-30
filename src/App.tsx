@@ -180,6 +180,22 @@ export function App() {
     );
   }
 
+  const isAdmin = activeUser?.role === 'geca';
+
+  // Si el usuario no es Administrador, restringir la navegación a los 3 módulos permitidos
+  useEffect(() => {
+    if (!isAdmin && !['dashboard', 'process_map', 'documents'].includes(activeTab)) {
+      setActiveTab('dashboard');
+    }
+  }, [isAdmin, activeTab]);
+
+  const handleSelectTab = (tab: NavTab) => {
+    if (!isAdmin && !['dashboard', 'process_map', 'documents'].includes(tab)) {
+      return;
+    }
+    setActiveTab(tab);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar
@@ -197,9 +213,10 @@ export function App() {
       <div className="flex-1 flex overflow-hidden">
         <Sidebar
           activeTab={activeTab}
-          onSelectTab={setActiveTab}
+          onSelectTab={handleSelectTab}
           documentCount={documents.length}
           openCapaCount={openCapasCount}
+          isAdmin={isAdmin}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
@@ -210,7 +227,7 @@ export function App() {
               checklist={checklist}
               logs={logs}
               activeUser={activeUser}
-              onNavigate={setActiveTab}
+              onNavigate={handleSelectTab}
               onOpenNewDoc={() => {
                 setActiveTab('documents');
                 setIsOpenNewDocModal(true);
@@ -241,7 +258,7 @@ export function App() {
             />
           )}
 
-          {activeTab === 'indicators' && (
+          {isAdmin && activeTab === 'indicators' && (
             <IndicatorsView
               indicators={indicators}
               documents={documents}
@@ -254,7 +271,7 @@ export function App() {
             />
           )}
 
-          {activeTab === 'capa' && (
+          {isAdmin && activeTab === 'capa' && (
             <CAPAManagementView
               nonConformities={nonConformities}
               activeUser={activeUser}
@@ -268,7 +285,7 @@ export function App() {
             />
           )}
 
-          {activeTab === 'checklist' && (
+          {isAdmin && activeTab === 'checklist' && (
             <AuditChecklistView
               checklist={checklist}
               nonConformities={nonConformities}
@@ -287,7 +304,7 @@ export function App() {
             />
           )}
 
-          {activeTab === 'logs' && (
+          {isAdmin && activeTab === 'logs' && (
             <ActivityLogsView logs={logs} />
           )}
         </main>
