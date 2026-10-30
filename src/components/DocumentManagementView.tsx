@@ -127,9 +127,10 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   const [selectedGuidePillar, setSelectedGuidePillar] = useState<'all' | 'Misional' | 'Soporte' | 'Estratégico'>('all');
   const [selectedGuideTopicId, setSelectedGuideTopicId] = useState<string | null>(null);
 
-  const canApprove = activeUser.role === 'geca';
-  const canCreate = activeUser.role === 'geca';
-  const isRectorado = activeUser.role === 'rectorado';
+  const canApprove = activeUser?.role === 'geca';
+  const canCreate = activeUser?.role === 'geca';
+  const isRectorado = activeUser?.role === 'rectorado';
+  const isAdmin = activeUser?.role === 'geca';
 
   const normalizedTerm = normalizeSearchText(searchTerm);
   const synonymCodes = getSynonymProcedureCodes(searchTerm);
@@ -533,7 +534,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                 <th className="px-3 py-3.5 text-center">Versión</th>
                 <th className="px-4 py-3.5">Estado</th>
                 <th className="px-4 py-3.5 min-w-[180px]">Ubicación en Manual</th>
-                <th className="px-5 py-3.5 text-right min-w-[140px]">Acciones</th>
+                <th className="px-5 py-3.5 text-right min-w-[120px]">{isAdmin ? 'Acciones' : 'Documento'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -618,7 +619,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                       </td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          {/* Botón principal: Abrir Procedimiento */}
+                          {/* Botón principal: Abrir Procedimiento (Visible para todos) */}
                           <button
                             onClick={() => {
                               setTargetPdfPage(null); setReadingDoc(doc);
@@ -631,52 +632,53 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                             <span>Abrir</span>
                           </button>
 
-                          {/* Ver Ficha Técnica */}
-                          <button
-                            onClick={() => setViewingDoc(doc)}
-                            title="Ver ficha técnica de custodia e historial"
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
+                          {/* Acciones exclusivas del Administrador General */}
+                          {isAdmin && (
+                            <>
+                              {/* Ver Ficha Técnica */}
+                              <button
+                                onClick={() => setViewingDoc(doc)}
+                                title="Ver ficha técnica de custodia e historial"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
 
-                          {doc.status === 'revision' && canApprove && (
-                            <button
-                              onClick={() => onApproveDocument(doc.id)}
-                              title="Aprobar documento oficialmente"
-                              className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
-                            >
-                              <FileCheck className="w-4 h-4" />
-                            </button>
-                          )}
+                              {doc.status === 'revision' && canApprove && (
+                                <button
+                                  onClick={() => onApproveDocument(doc.id)}
+                                  title="Aprobar documento oficialmente"
+                                  className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                                >
+                                  <FileCheck className="w-4 h-4" />
+                                </button>
+                              )}
 
-                          {canCreate && (
-                            <button
-                              onClick={() => {
-                                setVersioningDoc(doc);
-                                const parts = doc.version.split('.');
-                                const major = parseInt(parts[0], 10) || 1;
-                                setNewVersionNumber(String(major + 1).padStart(2, '0'));
-                              }}
-                              title="Crear nueva versión (Control de cambios)"
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
-                            >
-                              <History className="w-4 h-4" />
-                            </button>
-                          )}
+                              <button
+                                onClick={() => {
+                                  setVersioningDoc(doc);
+                                  const parts = doc.version.split('.');
+                                  const major = parseInt(parts[0], 10) || 1;
+                                  setNewVersionNumber(String(major + 1).padStart(2, '0'));
+                                }}
+                                title="Crear nueva versión (Control de cambios)"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
+                              >
+                                <History className="w-4 h-4" />
+                              </button>
 
-                          {canApprove && (
-                            <button
-                              onClick={() => {
-                                if (confirm(`¿Está seguro de eliminar el procedimiento ${doc.code} de la Lista Maestra?`)) {
-                                  onDeleteDocument(doc.id);
-                                }
-                              }}
-                              title="Eliminar procedimiento"
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`¿Está seguro de eliminar el procedimiento ${doc.code} de la Lista Maestra?`)) {
+                                    onDeleteDocument(doc.id);
+                                  }
+                                }}
+                                title="Eliminar procedimiento"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
