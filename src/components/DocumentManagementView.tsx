@@ -61,7 +61,8 @@ const STATUS_CONFIG: Record<DocumentStatus, { label: string; color: string; icon
   obsoleto: { label: 'Obsoleto', color: 'bg-rose-100 text-rose-800 border-rose-200', icon: AlertCircle },
 };
 
-function getPageAndManual(code: string, storageLocation: string, description: string) {
+function getPageAndManual(code: string, storageLocation: string, description: string, documentType?: DocumentType) {
+  const isManual = documentType === 'Manual' || code.startsWith('MN') || code === 'doc-man-01' || storageLocation.toLowerCase().includes('manual de procesos');
   const range = getProcedureRange(code);
   const pageMatch = storageLocation.match(/Pág\.?\s*(\d+)/i) || description.match(/Pág\.?\s*(\d+)/i);
   const fallbackPage = pageMatch ? pageMatch[1] : null;
@@ -72,13 +73,27 @@ function getPageAndManual(code: string, storageLocation: string, description: st
     manual = range.manual;
   }
 
+  if (isManual) {
+    return {
+      manual: manual || 'Manual Institucional UPT',
+      page: null,
+      range: null,
+      startPage: 1,
+      endPage: undefined,
+      activitiesPage: 1,
+      rangeText: 'Completo',
+      pageCount: 'Manual Completo',
+      isManual: true,
+    };
+  }
+
   const startPage = range ? range.startPage : (fallbackPage ? parseInt(fallbackPage, 10) : 1);
   const endPage = range ? range.endPage : startPage;
   const rangeText = range ? range.rangeText : (fallbackPage ? String(fallbackPage) : '1');
   const pageCount = range ? range.pageCount : 1;
 
     const activitiesPage = range ? range.activitiesPage : startPage;
-  return { manual, page: fallbackPage || (range ? String(range.startPage) : null), range, startPage, endPage, activitiesPage, rangeText, pageCount };
+  return { manual, page: fallbackPage || (range ? String(range.startPage) : null), range, startPage, endPage, activitiesPage, rangeText, pageCount, isManual: false };
 }
 
 
@@ -588,10 +603,15 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                       </td>
                       <td className="px-4 py-4 text-xs">
                         {(() => {
-                          const { manual, page, range, rangeText, pageCount } = getPageAndManual(doc.code, doc.storageLocation, doc.description);
+                          const { manual, page, range, rangeText, pageCount, isManual } = getPageAndManual(doc.code, doc.storageLocation, doc.description, doc.documentType);
                           return (
                             <div className="space-y-1.5">
-                              {range ? (
+                              {isManual ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-900 border border-purple-200 font-bold text-xs shadow-2xs">
+                                  <BookOpen className="w-3.5 h-3.5 text-purple-700 shrink-0" />
+                                  <span>Manual Completo</span>
+                                </span>
+                              ) : range ? (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-bold text-xs shadow-2xs">
                                   <BookOpen className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                                   <span>Págs. {rangeText}</span>
@@ -749,10 +769,10 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
               </div>
             </div>
 
-            {/* Contenido Oficial del Procedimiento */}
+            {/* Contenido Oficial del Procedimiento o Manual */}
             <div className="p-6 overflow-y-auto space-y-5 text-sm text-slate-700 leading-relaxed">
               {(() => {
-                const { manual, page, range, startPage, endPage, activitiesPage, rangeText, pageCount } = getPageAndManual(readingDoc.code, readingDoc.storageLocation, readingDoc.description);
+                const { manual, page, range, startPage, endPage, activitiesPage, rangeText, pageCount, isManual } = getPageAndManual(readingDoc.code, readingDoc.storageLocation, readingDoc.description, readingDoc.documentType);
                 const detailed = UPT_PROCEDURES_DETAILED[readingDoc.code];
                 const officialObj = detailed ? detailed.objective : readingDoc.description;
                 const officialScope = detailed ? detailed.scope : 'Aplica a todas las dependencias académicas y administrativas correspondientes de la Universidad Privada de Tacna.';
@@ -763,15 +783,15 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                     <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
                       <div className="flex items-center gap-3">
                         <div className="w-16 h-12 rounded-2xl bg-amber-500 text-white flex flex-col items-center justify-center font-bold shadow-xs shrink-0 px-1">
-                          <span className="text-[9px] uppercase tracking-wider font-semibold">PÁGS</span>
-                          <span className="text-xs leading-none font-sans font-bold tracking-tight text-center">{rangeText}</span>
+                          <span className="text-[9px] uppercase tracking-wider font-semibold">{isManual ? 'MANUAL' : 'PÁGS'}</span>
+                          <span className="text-xs leading-none font-sans font-bold tracking-tight text-center">{isManual ? 'COMPLETO' : rangeText}</span>
                         </div>
                         <div>
                           <div className="text-[11px] font-bold uppercase tracking-wider text-amber-900">
-                            Ubicación Exacta en el Manual Oficial UPT
+                            {isManual ? 'Manual Institucional Completo UPT' : 'Ubicación Exacta en el Manual Oficial UPT'}
                           </div>
                           <div className="text-sm font-bold text-slate-900 mt-0.5">
-                            {manual} &bull; <span className="text-amber-900 underline decoration-amber-400">Páginas {rangeText} ({pageCount} {pageCount === 1 ? 'página' : 'páginas'})</span>
+                            {manual} &bull; <span className="text-amber-900 underline decoration-amber-400">{isManual ? 'Archivo Oficial Completo (Todas las páginas del documento)' : `Páginas ${rangeText} (${pageCount} ${pageCount === 1 ? 'página' : 'páginas'})`}</span>
                           </div>
                           <div className="text-[11px] text-slate-500 mt-0.5">
                             Aprobado por Consejo Universitario &bull; {readingDoc.approvalResolution}
@@ -779,18 +799,23 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                         </div>
                       </div>
                       <div className="shrink-0 flex flex-wrap items-center gap-2">
-                        {page && (
+                        {isManual ? (
+                          <span className="px-3 py-1.5 rounded-xl bg-purple-100 text-purple-950 font-bold text-xs flex items-center gap-1.5 shadow-2xs border border-purple-200">
+                            <BookOpen className="w-4 h-4 text-purple-800" />
+                            <span>Documento Completo</span>
+                          </span>
+                        ) : page ? (
                           <span className="px-3 py-1.5 rounded-xl bg-amber-200 text-amber-950 font-bold text-xs flex items-center gap-1.5 shadow-2xs border border-amber-300">
                             <BookOpen className="w-4 h-4 text-amber-800" />
                             <span>Págs. {rangeText} del PDF</span>
                           </span>
-                        )}
+                        ) : null}
                         <a
-                          href={getDocumentExactPageUrl(readingDoc.code, page)}
+                          href={isManual ? getLocalPdfPath(readingDoc.code) : getDocumentExactPageUrl(readingDoc.code, page)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs hover:shadow-md transition-all cursor-pointer"
-                          title={`Abrir PDF oficial directamente en la Página ${page || 1} en nueva pestaña`}
+                          title="Abrir PDF oficial en nueva pestaña"
                         >
                           <ExternalLink className="w-4 h-4" />
                           <span>Abrir en Pestaña Completa</span>
@@ -820,7 +845,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                         }`}
                       >
                         <BookOpen className="w-4 h-4" />
-                        <span>📄 Documento Oficial PDF (Págs. {rangeText})</span>
+                        <span>📄 {isManual ? 'Manual Oficial Completo en PDF' : `Documento Oficial PDF (Págs. ${rangeText})`}</span>
                       </button>
                       <button
                         type="button"
@@ -832,7 +857,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                         }`}
                       >
                         <Layers className="w-4 h-4" />
-                        <span>📋 Ficha y Resumen del Procedimiento</span>
+                        <span>📋 Ficha y Resumen Institucional</span>
                       </button>
                     </div>
 
@@ -840,10 +865,11 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                     {readingTab === 'pdf' && (
                       <div className="space-y-3">
                         <PdfViewer
-                          key={`${readingDoc.code}-${startPage}-${endPage}`}
+                          key={`${readingDoc.code}-${isManual ? 'full' : `${startPage}-${endPage}`}`}
                           pdfUrl={getLocalPdfPath(readingDoc.code)}
                           startPage={startPage}
-                          endPage={endPage}
+                          endPage={isManual ? undefined : endPage}
+                          isFullDocument={isManual}
                           initialPage={targetPdfPage || startPage}
                           activitiesPage={activitiesPage}
                           docCode={readingDoc.code}
