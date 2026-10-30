@@ -33,13 +33,30 @@ export const UPT_CLOUD_MANUALS = {
 
 export const SHAREPOINT_LISTA_MAESTRA_DOCX = 'https://uptpe-my.sharepoint.com/:w:/g/personal/licencia_institucional_upt_pe/cQpPz-kp3DccSpsXKVHz4jBcEgUCuqAAae2ytvwZ6oKsf2TlFQ';
 
+// Resuelve la ruta del PDF de manera absoluta considerando el subpath de GitHub Pages (/SGCGECAUPT/) o local
+export function resolveManualPath(localFile: string): string {
+  if (!localFile) return localFile;
+  if (localFile.startsWith('http://') || localFile.startsWith('https://') || localFile.startsWith('blob:')) {
+    return localFile;
+  }
+  const clean = localFile.replace(/^\.?\//, '');
+  if (typeof window !== 'undefined') {
+    const pathname = window.location.pathname;
+    const basePath = pathname.endsWith('/') ? pathname : pathname.substring(0, pathname.lastIndexOf('/') + 1);
+    return `${window.location.origin}${basePath}${clean}`;
+  }
+  return `./${clean}`;
+}
+
 export function getLocalPdfPath(code: string): string {
-  if (code === 'MN01.PE.01') return UPT_CLOUD_MANUALS.PROCESOS.localFile;
-  if (code === 'MN01.PE.02') return UPT_CLOUD_MANUALS.SGC.localFile;
-  if (code === 'MN02.PE.01' || code.startsWith('PE') || code.includes('.PE.')) return UPT_CLOUD_MANUALS.ESTRATEGICOS.localFile;
-  if (code === 'MN01.PM.01' || code.startsWith('PM') || code.includes('.PM.')) return UPT_CLOUD_MANUALS.MISIONALES.localFile;
-  if (code === 'MN01.PS.01' || code.startsWith('PS') || code.includes('.PS.')) return UPT_CLOUD_MANUALS.SOPORTE.localFile;
-  return UPT_CLOUD_MANUALS.SGC.localFile;
+  let file = UPT_CLOUD_MANUALS.SGC.localFile;
+  if (code === 'MN01.PE.01') file = UPT_CLOUD_MANUALS.PROCESOS.localFile;
+  else if (code === 'MN01.PE.02') file = UPT_CLOUD_MANUALS.SGC.localFile;
+  else if (code === 'MN02.PE.01' || code.startsWith('PE') || code.includes('.PE.')) file = UPT_CLOUD_MANUALS.ESTRATEGICOS.localFile;
+  else if (code === 'MN01.PM.01' || code.startsWith('PM') || code.includes('.PM.')) file = UPT_CLOUD_MANUALS.MISIONALES.localFile;
+  else if (code === 'MN01.PS.01' || code.startsWith('PS') || code.includes('.PS.')) file = UPT_CLOUD_MANUALS.SOPORTE.localFile;
+  
+  return resolveManualPath(file);
 }
 
 export function getDocumentExactPageUrl(code: string, page?: number | string | null): string {

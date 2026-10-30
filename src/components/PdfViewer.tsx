@@ -211,6 +211,21 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     return pages;
   }, [effectiveStart, effectiveEnd, numPages]);
 
+  // Resolver la URL absoluta del PDF para que funcione tanto en localhost como en GitHub Pages
+  const resolvedPdfUrl = useMemo(() => {
+    if (!pdfUrl) return pdfUrl;
+    if (pdfUrl.startsWith('http://') || pdfUrl.startsWith('https://') || pdfUrl.startsWith('blob:')) {
+      return pdfUrl;
+    }
+    const clean = pdfUrl.replace(/^\.?\//, '');
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const basePath = pathname.endsWith('/') ? pathname : pathname.substring(0, pathname.lastIndexOf('/') + 1);
+      return `${window.location.origin}${basePath}${clean}`;
+    }
+    return `./${clean}`;
+  }, [pdfUrl]);
+
   // Load the PDF document
   useEffect(() => {
     let isCancelled = false;
@@ -218,7 +233,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     setError(null);
 
     const loadingTask = pdfjsLib.getDocument({
-      url: pdfUrl,
+      url: resolvedPdfUrl,
       cMapPacked: true,
       enableXfa: true,
     });
@@ -255,7 +270,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         // ignore
       }
     };
-  }, [pdfUrl, effectiveStart, reloadKey, initialPage, effectiveEnd]);
+  }, [resolvedPdfUrl, effectiveStart, reloadKey, initialPage, effectiveEnd]);
 
   // Jump to specific page
   const scrollToPage = (pageNum: number) => {
@@ -449,7 +464,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         {/* Acciones de exportación y nueva pestaña */}
         <div className="flex items-center gap-1.5">
           <a
-            href={`${pdfUrl}#page=${effectiveStart}`}
+            href={`${resolvedPdfUrl}#page=${effectiveStart}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
@@ -460,7 +475,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           </a>
 
           <a
-            href={pdfUrl}
+            href={resolvedPdfUrl}
             download
             className="p-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
             title="Descargar archivo PDF completo"
@@ -522,7 +537,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 <span>Reintentar Carga</span>
               </button>
               <a
-                href={`${pdfUrl}#page=${effectiveStart}`}
+                href={`${resolvedPdfUrl}#page=${effectiveStart}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white transition-colors flex items-center gap-1.5 cursor-pointer"
