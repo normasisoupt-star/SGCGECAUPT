@@ -125,6 +125,25 @@ export async function loginWithFirebase(email: string, password: string): Promis
   const credential = await Promise.race([authPromise, timeoutPromise]);
   const user = credential.user;
 
+  // Buscar si el usuario ya tiene su perfil registrado en el almacenamiento local
+  try {
+    const rawUsers = typeof window !== 'undefined' ? localStorage.getItem('upt_sgc_users_v1') : null;
+    if (rawUsers) {
+      const parsedUsers = JSON.parse(rawUsers);
+      const existing = parsedUsers.find((u: any) => u.email?.toLowerCase() === (user.email || email).toLowerCase());
+      if (existing) {
+        return {
+          ...existing,
+          id: user.uid,
+          name: user.displayName || existing.name,
+          email: user.email || email,
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('Error recuperando perfil local:', e);
+  }
+
   return {
     id: user.uid,
     name: user.displayName || user.email?.split('@')[0] || 'Funcionario UPT',

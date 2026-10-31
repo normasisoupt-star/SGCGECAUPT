@@ -27,14 +27,19 @@ interface LoginLandingViewProps {
 }
 
 const OFFICE_DIRECTORY = [
-  { name: 'Oficina de Planificación y Calidad Académica', charge: 'Jefe de OPLA', code: 'PE.01', proc: ['PE.01.01.01', 'PE.01.01.02', 'PE.01.02.01', 'PE.01.02.02', 'PE.01.02.03', 'PE.01.02.04', 'PE.01.02.05', 'PE.01.03.01', 'PE.01.04.01', 'PE.01.04.02', 'PE.01.04.03'] },
-  { name: 'Oficina de Gestión de la Calidad', charge: 'Responsable de Calidad', code: 'PE.02', proc: ['PE.02.01.01', 'PE.02.01.02', 'PE.02.01.03', 'PE.02.01.04', 'PE.02.02.01', 'PE.02.03.01', 'PE.02.04.01', 'PE.02.04.02'] },
-  { name: 'Oficina de Seguridad y Gestión del Riesgo', charge: 'Responsable de Seguridad', code: 'PE.03', proc: ['PE.03.01.01', 'PE.03.02.01', 'PE.03.02.02', 'PE.03.02.03'] },
-  { name: 'Oficina de Cooperación y Relaciones Interinstitucionales', charge: 'Jefe de Cooperación', code: 'PE.04', proc: ['PE.04.01.01', 'PE.04.02.01'] },
-  { name: 'Vicerrectorado Académico', charge: 'Vicerrector Académico', code: 'PM.01', proc: ['PM.01.01.01', 'PM.01.01.02', 'PM.01.01.03', 'PM.01.01.04', 'PM.01.01.05', 'PM.01.02.01', 'PM.01.02.02', 'PM.01.02.03', 'PM.01.02.04', 'PM.01.02.05', 'PM.01.02.06', 'PM.01.02.07', 'PM.01.02.08', 'PM.01.02.09', 'PM.01.02.10', 'PM.01.03.01', 'PM.01.03.02', 'PM.01.03.03', 'PM.01.03.04', 'PM.01.03.05', 'PM.01.03.06'] },
-  { name: 'Dirección General de Administración', charge: 'Director de Administración', code: 'PS.02', proc: ['PS.02.01.01', 'PS.02.01.02', 'PS.02.01.03', 'PS.02.01.04', 'PS.02.01.05', 'PS.02.01.06', 'PS.02.01.07', 'PS.02.01.08', 'PS.02.01.09', 'PS.02.01.10', 'PS.02.01.11', 'PS.02.01.12', 'PS.02.01.13', 'PS.02.01.14', 'PS.02.01.15', 'PS.02.01.16', 'PS.02.01.17', 'PS.02.01.18', 'PS.02.01.19', 'PS.02.01.20', 'PS.02.01.21', 'PS.02.02.01', 'PS.02.02.02', 'PS.02.02.03', 'PS.02.02.04'] },
-  { name: 'Oficina de Tecnologías de Información', charge: 'Jefe de TI', code: 'PS.04', proc: ['PS.04.01.01', 'PS.04.01.02', 'PS.04.01.03', 'PS.04.01.04'] },
-  { name: 'Oficina de Personal', charge: 'Jefe de Personal', code: 'PS.01', proc: ['PS.01.01.01', 'PS.01.01.02', 'PS.01.01.03', 'PS.01.01.04', 'PS.01.01.05', 'PS.01.01.06', 'PS.01.01.07'] },
+  { name: 'Oficina de Planificación y Calidad Académica (OPLA)', charge: 'Jefe de OPLA', code: 'PE.01', proc: ['PE.01'] },
+  { name: 'Oficina de Gestión de la Calidad (GECA)', charge: 'Especialista de Calidad', code: 'PE.02', proc: ['PE.02'] },
+  { name: 'Oficina de Seguridad y Gestión del Riesgo', charge: 'Responsable de Seguridad y Riesgos', code: 'PE.03', proc: ['PE.03'] },
+  { name: 'Oficina de Cooperación y Relaciones Interinstitucionales', charge: 'Jefe de Cooperación', code: 'PE.04', proc: ['PE.04'] },
+  { name: 'Vicerrectorado Académico (VRAC) / Facultades y Escuelas', charge: 'Vicerrector Académico / Director de Escuela', code: 'PM.01', proc: ['PM.01'] },
+  { name: 'Vicerrectorado de Investigación (VRIN) / Incuba UPT', charge: 'Vicerrector de Investigación / Responsable I+D+i', code: 'PM.02', proc: ['PM.02'] },
+  { name: 'Dirección de Responsabilidad Social Universitaria (RSU)', charge: 'Director / Coordinador de RSU', code: 'PM.03', proc: ['PM.03'] },
+  { name: 'Oficina de Personal / Gestión de Potencial Humano', charge: 'Jefe de Personal / Analista', code: 'PS.01', proc: ['PS.01'] },
+  { name: 'Dirección de Centros de Información y Bibliotecas', charge: 'Jefe de Biblioteca', code: 'PS.02', proc: ['PS.02'] },
+  { name: 'Oficina de Infraestructura, Patrimonio y Mantenimiento', charge: 'Jefe de Infraestructura', code: 'PS.03', proc: ['PS.03'] },
+  { name: 'Oficina de Tecnologías de Información (TEIN)', charge: 'Jefe de TI / Administrador', code: 'PS.04', proc: ['PS.04'] },
+  { name: 'Dirección General de Administración (DIGA) / Finanzas y Tesorería', charge: 'Director de Administración / Tesorero', code: 'PS.05', proc: ['PS.05'] },
+  { name: 'Oficina de Asesoría Jurídica / Gestión Legal', charge: 'Asesor Legal Institucional', code: 'PS.06', proc: ['PS.06'] },
 ];
 
 export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
@@ -120,12 +125,24 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
     // 2. Autenticación regular en Firebase Auth
     try {
       const firebaseUser = await loginWithFirebase(fullEmail, password);
+      // Combinar con los datos registrados localmente si existen para mantener cargo, oficina y proceso
+      const matchedLocal = users.find(u => 
+        u.email.toLowerCase() === fullEmail.toLowerCase() || 
+        u.email.toLowerCase().startsWith(emailUsername.toLowerCase().split('@')[0] + '@')
+      );
+      const finalUser = matchedLocal ? {
+        ...matchedLocal,
+        id: firebaseUser.id,
+        name: firebaseUser.name || matchedLocal.name,
+        email: firebaseUser.email || matchedLocal.email,
+      } : firebaseUser;
+
       setStatusMessage({
         type: 'success',
-        text: `¡Bienvenido(a), ${firebaseUser.name}! Autenticación exitosa en Firebase.`,
+        text: `¡Bienvenido(a), ${finalUser.name}! Autenticación exitosa.`,
       });
       setTimeout(() => {
-        onLogin(firebaseUser);
+        onLogin(finalUser);
       }, 700);
       return;
     } catch (err: any) {

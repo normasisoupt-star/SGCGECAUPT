@@ -171,6 +171,7 @@ interface PdfViewerProps {
   docTitle?: string;
   manualName?: string;
   className?: string;
+  isFullDocument?: boolean;
 }
 
 export const PdfViewer: React.FC<PdfViewerProps> = ({
@@ -183,6 +184,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   docTitle,
   manualName,
   className = '',
+  isFullDocument = false,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -198,9 +200,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   const [viewMode, setViewMode] = useState<'all' | 'single'>('all');
   const [singleCurrentPage, setSingleCurrentPage] = useState<number>(startPage || 1);
 
-  // Determine effective range
-  const effectiveStart = Math.max(1, startPage || initialPage || 1);
-  const effectiveEnd = Math.max(effectiveStart, endPage || effectiveStart);
+  // Determine effective range (if full document / manual, render all pages from 1 to numPages)
+  const isFull = Boolean(isFullDocument || endPage === undefined || endPage === null || endPage === 0);
+  const effectiveStart = isFull ? 1 : Math.max(1, startPage || initialPage || 1);
+  const effectiveEnd = isFull ? (numPages || effectiveStart) : Math.max(effectiveStart, endPage || effectiveStart);
 
   // List of all pages to render in 'all' mode
   const pagesInRange = useMemo(() => {
@@ -246,7 +249,8 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         if (isCancelled) return;
         setPdfDoc(loadedDoc);
         setNumPages(loadedDoc.numPages);
-        const target = initialPage && initialPage >= effectiveStart && initialPage <= effectiveEnd ? initialPage : effectiveStart;
+        const maxEnd = isFull ? loadedDoc.numPages : (endPage || effectiveStart);
+        const target = initialPage && initialPage >= effectiveStart && initialPage <= maxEnd ? initialPage : effectiveStart;
         setSingleCurrentPage(target);
         setLoading(false);
       })
@@ -333,8 +337,14 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         <div className="flex items-center gap-2">
           <div className="px-2.5 py-1 rounded-lg bg-red-950/80 border border-red-700/60 text-red-200 font-bold flex items-center gap-1.5 shadow-xs">
             <FileText className="w-3.5 h-3.5 text-red-400" />
-            <span>Págs. {effectiveStart} a {effectiveEnd}</span>
-            <span className="text-red-300 font-normal">({pagesInRange.length} {pagesInRange.length === 1 ? 'página' : 'páginas'})</span>
+            {isFull ? (
+              <span>Manual Completo ({numPages || '...'} págs.)</span>
+            ) : (
+              <>
+                <span>Págs. {effectiveStart} a {effectiveEnd}</span>
+                <span className="text-red-300 font-normal">({pagesInRange.length} {pagesInRange.length === 1 ? 'página' : 'páginas'})</span>
+              </>
+            )}
           </div>
 
           {/* Selector de modo: Todas las páginas vs Una a una */}
@@ -347,7 +357,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'text-slate-400 hover:text-white'
               }`}
-              title="Mostrar todas las páginas del procedimiento de forma continua"
+              title="Mostrar todas las páginas del documento de forma continua"
             >
               <span className="flex items-center gap-1">
                 <Layers className="w-3 h-3" />
@@ -372,27 +382,47 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           </div>
         </div>
 
-        {/* Acceso rápido a las páginas del rango (Píldoras) */}
+        {/* Acceso rápido a las páginas del rango (Píldoras o Buscador) */}
         {pagesInRange.length > 1 && viewMode === 'all' && (
-          <div className="hidden lg:flex items-center gap-1 overflow-x-auto py-0.5 max-w-md">
-            <span className="text-[11px] text-slate-400 mr-0.5">Saltar a:</span>
-            {pagesInRange.map((p, idx) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => scrollToPage(p)}
-                className="px-2 py-0.5 rounded-md bg-slate-700 hover:bg-amber-600 hover:text-white text-[11px] font-bold text-slate-300 transition-colors cursor-pointer"
-                title={`Ir a Página ${p} (Hoja ${idx + 1})`}
-              >
-                Pág. {p}
-              </button>
-            ))}
-          </div>
+          pagesInRange.length <= 15 ? (
+            <div className="hidden lg:flex items-center gap-1 overflow-x-auto py-0.5 max-w-md">
+              <span className="text-[11px] text-slate-400 mr-0.5">Saltar a:</span>
+              {pagesInRange.map((p, idx) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => scrollToPage(p)}
+                  className="px-2 py-0.5 rounded-md bg-slate-700 hover:bg-amber-600 hover:text-white text-[11px] font-bold text-slate-300 transition-colors cursor-pointer"
+                  title={`Ir a Página ${p} (Hoja ${idx + 1})`}
+                >
+                  Pág. {p}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="hidden sm:flex items-center gap-1.5 text-[11px] bg-slate-900 px-2 py-1 rounded-lg border border-slate-700">
+              <span className="text-slate-400">Ir a pág:</span>
+              <input
+                type="number"
+                min={effectiveStart}
+                max={effectiveEnd}
+                defaultValue={effectiveStart}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const val = parseInt((e.target as HTMLInputElement).value, 10);
+                    if (val >= effectiveStart && val <= effectiveEnd) scrollToPage(val);
+                  }
+                }}
+                className="w-14 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-600 text-amber-300 font-bold text-center text-xs"
+              />
+              <span className="text-slate-400">de {effectiveEnd}</span>
+            </div>
+          )
         )}
 
         {/* Controles en modo Individual */}
         {viewMode === 'single' && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 bg-slate-900 rounded-lg px-2 py-1 border border-slate-700">
             <button
               type="button"
               onClick={() => setSingleCurrentPage((prev) => Math.max(effectiveStart, prev - 1))}
@@ -402,9 +432,23 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="px-2 py-0.5 font-bold text-amber-300">
-              Pág. {singleCurrentPage} de {effectiveEnd}
-            </span>
+            <div className="flex items-center gap-1 text-xs">
+              <span className="text-slate-400">Pág.</span>
+              <input
+                type="number"
+                min={effectiveStart}
+                max={effectiveEnd}
+                value={singleCurrentPage}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (val >= effectiveStart && val <= effectiveEnd) {
+                    setSingleCurrentPage(val);
+                  }
+                }}
+                className="w-12 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-amber-300 font-bold text-center text-xs"
+              />
+              <span className="font-bold text-amber-300">de {effectiveEnd}</span>
+            </div>
             <button
               type="button"
               onClick={() => setSingleCurrentPage((prev) => Math.min(effectiveEnd, prev + 1))}
@@ -595,7 +639,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           <span>Manual: <strong className="text-slate-200">{manualName || 'Oficial'}</strong></span>
           <span>&bull;</span>
           <span>
-            Procedimiento Completo: <strong className="text-amber-300">Págs. {effectiveStart} a {effectiveEnd} ({pagesInRange.length} {pagesInRange.length === 1 ? 'pág.' : 'págs.'})</strong>
+            {isFull ? (
+              <>Documento Completo: <strong className="text-amber-300">{numPages || '...'} páginas</strong></>
+            ) : (
+              <>Procedimiento Completo: <strong className="text-amber-300">Págs. {effectiveStart} a {effectiveEnd} ({pagesInRange.length} {pagesInRange.length === 1 ? 'pág.' : 'págs.'})</strong></>
+            )}
           </span>
         </div>
       </div>

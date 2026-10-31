@@ -1,5 +1,8 @@
 import React from 'react';
 import { 
+  Building2,
+  Briefcase,
+  Mail,
   FileText, 
   AlertTriangle, 
   CheckCircle2, 
@@ -16,6 +19,7 @@ import {
 } from 'lucide-react';
 import { ISODocument, NonConformity, AuditChecklistItem, ActivityLog, UserProfile, ProcessLevel0 } from '../types';
 import { NavTab } from './Sidebar';
+import { UPT_PROCESSES } from '../data/initialData';
 
 interface DashboardViewProps {
   documents: ISODocument[];
@@ -38,6 +42,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenNewDoc,
   onOpenNewCapa,
 }) => {
+  const userProcesses = (activeUser?.processCodes || [])
+    .map(code => UPT_PROCESSES.find(p => p.code === code))
+    .filter(Boolean) as typeof UPT_PROCESSES;
+
   const activeDocs = documents.filter(d => d.status === 'vigente').length;
   const reviewDocs = documents.filter(d => d.status === 'revision').length;
   const draftDocs = documents.filter(d => d.status === 'borrador').length;
@@ -58,14 +66,59 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Saludo Institucional UPT */}
       <div className="bg-gradient-to-r from-[#0d2d3f] via-[#10344c] to-[#001826] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border-t-2 border-[#9C7D0F]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[#F3E5AB] text-xs font-semibold font-outfit">
               <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Universidad Privada de Tacna &bull; Oficina de Gestión de la Calidad (GECA)</span>
+              <span>Universidad Privada de Tacna &bull; {activeUser?.officeName || activeUser?.department || 'Oficina de Gestión de la Calidad (GECA)'}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white capitalize">
               {activeUser?.name || 'Funcionario UPT'}
             </h1>
+
+            {/* Metadatos Institucionales del Funcionario: Oficina, Cargo, Proceso Relacionado */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
+              {/* Oficina Asignada */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white shadow-xs">
+                <Building2 className="w-3.5 h-3.5 text-[#F3E5AB] shrink-0" />
+                <span className="text-slate-300 font-normal">Oficina:</span>
+                <span className="font-bold text-white tracking-wide">
+                  {activeUser?.officeName || activeUser?.department || 'Dependencia Institucional UPT'}
+                </span>
+              </div>
+
+              {/* Cargo Institucional */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white shadow-xs">
+                <Briefcase className="w-3.5 h-3.5 text-[#F3E5AB] shrink-0" />
+                <span className="text-slate-300 font-normal">Cargo:</span>
+                <span className="font-bold text-white tracking-wide">
+                  {activeUser?.charge || 'Funcionario'}
+                </span>
+              </div>
+
+              {/* Proceso SGC Relacionado */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9C7D0F]/30 backdrop-blur-md border border-[#9C7D0F]/50 text-xs text-[#F3E5AB] shadow-xs">
+                <Network className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
+                <span className="text-slate-200 font-normal">Proceso Relacionado:</span>
+                <span className="font-bold text-white">
+                  {isAdmin
+                    ? 'Todos los 13 Procesos UPT (Acceso Global GECA)'
+                    : userProcesses.length > 0
+                    ? userProcesses.map((p) => `${p.code} - ${p.name}`).join(' • ')
+                    : activeUser?.processCodes && activeUser.processCodes.length > 0
+                    ? activeUser.processCodes.join(' • ')
+                    : 'Proceso Asignado'}
+                </span>
+              </div>
+
+              {/* Correo Institucional */}
+              {activeUser?.email && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-xs text-slate-300">
+                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="font-sans">{activeUser.email}</span>
+                </div>
+              )}
+            </div>
+
             <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
               {isAdmin
                 ? 'Plataforma del Sistema de Gestión de Calidad (SGC). Monitorea los 13 procesos institucionales, la lista maestra de 94 procedimientos, los indicadores oficiales y el cumplimiento de la norma ISO 21001:2025.'
