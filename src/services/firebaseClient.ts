@@ -105,7 +105,7 @@ export async function registerWithFirebase(
     officeName: profileData.officeName || profileData.department,
     role: profileData.role,
     processCodes: profileData.processCodes || [],
-    avatar: profileData.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    avatar: profileData.avatar,
   };
 
   return userProfile;
@@ -153,7 +153,7 @@ export async function loginWithFirebase(email: string, password: string): Promis
     officeName: 'Oficina Institucional',
     role: 'colaborador',
     processCodes: ['PE.02'],
-    avatar: user.photoURL || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    avatar: user.photoURL || undefined,
   };
 }
 

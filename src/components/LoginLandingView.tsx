@@ -100,7 +100,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         department: 'Oficina de Gestión de la Calidad',
         officeName: 'Oficina de Gestión de la Calidad',
         processCodes: ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'],
-        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
+        avatar: undefined,
       };
 
       // Si existe o no en Firebase, intentamos autenticarlo o crearlo silenciosamente
@@ -215,7 +215,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       officeName: selectedOfficeDef.name,
       role: regRole, // Solo 'colaborador', 'director_escuela', o 'auditor'
       processCodes: [selectedOfficeDef.code as ProcessLevel0],
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      avatar: undefined,
     };
 
     try {

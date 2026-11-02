@@ -5,7 +5,8 @@ import {
   Building2,
   Globe,
   Check,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types';
 
@@ -113,11 +114,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer"
               title={isAdmin ? "Cambiar de dependencia / oficina (Admin)" : "Ver perfil de usuario"}
             >
-              <img
-                src={activeUser?.avatar}
-                alt={activeUser?.name || 'Usuario'}
-                className="w-8 h-8 rounded-lg object-cover border border-white shadow-xs shrink-0"
-              />
+              <div className="w-8 h-8 rounded-lg bg-[#0d2d3f] text-[#F3E5AB] flex items-center justify-center font-bold text-xs shadow-xs shrink-0 font-outfit border border-[#9C7D0F]/40">
+                <User className="w-4 h-4" />
+              </div>
               <div className="text-left hidden lg:block max-w-[210px]">
                 <div className="text-xs font-bold text-slate-900 leading-tight truncate">
                   {activeUser?.name}
@@ -194,29 +193,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </>
                 ) : (
                   <div className="p-5 space-y-4">
-                    <div className="flex items-start gap-3">
-                      <img
-                        src={activeUser?.avatar}
-                        alt={activeUser?.name || 'Usuario'}
-                        className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-bold text-slate-900 leading-tight">
-                          {activeUser?.name}
-                        </div>
-                        <div className="text-xs text-slate-500 mt-0.5">
-                          {activeUser?.charge}
-                        </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                          <span className={'inline-block px-2 py-0.5 text-[10px] font-bold rounded-md border ' + (ROLE_COLORS[activeUser?.role || 'colaborador'] || 'bg-slate-100 text-slate-700')}>
-                            {activeUser?.department}
+                    <div className="space-y-1">
+                      <div className="text-base font-bold text-slate-900 leading-tight">
+                        {activeUser?.name}
+                      </div>
+                      <div className="text-xs text-slate-500 font-medium">
+                        {activeUser?.charge}
+                      </div>
+                      <div className="pt-2 flex flex-wrap items-center gap-1.5">
+                        <span className={'inline-block px-2.5 py-1 text-[11px] font-bold rounded-lg border ' + (ROLE_COLORS[activeUser?.role || 'colaborador'] || 'bg-slate-100 text-slate-700')}>
+                          {activeUser?.officeName || activeUser?.department}
+                        </span>
+                        {activeUser?.processCodes && activeUser.processCodes.length > 0 && (
+                          <span className="text-[11px] font-mono text-slate-600 font-bold bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                            Procesos: {activeUser.processCodes.join(', ')}
                           </span>
-                          {activeUser?.processCodes && activeUser.processCodes.length > 0 && (
-                            <span className="text-[10px] font-mono text-slate-500 font-bold bg-slate-100 px-1.5 py-0.5 rounded">
-                              Procesos: {activeUser.processCodes.join(', ')}
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </div>
 

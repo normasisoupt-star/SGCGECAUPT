@@ -515,7 +515,7 @@ export function registerUser(newUser: Omit<UserProfile, 'id'>): UserProfile {
   const created: UserProfile = {
     ...newUser,
     id,
-    avatar: newUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+    avatar: newUser.avatar,
   };
   users.push(created);
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
