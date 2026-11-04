@@ -323,40 +323,16 @@ export const RepositoryView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Botones de Acción */}
+                {/* Botón único de Acción: Visor Interactivo */}
                 <div className="shrink-0 flex items-center gap-2 self-end md:self-center">
-                  {file.fileType === 'pdf' && (
-                    <button
-                      onClick={() => setReadingPdf(file)}
-                      className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs hover:shadow-md transition-all cursor-pointer"
-                      title="Abrir visor interactivo del PDF"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>Ver PDF</span>
-                    </button>
-                  )}
-
-                  <a
-                    href={file.downloadUrl}
-                    download={file.name}
-                    className={`px-3.5 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs hover:shadow-md transition-all cursor-pointer ${
-                      file.fileType === 'word'
-                        ? 'bg-blue-700 hover:bg-blue-800'
-                        : file.fileType === 'excel'
-                        ? 'bg-emerald-600 hover:bg-emerald-700'
-                        : 'bg-slate-700 hover:bg-slate-800'
-                    }`}
-                    title={`Descargar ${file.name} a tu computadora`}
+                  <button
+                    onClick={() => setReadingPdf(file)}
+                    className="px-4 py-2 rounded-xl bg-[#0b4967] hover:bg-[#001826] text-white text-xs font-bold flex items-center gap-2 shadow-2xs hover:shadow-md transition-all cursor-pointer"
+                    title={`Abrir visor interactivo de ${file.name}`}
                   >
-                    <Download className="w-4 h-4" />
-                    <span>
-                      {file.fileType === 'word'
-                        ? 'Descargar Word'
-                        : file.fileType === 'excel'
-                        ? 'Descargar Excel'
-                        : 'Descargar PDF'}
-                    </span>
-                  </a>
+                    <Eye className="w-4 h-4 text-[#F3E5AB]" />
+                    <span>Ver Documento</span>
+                  </button>
                 </div>
               </div>
             ))}
@@ -364,7 +340,7 @@ export const RepositoryView: React.FC = () => {
         )}
       </div>
 
-      {/* Modal Visor de PDF Embebido para Documentos PDF del Repositorio */}
+      {/* Modal Visor Embebido para Todos los Documentos del Repositorio */}
       {readingPdf && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-2 sm:p-4 overflow-hidden">
           <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl lg:max-w-6xl my-auto overflow-hidden flex flex-col h-[94vh] max-h-[94vh]">
@@ -372,7 +348,7 @@ export const RepositoryView: React.FC = () => {
             <div className="px-6 py-4 bg-gradient-to-r from-[#0d2d3f] to-[#001826] border-b-2 border-[#9C7D0F] text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center font-bold text-lg border border-white/20">
-                  📄
+                  {readingPdf.fileType === 'word' ? '📝' : readingPdf.fileType === 'excel' ? '📊' : '📄'}
                 </div>
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-wider text-[#F3E5AB] font-outfit">
@@ -388,26 +364,33 @@ export const RepositoryView: React.FC = () => {
                 <a
                   href={readingPdf.downloadUrl}
                   download={readingPdf.name}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer"
-                  title="Descargar archivo PDF completo"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs hover:shadow-md cursor-pointer"
+                  title={`Descargar archivo ${readingPdf.fileType === 'word' ? 'Word editable (.docx)' : readingPdf.fileType === 'excel' ? 'Excel editable (.xlsx)' : 'PDF'}`}
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Descargar PDF</span>
+                  <Download className="w-4 h-4" />
+                  <span>
+                    {readingPdf.fileType === 'word'
+                      ? 'Descargar Word (.docx)'
+                      : readingPdf.fileType === 'excel'
+                      ? 'Descargar Excel (.xlsx)'
+                      : 'Descargar PDF'}
+                  </span>
                 </a>
                 <button
                   onClick={() => setReadingPdf(null)}
                   className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                  title="Cerrar visor"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Contenido del PDF */}
+            {/* Contenido del Visor */}
             <div className="flex-1 p-4 overflow-hidden bg-slate-100 flex flex-col">
               <PdfViewer
                 key={readingPdf.id}
-                pdfUrl={readingPdf.downloadUrl}
+                pdfUrl={readingPdf.viewUrl || readingPdf.downloadUrl}
                 isFullDocument={true}
                 docCode={readingPdf.code}
                 docTitle={readingPdf.name}
