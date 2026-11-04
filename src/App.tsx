@@ -76,7 +76,7 @@ export function App() {
 
   // Si el usuario no es Administrador, restringir la navegación a los 3 módulos permitidos
   useEffect(() => {
-    if (!isAdmin && !['dashboard', 'process_map', 'documents'].includes(activeTab)) {
+    if (!isAdmin && !['dashboard', 'process_map', 'documents', 'repository'].includes(activeTab)) {
       setActiveTab('dashboard');
     }
   }, [isAdmin, activeTab]);
@@ -199,7 +199,7 @@ export function App() {
   }
 
   const handleSelectTab = (tab: NavTab) => {
-    if (!isAdmin && !['dashboard', 'process_map', 'documents'].includes(tab)) {
+    if (!isAdmin && !['dashboard', 'process_map', 'documents', 'repository'].includes(tab)) {
       return;
     }
     if (tab === 'documents') {
