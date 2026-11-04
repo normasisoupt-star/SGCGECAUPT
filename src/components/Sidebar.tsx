@@ -3,6 +3,7 @@ import {
   LayoutDashboard, 
   Network,
   FileText, 
+  FolderOpen,
   LineChart,
   AlertTriangle, 
   ClipboardCheck, 
@@ -11,7 +12,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
-export type NavTab = 'dashboard' | 'process_map' | 'documents' | 'indicators' | 'capa' | 'checklist' | 'logs';
+export type NavTab = 'dashboard' | 'process_map' | 'documents' | 'repository' | 'indicators' | 'capa' | 'checklist' | 'logs';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -49,6 +50,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badgeColor: 'bg-slate-100 text-slate-700',
     },
     {
+      id: 'repository' as NavTab,
+      label: 'Repositorio SGC',
+      icon: FolderOpen,
+      badge: '16 formatos',
+      badgeColor: 'bg-amber-100 text-amber-900 font-bold',
+    },
+    {
       id: 'indicators' as NavTab,
       label: 'Tablero de Indicadores',
       icon: LineChart,
@@ -76,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const availableNavItems = isAdmin
     ? navItems
-    : navItems.filter((item) => ['dashboard', 'process_map', 'documents'].includes(item.id));
+    : navItems.filter((item) => ['dashboard', 'process_map', 'documents', 'repository'].includes(item.id));
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
@@ -93,18 +101,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={'w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer ' + (
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#0d2d3f] text-white font-semibold shadow-sm border-l-4 border-[#9C7D0F]'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  )}
+                      ? 'bg-[#001826] text-white shadow-md'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Icon className={'w-5 h-5 shrink-0 ' + (isActive ? 'text-white' : 'text-slate-500')} />
-                    <span className="text-xs truncate">{item.label}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#F3E5AB]' : 'text-slate-400'}`} />
+                    <span>{item.label}</span>
                   </div>
                   {item.badge !== undefined && (
-                    <span className={'text-[10px] px-2 py-0.5 rounded-full ' + (isActive ? 'bg-red-700 text-white' : item.badgeColor)}>
+                    <span
+                      className={`text-[11px] px-2 py-0.5 rounded-full ${
+                        isActive
+                          ? 'bg-[#9C7D0F] text-white font-bold'
+                          : item.badgeColor || 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
                       {item.badge}
                     </span>
                   )}
@@ -114,27 +128,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* Ficha Institucional UPT */}
-        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 to-red-50/40 border border-slate-200/80">
-          <div className="flex items-center gap-2 text-red-950 font-bold text-xs mb-1">
-            <Building2 className="w-4 h-4 text-red-700" />
-            <span>Campus Capanique</span>
+        {/* Banner Institucional ISO 21001 */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-amber-50/40 border border-slate-200 text-xs">
+          <div className="flex items-center gap-2 font-bold text-slate-900">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>SGOE UPT VIGENTE</span>
           </div>
-          <p className="text-[11px] text-slate-600 leading-relaxed">
-            Universidad Privada de Tacna &bull; Licencia SUNEDU &bull; Certificación ISO 21001:2025.
+          <p className="text-[11px] text-slate-500 mt-1 leading-snug">
+            Sistema de Gestión para Organizaciones Educativas bajo la norma NTP-ISO 21001:2026.
           </p>
-          <div className="mt-2.5 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[10px] text-slate-500 font-medium">
-            <span>Oficina GECA</span>
-            <span className="flex items-center gap-1 text-emerald-600 font-bold">
-              <CheckCircle2 className="w-3 h-3" />
-              SGC v03
-            </span>
-          </div>
         </div>
       </div>
 
-      <div className="p-4 border-t border-slate-200 text-[11px] text-slate-400 text-center">
-        <span>UPT &copy; 2026 - Gestión de Calidad</span>
+      {/* Footer del Sidebar */}
+      <div className="p-4 border-t border-slate-200 text-[11px] text-slate-400">
+        <div className="font-semibold text-slate-700">Oficina de Gestión de la Calidad</div>
+        <div>GECA &bull; Versión 3.0 (2026)</div>
       </div>
     </aside>
   );

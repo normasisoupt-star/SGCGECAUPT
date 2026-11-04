@@ -6,6 +6,8 @@ import { Sidebar, NavTab } from './components/Sidebar';
 import { DashboardView } from './components/DashboardView';
 import { ProcessMapView } from './components/ProcessMapView';
 import { DocumentManagementView } from './components/DocumentManagementView';
+import { RepositoryView } from './components/RepositoryView';
+
 import { IndicatorsView } from './components/IndicatorsView';
 import { CAPAManagementView } from './components/CAPAManagementView';
 import { AuditChecklistView } from './components/AuditChecklistView';
@@ -269,6 +271,10 @@ export function App() {
               initialProcessFilter={selectedProcessFilter}
               onProcessFilterChange={setSelectedProcessFilter}
             />
+          )}
+
+          {activeTab === 'repository' && (
+            <RepositoryView />
           )}
 
           {isAdmin && activeTab === 'indicators' && (

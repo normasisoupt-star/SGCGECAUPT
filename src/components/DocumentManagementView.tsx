@@ -407,7 +407,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           <div className="text-xs font-medium text-slate-400">Total Documentos</div>
           <div className="text-2xl font-bold text-slate-900 mt-1">{documents.length}</div>
           <div className="text-[11px] text-emerald-600 mt-1 font-medium">
-            {documents.filter((d) => d.documentType === 'Procedimiento').length} Procedimientos + {documents.filter((d) => d.documentType === 'Manual').length} Manuales + {documents.filter((d) => d.documentType === 'Documento Externo').length} Ext.
+            {documents.filter((d) => d.documentType === 'Procedimiento').length} Procedimientos + {documents.filter((d) => d.documentType === 'Manual').length} Manuales
           </div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
@@ -512,7 +512,6 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             <option value="all">Todos los Tipos ({documents.length})</option>
             <option value="Procedimiento">Procedimientos ({documents.filter((d) => d.documentType === 'Procedimiento').length})</option>
             <option value="Manual">Manuales ({documents.filter((d) => d.documentType === 'Manual').length})</option>
-            <option value="Documento Externo">Documentos Externos ({documents.filter((d) => d.documentType === 'Documento Externo').length})</option>
             <option value="Directiva / Política">Directivas</option>
             <option value="Reglamento">Reglamentos</option>
             <option value="Registro / Formato">Formatos (RG)</option>

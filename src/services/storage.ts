@@ -111,7 +111,8 @@ export function getDocuments(): ISODocument[] {
 
     // Always ensure official documents use the latest audited storageLocation & description
     const officialMap = new Map(UPT_DOCUMENTS.map(d => [d.code, d]));
-    const updated = parsed.map(d => {
+    const filtered = parsed.filter(d => !d.code.startsWith('DE-') && d.documentType !== 'Documento Externo');
+    const updated = filtered.map(d => {
       const off = officialMap.get(d.code);
       if (off) {
         return {
