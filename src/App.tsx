@@ -1,3 +1,4 @@
+import { initSystemSecurity } from './services/security';
 import React, { useState, useEffect } from 'react';
 import { GraduationCap, ArrowRight, UserCheck } from 'lucide-react';
 import { Navbar } from './components/Navbar';
@@ -48,6 +49,10 @@ import {
 export function App() {
   useEffect(() => {
     initStorage();
+    const cleanupSecurity = initSystemSecurity();
+    return () => {
+      cleanupSecurity?.();
+    };
   }, []);
 
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
