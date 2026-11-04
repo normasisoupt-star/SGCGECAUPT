@@ -54,7 +54,8 @@ export type DocumentType =
   | 'Reglamento'
   | 'Registro / Formato'
   | 'Plan'
-  | 'Instructivo';
+  | 'Instructivo'
+  | 'Documento Externo';
 
 export type DocumentStatus = 'vigente' | 'revision' | 'borrador' | 'obsoleto';
 

@@ -64,7 +64,8 @@ const STATUS_CONFIG: Record<DocumentStatus, { label: string; color: string; icon
 };
 
 function getPageAndManual(code: string, storageLocation: string, description: string, documentType?: DocumentType) {
-  const isManual = documentType === 'Manual' || code.startsWith('MN') || code === 'doc-man-01' || storageLocation.toLowerCase().includes('manual de procesos');
+  const isExternal = documentType === 'Documento Externo' || code.startsWith('DE-');
+  const isManual = isExternal || documentType === 'Manual' || code.startsWith('MN') || code === 'doc-man-01' || storageLocation.toLowerCase().includes('manual de procesos');
   const range = getProcedureRange(code);
   const pageMatch = storageLocation.match(/Pág\.?\s*(\d+)/i) || description.match(/Pág\.?\s*(\d+)/i);
   const fallbackPage = pageMatch ? pageMatch[1] : null;
@@ -73,6 +74,21 @@ function getPageAndManual(code: string, storageLocation: string, description: st
   manual = manual.replace(/\(Pág\.?\s*[\d\s\-a]+\)/i, '').trim();
   if (range && (!manual || manual === 'Carpeta SGC' || manual === '')) {
     manual = range.manual;
+  }
+
+  if (isExternal) {
+    return {
+      manual: storageLocation || 'Repositorio SGC / Documentos Externos',
+      page: null,
+      range: null,
+      startPage: 1,
+      endPage: undefined,
+      activitiesPage: 1,
+      rangeText: 'Completo',
+      pageCount: 'Documento Completo',
+      isManual: true,
+      isExternal: true,
+    };
   }
 
   if (isManual) {
@@ -86,6 +102,7 @@ function getPageAndManual(code: string, storageLocation: string, description: st
       rangeText: 'Completo',
       pageCount: 'Manual Completo',
       isManual: true,
+      isExternal: false,
     };
   }
 
@@ -94,8 +111,8 @@ function getPageAndManual(code: string, storageLocation: string, description: st
   const rangeText = range ? range.rangeText : (fallbackPage ? String(fallbackPage) : '1');
   const pageCount = range ? range.pageCount : 1;
 
-    const activitiesPage = range ? range.activitiesPage : startPage;
-  return { manual, page: fallbackPage || (range ? String(range.startPage) : null), range, startPage, endPage, activitiesPage, rangeText, pageCount, isManual: false };
+  const activitiesPage = range ? range.activitiesPage : startPage;
+  return { manual, page: fallbackPage || (range ? String(range.startPage) : null), range, startPage, endPage, activitiesPage, rangeText, pageCount, isManual: false, isExternal: false };
 }
 
 
@@ -390,7 +407,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
           <div className="text-xs font-medium text-slate-400">Total Documentos</div>
           <div className="text-2xl font-bold text-slate-900 mt-1">{documents.length}</div>
           <div className="text-[11px] text-emerald-600 mt-1 font-medium">
-            {documents.filter((d) => d.documentType === 'Procedimiento').length} Procedimientos + {documents.filter((d) => d.documentType === 'Manual').length} Manuales
+            {documents.filter((d) => d.documentType === 'Procedimiento').length} Procedimientos + {documents.filter((d) => d.documentType === 'Manual').length} Manuales + {documents.filter((d) => d.documentType === 'Documento Externo').length} Ext.
           </div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
@@ -495,6 +512,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             <option value="all">Todos los Tipos ({documents.length})</option>
             <option value="Procedimiento">Procedimientos ({documents.filter((d) => d.documentType === 'Procedimiento').length})</option>
             <option value="Manual">Manuales ({documents.filter((d) => d.documentType === 'Manual').length})</option>
+            <option value="Documento Externo">Documentos Externos ({documents.filter((d) => d.documentType === 'Documento Externo').length})</option>
             <option value="Directiva / Política">Directivas</option>
             <option value="Reglamento">Reglamentos</option>
             <option value="Registro / Formato">Formatos (RG)</option>
@@ -642,10 +660,15 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                       </td>
                       <td className="px-4 py-4 text-xs">
                         {(() => {
-                          const { manual, page, range, rangeText, pageCount, isManual } = getPageAndManual(doc.code, doc.storageLocation, doc.description, doc.documentType);
+                          const { manual, page, range, rangeText, pageCount, isManual, isExternal } = getPageAndManual(doc.code, doc.storageLocation, doc.description, doc.documentType);
                           return (
                             <div className="space-y-1.5">
-                              {isManual ? (
+                              {isExternal ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-900 border border-purple-200 font-bold text-xs shadow-2xs">
+                                  <FileText className="w-3.5 h-3.5 text-purple-700 shrink-0" />
+                                  <span>Documento Externo</span>
+                                </span>
+                              ) : isManual ? (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-900 border border-purple-200 font-bold text-xs shadow-2xs">
                                   <BookOpen className="w-3.5 h-3.5 text-purple-700 shrink-0" />
                                   <span>Manual Completo</span>
@@ -811,7 +834,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             {/* Contenido Oficial del Procedimiento o Manual */}
             <div className="p-6 overflow-y-auto space-y-5 text-sm text-slate-700 leading-relaxed">
               {(() => {
-                const { manual, page, range, startPage, endPage, activitiesPage, rangeText, pageCount, isManual } = getPageAndManual(readingDoc.code, readingDoc.storageLocation, readingDoc.description, readingDoc.documentType);
+                const { manual, page, range, startPage, endPage, activitiesPage, rangeText, pageCount, isManual, isExternal } = getPageAndManual(readingDoc.code, readingDoc.storageLocation, readingDoc.description, readingDoc.documentType);
                 const detailed = UPT_PROCEDURES_DETAILED[readingDoc.code];
                 const officialObj = detailed ? detailed.objective : readingDoc.description;
                 const officialScope = detailed ? detailed.scope : 'Aplica a todas las dependencias académicas y administrativas correspondientes de la Universidad Privada de Tacna.';
@@ -821,14 +844,12 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                     {/* Banner Destacado de Ubicación de Página */}
                     <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
                       <div className="flex items-center gap-3">
-                        <div className="w-16 h-12 rounded-2xl bg-amber-500 text-white flex flex-col items-center justify-center font-bold shadow-xs shrink-0 px-1">
-                          <span className="text-[9px] uppercase tracking-wider font-semibold">{isManual ? 'MANUAL' : 'PÁGS'}</span>
+                        <div className={`w-16 h-12 rounded-2xl ${isExternal ? "bg-purple-600" : "bg-amber-500"} text-white flex flex-col items-center justify-center font-bold shadow-xs shrink-0 px-1`}>
+                          <span className="text-[9px] uppercase tracking-wider font-semibold">{isExternal ? 'EXTERNO' : isManual ? 'MANUAL' : 'PÁGS'}</span>
                           <span className="text-xs leading-none font-sans font-bold tracking-tight text-center">{isManual ? 'COMPLETO' : rangeText}</span>
                         </div>
                         <div>
-                          <div className="text-[11px] font-bold uppercase tracking-wider text-amber-900">
-                            {isManual ? 'Manual Institucional Completo UPT' : 'Ubicación Exacta en el Manual Oficial UPT'}
-                          </div>
+                          <div className="text-[11px] font-bold uppercase tracking-wider text-amber-900">{isExternal ? 'Documento Externo Oficial (Repositorio SGC)' : isManual ? 'Manual Institucional Completo UPT' : 'Ubicación Exacta en el Manual Oficial UPT'}</div>
                           <div className="text-sm font-bold text-slate-900 mt-0.5">
                             {manual} &bull; <span className="text-amber-900 underline decoration-amber-400">{isManual ? 'Archivo Oficial Completo (Todas las páginas del documento)' : `Páginas ${rangeText} (${pageCount} ${pageCount === 1 ? 'página' : 'páginas'})`}</span>
                           </div>
@@ -838,7 +859,12 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                         </div>
                       </div>
                       <div className="shrink-0 flex flex-wrap items-center gap-2">
-                        {isManual ? (
+                        {isExternal ? (
+                          <span className="px-3 py-1.5 rounded-xl bg-purple-100 text-purple-950 font-bold text-xs flex items-center gap-1.5 shadow-2xs border border-purple-200">
+                            <FileText className="w-4 h-4 text-purple-800" />
+                            <span>Documento Externo</span>
+                          </span>
+                        ) : isManual ? (
                           <span className="px-3 py-1.5 rounded-xl bg-purple-100 text-purple-950 font-bold text-xs flex items-center gap-1.5 shadow-2xs border border-purple-200">
                             <BookOpen className="w-4 h-4 text-purple-800" />
                             <span>Documento Completo</span>
@@ -849,6 +875,15 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                             <span>Págs. {rangeText} del PDF</span>
                           </span>
                         ) : null}
+                        <a
+                          href={getLocalPdfPath(readingDoc.code)}
+                          download={readingDoc.fileName || `${readingDoc.code}.pdf`}
+                          className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs hover:shadow-md transition-all cursor-pointer"
+                          title="Descargar archivo PDF oficial a tu dispositivo"
+                        >
+                          <Download className="w-4 h-4" />
+                          <span>Descargar PDF</span>
+                        </a>
                         <a
                           href={isManual ? getLocalPdfPath(readingDoc.code) : getDocumentExactPageUrl(readingDoc.code, page)}
                           target="_blank"
@@ -884,7 +919,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                         }`}
                       >
                         <BookOpen className="w-4 h-4" />
-                        <span>📄 {isManual ? 'Manual Oficial Completo en PDF' : `Documento Oficial PDF (Págs. ${rangeText})`}</span>
+                        <span>📄 {isExternal ? 'Documento Externo Completo (PDF)' : isManual ? 'Manual Oficial Completo en PDF' : `Documento Oficial PDF (Págs. ${rangeText})`}</span>
                       </button>
                       <button
                         type="button"
@@ -1457,6 +1492,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                   >
                     <option value="Procedimiento">Procedimiento</option>
                     <option value="Manual">Manual</option>
+                    <option value="Documento Externo">Documento Externo</option>
                     <option value="Directiva / Política">Directiva / Política</option>
                     <option value="Reglamento">Reglamento</option>
                     <option value="Registro / Formato">Registro / Formato</option>
