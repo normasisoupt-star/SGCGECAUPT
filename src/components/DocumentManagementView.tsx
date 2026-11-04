@@ -512,9 +512,6 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             <option value="all">Todos los Tipos ({documents.length})</option>
             <option value="Procedimiento">Procedimientos ({documents.filter((d) => d.documentType === 'Procedimiento').length})</option>
             <option value="Manual">Manuales ({documents.filter((d) => d.documentType === 'Manual').length})</option>
-            <option value="Directiva / Política">Directivas</option>
-            <option value="Reglamento">Reglamentos</option>
-            <option value="Registro / Formato">Formatos (RG)</option>
           </select>
 
           {/* Filtro por Estado */}
