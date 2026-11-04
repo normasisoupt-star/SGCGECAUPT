@@ -921,7 +921,8 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                         <BookOpen className="w-4 h-4" />
                         <span>📄 {isExternal ? 'Documento Externo Completo (PDF)' : isManual ? 'Manual Oficial Completo en PDF' : `Documento Oficial PDF (Págs. ${rangeText})`}</span>
                       </button>
-                      <button
+                      {!isExternal && (
+<button
                         type="button"
                         onClick={() => setReadingTab('details')}
                         className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
@@ -933,10 +934,11 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                         <Layers className="w-4 h-4" />
                         <span>📋 Ficha y Resumen Institucional</span>
                       </button>
+                      )}
                     </div>
 
                     {/* Vista 1: Visor de PDF Oficial Embebido (Predeterminada) */}
-                    {readingTab === 'pdf' && (
+                    {(readingTab === 'pdf' || isExternal) && (
                       <div className="space-y-3">
                         <PdfViewer
                           key={`${readingDoc.code}-${isManual ? 'full' : `${startPage}-${endPage}`}`}
@@ -969,7 +971,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                     )}
 
                     {/* Vista 2: Ficha Técnica y Resumen Estructurado */}
-                    {readingTab === 'details' && (
+                    {!isExternal && readingTab === 'details' && (
                       <div className="space-y-6">
                         {/* Sección 1 y 2: Objetivo y Alcance Literales */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
