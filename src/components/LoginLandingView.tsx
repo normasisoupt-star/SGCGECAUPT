@@ -383,7 +383,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     {/* Medallón 1: Procedimientos */}
                     <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
                       <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0d2d3f] to-[#001826] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-outer">
-                        <span className="text-base font-black font-outfit leading-none">98</span>
+                        <span className="text-base font-black font-outfit leading-none">95</span>
                         <span className="text-[9px] uppercase tracking-tighter opacity-80">Docs</span>
                       </div>
                       <div>
