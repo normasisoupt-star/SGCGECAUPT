@@ -111,7 +111,7 @@ export function getDocuments(): ISODocument[] {
 
     // Always ensure official documents use the latest audited storageLocation & description
     const officialMap = new Map(UPT_DOCUMENTS.map(d => [d.code, d]));
-    const filtered = parsed.filter(d => !d.code.startsWith('DE-') && d.documentType !== 'Documento Externo');
+    const filtered = parsed.filter(d => !d.code.startsWith('DE-') && d.documentType !== 'Documento Externo' && d.code !== 'PE.04.01.02');
     const updated = filtered.map(d => {
       const off = officialMap.get(d.code);
       if (off) {
@@ -134,6 +134,7 @@ export function getDocuments(): ISODocument[] {
       return fullList;
     }
 
+    if (updated.length !== parsed.length) { localStorage.setItem(STORAGE_KEYS.DOCS, JSON.stringify(updated)); }
     return updated;
   } catch {
     return UPT_DOCUMENTS;

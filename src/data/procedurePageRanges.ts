@@ -250,16 +250,6 @@ export const UPT_PROCEDURE_PAGE_RANGES: Record<string, ProcedureRangeInfo> = {
     "rangeText": "181 a 187",
     "activitiesPage": 183
   },
-  "PE.04.01.02": {
-    "code": "PE.04.01.02",
-    "title": "Gestión de alianzas estratégicas",
-    "startPage": 181,
-    "endPage": 187,
-    "pageCount": 7,
-    "manual": "Manual de Procedimientos Estratégicos v3.0",
-    "rangeText": "181 a 187",
-    "activitiesPage": 184
-  },
   "PE.04.02.01": {
     "code": "PE.04.02.01",
     "title": "Difusión de información interna y externa",

@@ -609,22 +609,6 @@ export const UPT_PROCEDURES_DETAILED: Record<string, ProcedureDetailedInfo> = {
       { step: 25, task: "Renovar o modificar el convenio Oficina de Relaciones Nacionales e Internacionales Jefe de Oficina de Relaciones Nacionales e Internacionales", unit: "Unidad Orgánica Responsable", responsible: "Responsable Designado" },
     ]
   },
-  "PE.04.01.02": {
-    code: "PE.04.01.02",
-    title: "Gestión de alianzas estratégicas",
-    page: 181,
-    manual: "Manual de Procedimientos Estratégicos v03",
-    objective: "Establecer las directrices y mecanismos para la identificación, formalización, ejecución y seguimiento de alianzas estratégicas institucionales nacionales e internacionales en la Universidad Privada de Tacna.",
-    scope: "Aplica a la Dirección de Cooperación y Relaciones Interinstitucionales, Rectorado, Vicerrectorados, Facultades y unidades académicas y administrativas involucradas.",
-    activities: [
-      { step: 1, task: "Identificar la necesidad de suscribir una alianza o convenio estratégico", unit: "Unidad orgánica", responsible: "Jefe de Unidad orgánica" },
-      { step: 2, task: "Gestionar alianza con institución o contraparte externa", unit: "Unidad orgánica", responsible: "Jefe de Unidad orgánica" },
-      { step: 3, task: "Comunicar a Oficina de Relaciones Nacionales e Internacionales las gestiones realizadas", unit: "Unidad orgánica", responsible: "Jefe de Unidad orgánica" },
-      { step: 4, task: "Formular el proyecto de alianza o convenio estratégico", unit: "Oficina de Relaciones Nacionales e Internacionales", responsible: "Jefe de Oficina de Relaciones Nacionales e Internacionales" },
-      { step: 5, task: "Revisión legal y dictamen de procedencia jurídica", unit: "Oficina de Asesoría Jurídica y Legal", responsible: "Jefe de la Oficina de Asesoría Jurídica y Legal" },
-      { step: 6, task: "Aprobación y suscripción por Consejo Universitario y Rectorado", unit: "Rectorado / Consejo Universitario", responsible: "Rector / Consejo Universitario" }
-    ]
-  },
   "PE.04.02.01": {
     code: "PE.04.02.01",
     title: "Difusión de información interna y externa",

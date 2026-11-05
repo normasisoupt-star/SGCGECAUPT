@@ -173,8 +173,8 @@ export const SEARCH_SYNONYMS: Record<string, string[]> = {
   'riesgos': ['PE.03.01.01', 'PE.03.01.02'],
   'seguridad de la informacion': ['PE.03.01.03'],
   'contingencia': ['PE.03.01.02', 'PE.03.01.04'],
-  'convenio': ['PE.04.01.01', 'PE.04.01.02'],
-  'convenios': ['PE.04.01.01', 'PE.04.01.02'],
+  'convenio': ['PE.04.01.01'],
+  'convenios': ['PE.04.01.01'],
 };
 
 // Función para normalizar texto (elimina tildes, signos y pasa a minúsculas)
@@ -426,6 +426,6 @@ export const GUIDE_TOPICS: GuideTopic[] = [
     pillar: 'Estratégico',
     title: 'Convenios y Movilidad Institucional',
     description: 'Suscripción de convenios interinstitucionales, pasantías y movilidad académica estudiantil y docente.',
-    procedureCodes: ['PE.04.01.01', 'PE.04.01.02', 'PM.01.05.01']
+    procedureCodes: ['PE.04.01.01', 'PM.01.05.01']
   }
 ];
