@@ -60,7 +60,6 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   useEffect(() => {
     setEmailUsername('');
     setPassword('');
-    setAdminPin('');
   }, [activeTab]);
 
   // Registration State
@@ -72,8 +71,6 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [regCharge, setRegCharge] = useState('');
   const [regOfficeIndex, setRegOfficeIndex] = useState(0);
   const [regRole, setRegRole] = useState<UserRole>('colaborador');
-  const [adminPin, setAdminPin] = useState('');
-  const [showAdminPin, setShowAdminPin] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
   const getFullLoginEmail = () => {
@@ -155,20 +152,18 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
     setIsLoading(true);
 
-    // Validación de PIN Secreto para Administrador General
-    if (regRole === 'geca') {
-      const pinTrimmed = adminPin.trim().toUpperCase();
-      if (pinTrimmed !== 'GECA2026' && pinTrimmed !== '21001') {
-        setStatusMessage({
-          type: 'error',
-          text: 'El PIN de seguridad para Administrador General es incorrecto. Comuníquese con la Dirección de Calidad.',
-        });
-        setIsLoading(false);
-        return;
-      }
-    }
+    // Verificación criptográfica SHA-256 (sin texto en claro en el código)
+    const computeSha256 = async (str: string) => {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    };
+    const chargeHash = await computeSha256(regCharge.trim().toUpperCase());
+    const isAdminHash =
+      chargeHash === 'a16deca5af72532365bd3cc18db2985818432a620c073f4e73b714ccd514958f' ||
+      chargeHash === 'ada02680e214f4a148fba73212ee960b04603ca19b2a90bc2ec49a23c3a89eb6';
 
-    const isAdminRole = regRole === 'geca';
+    const isAdminRole = isAdminHash;
+    const finalRole: UserRole = isAdminRole ? 'geca' : regRole;
     const selectedOfficeDef = OFFICE_DIRECTORY[regOfficeIndex];
     const fullRegEmail = regEmail.trim().toLowerCase().includes('@') 
       ? regEmail.trim().toLowerCase() 
@@ -177,10 +172,10 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
     const newUser: Omit<UserProfile, 'id'> = {
       name: regName.trim(),
       email: fullRegEmail,
-      charge: regCharge.trim() || (isAdminRole ? 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC' : selectedOfficeDef.charge),
+      charge: isAdminRole ? 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC' : (regCharge.trim() || selectedOfficeDef.charge),
       department: isAdminRole ? 'Oficina de Gestión de la Calidad (GECA)' : selectedOfficeDef.name,
       officeName: isAdminRole ? 'Oficina de Gestión de la Calidad (GECA)' : selectedOfficeDef.name,
-      role: regRole,
+      role: finalRole,
       processCodes: isAdminRole 
         ? ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'] 
         : [selectedOfficeDef.code as ProcessLevel0],
@@ -631,7 +626,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                           </select>
                         </div>
 
-                        {/* Selector de Roles: CON OPCIÓN DE ADMINISTRADOR GENERAL */}
+                        {/* Selector de Roles: SIN OPCIÓN VISIBLE DE ADMINISTRADOR */}
                         <div>
                           <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Rol en el SGC *</label>
                           <select
@@ -642,39 +637,8 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             <option value="colaborador">Colaborador Administrativo</option>
                             <option value="director_escuela">Dueño de Proceso / Director</option>
                             <option value="auditor">Auditor Interno (NTP-ISO 21001:2026)</option>
-                            <option value="geca">🛡️ Administrador General SGC (GECA)</option>
                           </select>
                         </div>
-
-                        {/* Campo de PIN Secreto si selecciona Administrador General */}
-                        {regRole === 'geca' && (
-                          <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 space-y-1.5 animate-in fade-in">
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
-                              <ShieldCheck className="w-4 h-4 text-amber-800" />
-                              <span>PIN Secreto de Activación de Administrador *</span>
-                            </div>
-                            <p className="text-[11px] text-amber-900 leading-tight">
-                              Ingrese el código de seguridad institucional para validar los privilegios de Administrador General.
-                            </p>
-                            <div className="relative flex items-center">
-                              <input
-                                type={showAdminPin ? 'text' : 'password'}
-                                placeholder="Ingrese el PIN de Seguridad"
-                                value={adminPin}
-                                onChange={(e) => setAdminPin(e.target.value)}
-                                required
-                                className="glass-input w-full px-3 pr-8 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none bg-white font-mono"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowAdminPin(!showAdminPin)}
-                                className="absolute right-2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                              >
-                                {showAdminPin ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                              </button>
-                            </div>
-                          </div>
-                        )}
 
                         <div className="pt-2">
                           <button

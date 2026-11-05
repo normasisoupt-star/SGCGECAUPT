@@ -86,11 +86,11 @@ export async function registerWithFirebase(
   const credential = await Promise.race([authPromise, timeoutPromise]);
   const user = credential.user;
 
-  // Actualizar nombre visible en Firebase
+  // Actualizar nombre visible y metadato de rol en Firebase
   try {
     await updateProfile(user, {
       displayName: profileData.name,
-      photoURL: profileData.avatar,
+      photoURL: profileData.role === 'geca' ? 'role:geca' : (profileData.avatar || `role:${profileData.role}`),
     });
   } catch (err) {
     console.warn('Aviso: no se pudo actualizar displayName:', err);
@@ -144,16 +144,25 @@ export async function loginWithFirebase(email: string, password: string): Promis
     console.warn('Error recuperando perfil local:', e);
   }
 
+  const isCloudAdmin = user.photoURL === 'role:geca';
+  const cloudRole: UserRole = isCloudAdmin
+    ? 'geca'
+    : user.photoURL?.startsWith('role:')
+    ? (user.photoURL.replace('role:', '') as UserRole)
+    : 'colaborador';
+
   return {
     id: user.uid,
     name: user.displayName || user.email?.split('@')[0] || 'Funcionario UPT',
     email: user.email || email,
-    charge: 'Funcionario SGC UPT',
-    department: 'Oficina Institucional',
-    officeName: 'Oficina Institucional',
-    role: 'colaborador',
-    processCodes: ['PE.02'],
-    avatar: user.photoURL || undefined,
+    charge: isCloudAdmin ? 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC' : 'Funcionario SGC UPT',
+    department: isCloudAdmin ? 'Oficina de Gestión de la Calidad (GECA)' : 'Oficina Institucional',
+    officeName: isCloudAdmin ? 'Oficina de Gestión de la Calidad (GECA)' : 'Oficina Institucional',
+    role: cloudRole,
+    processCodes: isCloudAdmin
+      ? ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06']
+      : ['PE.02'],
+    avatar: user.photoURL?.startsWith('role:') ? undefined : (user.photoURL || undefined),
   };
 }
 
