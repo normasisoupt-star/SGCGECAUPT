@@ -9,18 +9,26 @@ import {
   Layers
 } from 'lucide-react';
 import { UPT_PROCESSES } from '../data/initialData';
-import { ProcessLevel0, ProcessCategory } from '../types';
+import { ProcessLevel0, ProcessCategory, UserProfile } from '../types';
+import { resolveUserOrganizationUnit } from '../data/organizationHierarchy';
 
 interface ProcessMapViewProps {
   onSelectProcessFilter: (processCode: ProcessLevel0) => void;
+  activeUser?: UserProfile;
+  isAdmin?: boolean;
 }
 
-export const ProcessMapView: React.FC<ProcessMapViewProps> = ({ onSelectProcessFilter }) => {
+export const ProcessMapView: React.FC<ProcessMapViewProps> = ({ onSelectProcessFilter, activeUser, isAdmin = false }) => {
+  const unit = activeUser ? resolveUserOrganizationUnit(activeUser) : undefined;
+  const allowedProcesses = (!isAdmin && unit && unit.processCodes.length > 0) ? unit.processCodes : null;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const strategic = UPT_PROCESSES.filter(p => p.category === 'Estratégico');
-  const missional = UPT_PROCESSES.filter(p => p.category === 'Misional');
-  const support = UPT_PROCESSES.filter(p => p.category === 'Soporte');
+  const baseProcesses = allowedProcesses
+    ? UPT_PROCESSES.filter(p => allowedProcesses.includes(p.code as ProcessLevel0))
+    : UPT_PROCESSES;
+  const strategic = baseProcesses.filter(p => p.category === 'Estratégico');
+  const missional = baseProcesses.filter(p => p.category === 'Misional');
+  const support = baseProcesses.filter(p => p.category === 'Soporte');
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

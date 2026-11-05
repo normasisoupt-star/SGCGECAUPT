@@ -223,8 +223,10 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
       activeUser?.role === 'geca' &&
       (activeUser?.id === 'u-geca' || activeUser?.officeName === 'Administrador del Sistema');
 
+    // Si NO es Administrador del Sistema (o si el Administrador está previsualizando una unidad en modo 'my_office'),
+    // restringir estrictamente a los procedimientos que le corresponden a su Órgano / Oficina / Área / Facultad.
     let matchesScope = true;
-    if (scopeMode === 'my_office' && !isGlobalSystemAdmin) {
+    if (!isGlobalSystemAdmin && (!isAdmin || scopeMode === 'my_office')) {
       if (exactUserProcedures.length > 0) {
         matchesScope = exactUserProcedures.includes(doc.code);
       } else if (activeUser.processCodes && activeUser.processCodes.length > 0) {
@@ -417,33 +419,43 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
         </div>
       </div>
 
-      {/* Tarjetas resumen de estado */}
+      {/* Tarjetas resumen de estado ajustadas al alcance de la unidad del usuario */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-          <div className="text-xs font-medium text-slate-400">Total Documentos</div>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{documents.length}</div>
-          <div className="text-[11px] text-emerald-600 mt-1 font-medium">
-            {documents.filter((d) => d.documentType === 'Procedimiento').length} Procedimientos + {documents.filter((d) => d.documentType === 'Manual').length} Manuales
+          <div className="text-xs font-medium text-slate-400">
+            {isAdmin && scopeMode === 'all' ? 'Total Documentos SGC' : 'Procedimientos de Mi Unidad'}
+          </div>
+          <div className="text-2xl font-bold text-slate-900 mt-1">{filteredDocs.length}</div>
+          <div className="text-[11px] text-emerald-600 mt-1 font-medium truncate">
+            {isAdmin && scopeMode === 'all'
+              ? `${documents.filter((d) => d.documentType === 'Procedimiento').length} Procedimientos + ${documents.filter((d) => d.documentType === 'Manual').length} Manuales`
+              : activeUser?.officeName || activeUser?.department}
           </div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
           <div className="text-xs font-medium text-slate-400">Vigentes (Oficiales)</div>
           <div className="text-2xl font-bold text-emerald-600 mt-1">
-            {documents.filter((d) => d.status === 'vigente').length}
+            {filteredDocs.filter((d) => d.status === 'vigente').length}
           </div>
           <div className="text-[11px] text-slate-400 mt-1">Res. Rectoral N° 0418-2026</div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
           <div className="text-xs font-medium text-slate-400">En Revisión / Borrador</div>
           <div className="text-2xl font-bold text-amber-600 mt-1">
-            {documents.filter((d) => d.status === 'revision' || d.status === 'borrador').length}
+            {filteredDocs.filter((d) => d.status === 'revision' || d.status === 'borrador').length}
           </div>
           <div className="text-[11px] text-slate-400 mt-1">En proceso de aprobación</div>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-          <div className="text-xs font-medium text-slate-400">Procesos UPT Cubiertos</div>
-          <div className="text-2xl font-bold text-[#0d2d3f] mt-1 font-outfit">13 / 13</div>
-          <div className="text-[11px] text-slate-400 mt-1">Estratégicos, Misionales, Soporte</div>
+          <div className="text-xs font-medium text-slate-400">Procesos Relacionados</div>
+          <div className="text-2xl font-bold text-[#0d2d3f] mt-1 font-outfit">
+            {isAdmin && scopeMode === 'all' ? '13 / 13' : `${new Set(filteredDocs.map((d) => d.processCode)).size} Proceso(s)`}
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1 truncate">
+            {isAdmin && scopeMode === 'all'
+              ? 'Estratégicos, Misionales, Soporte'
+              : Array.from(new Set(filteredDocs.map((d) => d.processCode))).join(', ')}
+          </div>
         </div>
       </div>
 
@@ -491,24 +503,26 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             <span>Filtrar:</span>
           </div>
 
-          {/* Filtro por Oficina / Área / Facultad según Excel Oficial */}
-          <select
-            value={selectedDependency}
-            onChange={(e) => setSelectedDependency(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[290px]"
-            title="Filtrar por Órgano, Oficina, Área de DIGA o Facultad de la UPT"
-          >
-            <option value="all">Todas las Oficinas, Áreas y Facultades (28)</option>
-            {ORGAN_GROUPS.map((group) => (
-              <optgroup key={group.key} label={group.label}>
-                {ORGANIZATION_UNITS.filter((u) => u.organGroup === group.key).map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.displayName} ({u.consolidatedProcedures.length} proc.)
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+          {/* Filtro por Oficina / Área / Facultad (Solo visible para el Administrador del Sistema) */}
+          {isAdmin && (
+            <select
+              value={selectedDependency}
+              onChange={(e) => setSelectedDependency(e.target.value)}
+              className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[290px]"
+              title="Filtrar por Órgano, Oficina, Área de DIGA o Facultad de la UPT"
+            >
+              <option value="all">Todas las Oficinas, Áreas y Facultades (28)</option>
+              {ORGAN_GROUPS.map((group) => (
+                <optgroup key={group.key} label={group.label}>
+                  {ORGANIZATION_UNITS.filter((u) => u.organGroup === group.key).map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.displayName} ({u.consolidatedProcedures.length} proc.)
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          )}
 
           {/* Filtro por Proceso */}
           <select

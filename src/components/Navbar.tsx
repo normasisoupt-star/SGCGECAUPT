@@ -78,36 +78,43 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Acciones, Selector de Alcance & Selector de Oficina UPT */}
         <div className="flex items-center gap-3">
-          {/* INTERRUPTOR DUAL: MI OFICINA vs TODO EL SGC */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => onToggleScopeMode('my_office')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                scopeMode === 'my_office'
-                  ? 'bg-[#0d2d3f] text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-200'
-              }`}
-              title={`Mostrar únicamente procesos, procedimientos y registros de: ${activeUser?.officeName || activeUser?.department || ''}`}
-            >
-              <Building2 className="w-3.5 h-3.5 text-blue-300" />
-              <span>Mi Oficina</span>
-            </button>
+          {/* ALCANCE: Solo el Administrador puede alternar a Todo el SGC; los demás ven exclusivamente su Unidad */}
+          {isAdmin ? (
+            <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => onToggleScopeMode('my_office')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  scopeMode === 'my_office'
+                    ? 'bg-[#0d2d3f] text-white shadow-xs'
+                    : 'text-slate-600 hover:bg-slate-200'
+                }`}
+                title={`Mostrar únicamente procedimientos de: ${activeUser?.officeName || activeUser?.department || ''}`}
+              >
+                <Building2 className="w-3.5 h-3.5 text-blue-300" />
+                <span>Vista Unidad</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => onToggleScopeMode('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                scopeMode === 'all'
-                  ? 'bg-[#0d2d3f] text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-200'
-              }`}
-              title="Mostrar todo el catálogo institucional consolidado del SGC UPT"
-            >
-              <Globe className="w-3.5 h-3.5 text-emerald-300" />
-              <span className="hidden sm:inline">Todo el SGC</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => onToggleScopeMode('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  scopeMode === 'all'
+                    ? 'bg-[#0d2d3f] text-white shadow-xs'
+                    : 'text-slate-600 hover:bg-slate-200'
+                }`}
+                title="Mostrar todo el catálogo institucional consolidado del SGC UPT"
+              >
+                <Globe className="w-3.5 h-3.5 text-emerald-300" />
+                <span className="hidden sm:inline">Todo el SGC (94)</span>
+              </button>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0d2d3f] text-white text-xs font-bold shadow-xs">
+              <Building2 className="w-3.5 h-3.5 text-[#F3E5AB]" />
+              <span>Mis Procedimientos ({activeUser?.procedureCodes?.length || 0})</span>
+            </div>
+          )}
 
           {/* Menú de Selección de Dependencia / Usuario UPT */}
           <div className="relative">

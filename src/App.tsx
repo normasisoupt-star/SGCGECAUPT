@@ -1,3 +1,4 @@
+import { resolveUserOrganizationUnit } from './data/organizationHierarchy';
 import { initSystemSecurity } from './services/security';
 import React, { useState, useEffect } from 'react';
 import { GraduationCap, ArrowRight, UserCheck } from 'lucide-react';
@@ -294,7 +295,7 @@ export function App() {
         <Sidebar
           activeTab={activeTab}
           onSelectTab={handleSelectTab}
-          documentCount={documents.length}
+          documentCount={isAdmin && scopeMode === 'all' ? documents.length : (resolveUserOrganizationUnit(activeUser)?.consolidatedProcedures.length || activeUser?.procedureCodes?.length || documents.length)}
           openCapaCount={openCapasCount}
           isAdmin={isAdmin}
         />
@@ -321,7 +322,7 @@ export function App() {
           )}
 
           {activeTab === 'process_map' && (
-            <ProcessMapView onSelectProcessFilter={handleSelectProcessFilter} />
+            <ProcessMapView onSelectProcessFilter={handleSelectProcessFilter} activeUser={activeUser} isAdmin={isAdmin && scopeMode === 'all'} />
           )}
 
           {activeTab === 'documents' && (

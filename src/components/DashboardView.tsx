@@ -62,7 +62,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const isAdmin = activeUser?.role === 'geca' && activeUser?.officeName === 'Administrador del Sistema';
   const activeUnit = resolveUserOrganizationUnit(activeUser);
-  const unitProceduresCount = activeUnit?.consolidatedProcedures.length || activeUser?.procedureCodes?.length || 0;
+  const unitProcedureCodes = activeUnit?.consolidatedProcedures || activeUser?.procedureCodes || [];
+  const unitDocs = documents.filter((d) => unitProcedureCodes.includes(d.code));
+  const unitProceduresCount = unitDocs.length || unitProcedureCodes.length;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -237,24 +239,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       ) : (
-        /* Vista de Usuarios de Oficinas: Estrictamente hasta Lista Maestra */
+        /* Vista de Usuarios de Oficinas / Áreas / Facultades: Estrictamente sus Procedimientos Asignados */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div 
             onClick={() => onNavigate('documents')}
             className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-[#0d2d3f]/40 transition-all cursor-pointer group"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Documentos Vigentes</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mis Procedimientos</span>
               <div className="w-9 h-9 rounded-xl bg-[#0d2d3f]/10 text-[#0d2d3f] flex items-center justify-center group-hover:bg-[#0d2d3f] group-hover:text-white transition-colors">
                 <FileText className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-slate-900">{activeDocs}</span>
-              <span className="text-xs text-slate-500">en Lista Maestra</span>
+              <span className="text-3xl font-extrabold text-slate-900">{unitProceduresCount}</span>
+              <span className="text-xs text-slate-500">asignados a mi unidad</span>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span>Consulta oficial RG04</span>
+              <span>Ver mis procedimientos RG04</span>
               <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#0d2d3f] transition-all" />
             </div>
           </div>
@@ -264,17 +266,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-[#9C7D0F]/40 transition-all cursor-pointer group"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mapa de Procesos</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Procesos de Mi Unidad</span>
               <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#9C7D0F] flex items-center justify-center group-hover:bg-[#9C7D0F] group-hover:text-white transition-colors">
                 <Network className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-slate-900">13</span>
-              <span className="text-xs text-slate-500">Procesos UPT</span>
+              <span className="text-3xl font-extrabold text-slate-900">{userProcesses.length || 1}</span>
+              <span className="text-xs text-slate-500">Proceso(s) Nivel 0</span>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span>04 PE &bull; 03 PM &bull; 06 PS</span>
+              <span className="truncate">{userProcesses.map(p => p.code).join(' • ') || 'SGC UPT'}</span>
               <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#9C7D0F] transition-all" />
             </div>
           </div>
@@ -284,37 +286,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-200 transition-all cursor-pointer group"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Procedimientos</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Estado Documental</span>
               <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
                 <BookOpen className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-slate-900 font-outfit">94</span>
-              <span className="text-xs text-[#0b4967] font-semibold">Procedimientos Oficiales</span>
+              <span className="text-3xl font-extrabold text-emerald-600 font-outfit">100%</span>
+              <span className="text-xs text-[#0b4967] font-semibold">Vigentes (v03)</span>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span>Con visor PDF integrado</span>
+              <span>Con visor PDF en página exacta</span>
               <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-all" />
             </div>
           </div>
 
           <div 
-            onClick={() => onNavigate('documents')}
+            onClick={() => onNavigate('repository')}
             className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-emerald-200 transition-all cursor-pointer group"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Manuales del SGC</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Repositorio SGC</span>
               <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                 <Layers className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-emerald-600 font-outfit">04</span>
-              <span className="text-xs text-slate-500">Manuales Vigentes</span>
+              <span className="text-3xl font-extrabold text-emerald-600 font-outfit">16</span>
+              <span className="text-xs text-slate-500">Formatos y Registros</span>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span>MC, MA, MOF y Procedimientos</span>
+              <span>Formatos oficiales descargables</span>
               <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-all" />
             </div>
           </div>
@@ -443,94 +445,57 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       ) : (
-        /* Vista de Usuarios de Oficinas: Estructura de Procesos + Accesos Directos Oficiales */
+        /* Vista de Usuarios de Oficinas / Áreas / Facultades: Lista directa de sus Procedimientos Asignados */
         <div className="space-y-6">
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
-                <h2 className="font-bold text-slate-900 text-lg">Estructura por Niveles de Procesos UPT</h2>
+                <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#0d2d3f]/10 text-[#0d2d3f] border border-[#0d2d3f]/20 mb-1">
+                  <span>Alcance Exclusivo de su Dependencia</span>
+                </div>
+                <h2 className="font-bold text-slate-900 text-lg">
+                  Procedimientos Correspondientes a: {activeUser?.officeName || activeUser?.department} ({unitDocs.length})
+                </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Manual de Procesos Institucionales v03 — Aprobado para todas las facultades y dependencias universitarias.
+                  Estos son únicamente los procedimientos oficiales en los que participa o es responsable su unidad según la estructura del SGC UPT.
                 </p>
               </div>
               <button
-                onClick={() => onNavigate('process_map')}
+                onClick={() => onNavigate('documents')}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0d2d3f] text-white hover:bg-[#001826] text-xs font-bold transition-all shadow-xs cursor-pointer shrink-0 font-outfit"
               >
-                <Network className="w-3.5 h-3.5" />
-                <span>Abrir Mapa Completo &rarr;</span>
+                <FileText className="w-3.5 h-3.5" />
+                <span>Abrir en Visor de Lista Maestra &rarr;</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div 
-                onClick={() => onNavigate('process_map')}
-                className="p-5 rounded-2xl border border-[#0d2d3f]/20 bg-slate-50/60 hover:bg-slate-100 hover:border-[#0d2d3f]/40 transition-all cursor-pointer group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#0d2d3f] uppercase tracking-wider">Nivel Estratégico</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-[#0d2d3f] text-white font-outfit">PE</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {unitDocs.map((doc) => (
+                <div
+                  key={doc.id}
+                  onClick={() => onNavigate('documents')}
+                  className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-[#0d2d3f]/40 hover:shadow-sm transition-all cursor-pointer flex items-start justify-between gap-3 group"
+                >
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-[#0d2d3f] text-white font-mono">
+                        {doc.code}
+                      </span>
+                      <span className="text-[11px] font-semibold text-slate-500">
+                        Proceso {doc.processCode}
+                      </span>
+                    </div>
+                    <div className="text-sm font-bold text-slate-900 group-hover:text-[#0d2d3f] transition-colors">
+                      {doc.title}
+                    </div>
+                    <div className="text-[11px] text-slate-500 truncate">
+                      {doc.storageLocation}
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#0d2d3f] shrink-0 mt-1" />
                 </div>
-                <div className="text-lg font-bold text-slate-900 mt-2">04 Procesos Estratégicos</div>
-                <p className="text-xs text-slate-600 mt-1">25 Procedimientos de Dirección, Calidad, Riesgos y Convenios.</p>
-                <div className="mt-4 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs font-semibold text-[#0d2d3f] group-hover:text-red-900">
-                  <span>Explorar mapa</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </div>
-              </div>
-
-              <div 
-                onClick={() => onNavigate('process_map')}
-                className="p-5 rounded-2xl border border-red-200/80 bg-red-50/30 hover:bg-red-50/60 hover:border-red-300 transition-all cursor-pointer group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-red-800 uppercase tracking-wider">Nivel Misional</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-red-800 text-white font-outfit">PM</span>
-                </div>
-                <div className="text-lg font-bold text-slate-900 mt-2">03 Procesos Misionales</div>
-                <p className="text-xs text-slate-600 mt-1">35 Procedimientos de Enseñanza-Aprendizaje, Investigación y RSU.</p>
-                <div className="mt-4 pt-3 border-t border-red-200/60 flex items-center justify-between text-xs font-semibold text-red-800 group-hover:text-red-950">
-                  <span>Explorar mapa</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </div>
-              </div>
-
-              <div 
-                onClick={() => onNavigate('process_map')}
-                className="p-5 rounded-2xl border border-blue-200/80 bg-blue-50/30 hover:bg-blue-50/60 hover:border-blue-300 transition-all cursor-pointer group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-blue-800 uppercase tracking-wider">Nivel de Soporte</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-800 text-white font-outfit">PS</span>
-                </div>
-                <div className="text-lg font-bold text-slate-900 mt-2">06 Procesos de Soporte</div>
-                <p className="text-xs text-slate-600 mt-1">34 Procedimientos de Gestión Humana, TI, Finanzas, Legal y Servicios.</p>
-                <div className="mt-4 pt-3 border-t border-blue-200/60 flex items-center justify-between text-xs font-semibold text-blue-800 group-hover:text-blue-950">
-                  <span>Explorar mapa</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </div>
-              </div>
+              ))}
             </div>
-          </div>
-
-          {/* Acceso Rápido a Lista Maestra de Documentos */}
-          <div className="bg-gradient-to-br from-[#0d2d3f] via-[#10344c] to-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-md border-t-2 border-[#9C7D0F]">
-            <div className="space-y-1.5 max-w-2xl">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#9C7D0F] text-white">RG04.PE.02</span>
-                <span className="text-xs text-[#F3E5AB] font-medium">Lista Maestra Oficial de Documentos</span>
-              </div>
-              <h3 className="text-lg font-bold text-white">¿Necesitas consultar un procedimiento o formato institucional?</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Ingresa a la Lista Maestra para buscar por código, nombre o temática asistida. Podrás abrir el visor oficial en PDF con posicionamiento automático en la página exacta de cada procedimiento.
-              </p>
-            </div>
-            <button
-              onClick={() => onNavigate('documents')}
-              className="px-6 py-3 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all shadow-md shrink-0 cursor-pointer font-outfit"
-            >
-              Consultar Lista Maestra &rarr;
-            </button>
           </div>
         </div>
       )}
