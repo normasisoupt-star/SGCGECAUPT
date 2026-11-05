@@ -77,8 +77,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'logs' as NavTab,
-      label: 'Pista de Auditoría',
+      label: 'Usuarios y Auditoría',
       icon: History,
+      badge: 'Control',
+      badgeColor: 'bg-emerald-100 text-emerald-800 font-bold',
     },
   ];
 

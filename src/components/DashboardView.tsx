@@ -1,3 +1,4 @@
+import { resolveUserOrganizationUnit } from '../data/organizationHierarchy';
 import React from 'react';
 import { 
   Building2,
@@ -59,7 +60,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     ? Math.round((conformeCount / totalEvaluated) * 100) 
     : 0;
 
-  const isAdmin = activeUser?.role === 'geca';
+  const isAdmin = activeUser?.role === 'geca' && activeUser?.officeName === 'Administrador del Sistema';
+  const activeUnit = resolveUserOrganizationUnit(activeUser);
+  const unitProceduresCount = activeUnit?.consolidatedProcedures.length || activeUser?.procedureCodes?.length || 0;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -97,17 +100,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </span>
               </div>
 
-              {/* Alcance / Proceso SGC Relacionado */}
+              {/* Alcance / Procedimientos Asignados según Jerarquía Excel */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9C7D0F]/30 backdrop-blur-md border border-[#9C7D0F]/50 text-xs text-[#F3E5AB] shadow-xs">
                 <Network className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-                <span className="text-slate-200 font-normal">{isAdmin ? 'Alcance SGC:' : 'Proceso Relacionado:'}</span>
+                <span className="text-slate-200 font-normal">{isAdmin ? 'Alcance SGC:' : 'Procedimientos Asignados:'}</span>
                 <span className="font-bold text-white">
                   {isAdmin
-                    ? 'Acceso Total a los 13 Procesos Institucionales UPT'
+                    ? 'Acceso Total a los 13 Procesos y 94 Procedimientos UPT'
+                    : unitProceduresCount > 0
+                    ? `${unitProceduresCount} Procedimiento(s) Oficial(es) de su Dependencia`
                     : userProcesses.length > 0
                     ? userProcesses.map((p) => `${p.code} - ${p.name}`).join(' • ')
-                    : activeUser?.processCodes && activeUser.processCodes.length > 0
-                    ? activeUser.processCodes.join(' • ')
                     : 'Proceso Asignado'}
                 </span>
               </div>

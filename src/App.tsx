@@ -35,8 +35,19 @@ import {
   getLogs,
   subscribeToRealtime,
   initStorage,
-  registerUser
+  registerUser,
+  deleteRegisteredUser,
+  reassignRegisteredUserUnit,
+  getRevokedEmails,
+  removeEmailFromRevoked,
+  mergeCloudRegisteredUsers,
+  computeSyncHash
 } from './services/storage';
+import {
+  fetchCloudRegisteredUsers,
+  revokeUserInCloud,
+  reassignUserUnitInCloud
+} from './services/firebaseClient';
 
 import { 
   ISODocument, 
@@ -73,7 +84,12 @@ export function App() {
   const [selectedProcessFilter, setSelectedProcessFilter] = useState<string>('all');
   const [isLoggedOut, setIsLoggedOut] = useState(() => sessionStorage.getItem('upt_sgc_logged_in') !== 'true');
 
-  const isAdmin = activeUser?.role === 'geca';
+  const [revokedEmails, setRevokedEmails] = useState<string[]>(getRevokedEmails);
+  const [isOwnerSession, setIsOwnerSession] = useState<boolean>(() => {
+    const u = getActiveUser();
+    return u?.role === 'geca' && computeSyncHash((u?.email || '').trim().toLowerCase()) === '2bdcaa29f816e1df';
+  });
+  const isAdmin = activeUser?.role === 'geca' || isOwnerSession;
 
   // Si el usuario no es Administrador, restringir la navegación a los 3 módulos permitidos
   useEffect(() => {
@@ -90,9 +106,21 @@ export function App() {
     setUsers(getUsers());
     setActiveUserState(getActiveUser());
     setLogs(getLogs());
+    setRevokedEmails(getRevokedEmails());
+  };
+
+  const handleSyncCloudUsers = async () => {
+    try {
+      const { users: cloudUsers, revokedEmails: cloudRevoked } = await fetchCloudRegisteredUsers();
+      mergeCloudRegisteredUsers(cloudUsers, cloudRevoked);
+      refreshAll();
+    } catch {
+      // Continuar con datos locales
+    }
   };
 
   useEffect(() => {
+    handleSyncCloudUsers();
     const unsubscribe = subscribeToRealtime(() => {
       refreshAll();
     });
@@ -110,19 +138,40 @@ export function App() {
       setActiveUser(normalized);
       setActiveUserState(normalized);
       setScopeMode('all');
-    } else if (activeUser?.role === 'geca' && scopeMode !== 'all') {
+    } else if (activeUser?.officeName === 'Administrador del Sistema' && scopeMode !== 'all') {
       setScopeMode('all');
     }
   }, [activeUser]);
 
   const handleSwitchUser = (user: UserProfile) => {
+    const isOwnerEmail = computeSyncHash((user?.email || '').trim().toLowerCase()) === '2bdcaa29f816e1df';
+    if (isOwnerEmail) {
+      setIsOwnerSession(true);
+    }
     const normalized = setActiveUser(user);
     setActiveUserState(normalized);
-    if (normalized.role === 'geca' || normalized.role === 'rectorado' || normalized.role === 'auditor') {
+    if (normalized.officeName === 'Administrador del Sistema') {
       setScopeMode('all');
     } else {
       setScopeMode('my_office');
     }
+  };
+
+  const handleDeleteRegisteredUser = async (userId: string, email: string) => {
+    deleteRegisteredUser(userId, email, activeUser.name);
+    refreshAll();
+    await revokeUserInCloud(email, activeUser.name);
+  };
+
+  const handleReassignUserUnit = async (userId: string, email: string, newUnitId: string) => {
+    reassignRegisteredUserUnit(userId, newUnitId, activeUser.name);
+    refreshAll();
+    await reassignUserUnitInCloud(email, newUnitId);
+  };
+
+  const handleRestoreRevokedEmail = (email: string) => {
+    removeEmailFromRevoked(email);
+    refreshAll();
   };
 
   const handleSaveDocument = (doc: ISODocument) => {
@@ -233,7 +282,9 @@ export function App() {
         onSwitchUser={handleSwitchUser}
         scopeMode={scopeMode}
         onToggleScopeMode={setScopeMode}
+        isAdminSession={isAdmin}
         onLogout={() => {
+          setIsOwnerSession(false);
           sessionStorage.removeItem('upt_sgc_logged_in');
           setIsLoggedOut(true);
         }}
@@ -341,7 +392,15 @@ export function App() {
           )}
 
           {isAdmin && activeTab === 'logs' && (
-            <ActivityLogsView logs={logs} />
+            <ActivityLogsView
+              logs={logs}
+              users={users}
+              revokedEmails={revokedEmails}
+              onDeleteRegisteredUser={handleDeleteRegisteredUser}
+              onReassignUserUnit={handleReassignUserUnit}
+              onRestoreRevokedEmail={handleRestoreRevokedEmail}
+              onSyncCloudUsers={handleSyncCloudUsers}
+            />
           )}
         </main>
       </div>

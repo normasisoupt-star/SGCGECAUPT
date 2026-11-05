@@ -36,12 +36,22 @@ declare module 'firebase/firestore' {
   export interface DocumentReference {
     id: string;
   }
+  export interface CollectionReference {
+    id: string;
+  }
   export interface DocumentSnapshot {
+    id?: string;
     exists(): boolean;
     data(): any;
   }
+  export interface QuerySnapshot {
+    forEach(callback: (doc: DocumentSnapshot) => void): void;
+  }
   export function getFirestore(app?: any): Firestore;
+  export function collection(firestore: Firestore, path: string, ...pathSegments: string[]): CollectionReference;
   export function doc(firestore: Firestore, path: string, ...pathSegments: string[]): DocumentReference;
   export function setDoc(reference: DocumentReference, data: any, options?: { merge?: boolean }): Promise<void>;
   export function getDoc(reference: DocumentReference): Promise<DocumentSnapshot>;
+  export function getDocs(reference: CollectionReference): Promise<QuerySnapshot>;
+  export function deleteDoc(reference: DocumentReference): Promise<void>;
 }

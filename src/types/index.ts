@@ -26,6 +26,12 @@ export interface UserProfile {
   charge: string;
   department: string;
   officeName?: string;
+  unitId?: string;
+  organName?: string;
+  areaName?: string;
+  procedureCodes?: string[];
+  registeredAt?: string;
+  isCustomRegistered?: boolean;
   avatar?: string;
   processCodes?: ProcessLevel0[];
 }

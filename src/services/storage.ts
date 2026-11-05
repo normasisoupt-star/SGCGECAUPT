@@ -1,3 +1,4 @@
+import { getOrganizationUnitById, resolveUserOrganizationUnit } from '../data/organizationHierarchy';
 import { 
   AuditProcessSession,
   ISODocument, 
@@ -480,7 +481,33 @@ export function updateChecklistItem(item: AuditChecklistItem): void {
   }
 }
 
-// --- USUARIOS Y ROLES ---
+// --- USUARIOS, JERARQUÍA DE OFICINAS Y CONTROL DE REGISTROS ---
+const REVOKED_EMAILS_KEY = 'upt_sgc_revoked_emails_v1';
+
+export function getRevokedEmails(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(REVOKED_EMAILS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function isUserEmailRevoked(email: string): boolean {
+  if (!email) return false;
+  const clean = email.trim().toLowerCase();
+  const revoked = getRevokedEmails();
+  return revoked.includes(clean);
+}
+
+export function removeEmailFromRevoked(email: string): void {
+  if (typeof window === 'undefined' || !email) return;
+  const clean = email.trim().toLowerCase();
+  const revoked = getRevokedEmails().filter(e => e !== clean);
+  localStorage.setItem(REVOKED_EMAILS_KEY, JSON.stringify(revoked));
+}
+
 export function computeSyncHash(s: string): string {
   let h1 = 0xdeadbeef ^ s.length;
   let h2 = 0x41c6ce57 ^ s.length;
@@ -498,8 +525,9 @@ export function normalizeUserProfile(u: UserProfile): UserProfile {
   if (!u) return u;
   const emailHash = computeSyncHash((u.email || '').trim().toLowerCase());
   const chargeHash = computeSyncHash((u.charge || '').trim().toUpperCase());
-  // Solo el propietario autorizado (2bdcaa29f816e1df) tiene el rol Administrador del Sistema
+  // Solo el propietario autorizado (2bdcaa29f816e1df) o el perfil base u-geca tiene el rol Administrador del Sistema
   if (
+    u.id === 'u-geca' ||
     emailHash === '2bdcaa29f816e1df' ||
     chargeHash === 'de76c5eddf099554' ||
     chargeHash === 'd8d15fd595df5921'
@@ -513,6 +541,21 @@ export function normalizeUserProfile(u: UserProfile): UserProfile {
       processCodes: ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'],
     };
   }
+
+  // Resolver unidad organizacional (Órgano, Oficina, Área o Facultad) y sus procedimientos exactos
+  const resolvedUnit = resolveUserOrganizationUnit(u);
+  if (resolvedUnit) {
+    return {
+      ...u,
+      unitId: resolvedUnit.id,
+      organName: resolvedUnit.organName,
+      areaName: resolvedUnit.areaName,
+      department: resolvedUnit.organName,
+      officeName: resolvedUnit.displayName,
+      procedureCodes: resolvedUnit.consolidatedProcedures,
+      processCodes: resolvedUnit.processCodes,
+    };
+  }
   return u;
 }
 
@@ -521,28 +564,26 @@ export function getUsers(): UserProfile[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.USERS);
     const parsed: UserProfile[] | null = raw ? JSON.parse(raw) : null;
-    if (!parsed || parsed.length < UPT_USERS.length) {
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(UPT_USERS));
-      return UPT_USERS;
-    }
-    let changed = false;
-    const normalizedList = parsed.map(u => {
-      const norm = normalizeUserProfile(u);
-      if (
-        norm.role !== u.role ||
-        norm.charge !== u.charge ||
-        norm.officeName !== u.officeName ||
-        norm.department !== u.department
-      ) {
-        changed = true;
+    const revokedSet = new Set(getRevokedEmails());
+
+    // Asegurar que las 28 unidades oficiales + u-geca estén siempre presentes y actualizadas
+    const officialById = new Map(UPT_USERS.map(u => [u.id, u]));
+    const customUsers: UserProfile[] = [];
+    if (parsed && Array.isArray(parsed)) {
+      for (const u of parsed) {
+        if (!officialById.has(u.id)) {
+          const cleanEmail = (u.email || '').trim().toLowerCase();
+          if (!revokedSet.has(cleanEmail)) {
+            customUsers.push(normalizeUserProfile({ ...u, isCustomRegistered: true }));
+          }
+        }
       }
-      return norm;
-    });
-    if (changed) {
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(normalizedList));
-      localStorage.setItem('upt_sgc_users_v1', JSON.stringify(normalizedList));
     }
-    return normalizedList;
+
+    const merged = [...UPT_USERS.map(normalizeUserProfile), ...customUsers];
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(merged));
+    localStorage.setItem('upt_sgc_users_v1', JSON.stringify(merged));
+    return merged;
   } catch {
     return UPT_USERS;
   }
@@ -559,7 +600,8 @@ export function getActiveUser(): UserProfile {
       normalized.role !== parsed.role ||
       normalized.charge !== parsed.charge ||
       normalized.officeName !== parsed.officeName ||
-      normalized.department !== parsed.department
+      normalized.unitId !== parsed.unitId ||
+      JSON.stringify(normalized.procedureCodes) !== JSON.stringify(parsed.procedureCodes)
     ) {
       localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalized));
     }
@@ -577,12 +619,20 @@ export function setActiveUser(user: UserProfile): UserProfile {
 }
 
 export function registerUser(newUser: Omit<UserProfile, 'id'>): UserProfile {
-  const users = getUsers();
+  const cleanEmail = (newUser.email || '').trim().toLowerCase();
+  removeEmailFromRevoked(cleanEmail);
+
+  const users = getUsers().filter(
+    u => !u.isCustomRegistered || (u.email || '').trim().toLowerCase() !== cleanEmail
+  );
+  const nowStr = new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0, 5);
   const id = `u-custom-${Date.now()}`;
   const created: UserProfile = normalizeUserProfile({
     ...newUser,
     id,
-    avatar: newUser.avatar,
+    registeredAt: newUser.registeredAt || nowStr,
+    isCustomRegistered: true,
+    avatar: newUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   });
   users.push(created);
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
@@ -594,10 +644,107 @@ export function registerUser(newUser: Omit<UserProfile, 'id'>): UserProfile {
     action: 'Registró nuevo funcionario institucional en el SGC UPT',
     entityType: 'sistema',
     entityId: created.id,
-    details: `Perfil: ${created.officeName || created.department} (${created.processCodes ? created.processCodes.join(', ') : 'SGC'}) - Rol: ${created.role.toUpperCase()}`,
+    details: `Dependencia: ${created.officeName || created.department} (${created.procedureCodes?.length || 0} procedimientos asignados) - Correo: ${created.email}`,
   });
   broadcastChange('USER_CHANGED', created);
   return created;
+}
+
+export function deleteRegisteredUser(userId: string, email: string, adminName: string): UserProfile[] {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  // Nunca permitir borrar al propietario Administrador del Sistema
+  if (computeSyncHash(cleanEmail) === '2bdcaa29f816e1df') {
+    return getUsers();
+  }
+  const revoked = getRevokedEmails();
+  if (cleanEmail && !revoked.includes(cleanEmail)) {
+    revoked.push(cleanEmail);
+    localStorage.setItem(REVOKED_EMAILS_KEY, JSON.stringify(revoked));
+  }
+  const currentUsers = getUsers();
+  const targetUser = currentUsers.find(u => u.id === userId || (u.email || '').trim().toLowerCase() === cleanEmail);
+  const updated = currentUsers.filter(
+    u => u.id !== userId && (!cleanEmail || (u.email || '').trim().toLowerCase() !== cleanEmail || !u.isCustomRegistered)
+  );
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(updated));
+  localStorage.setItem('upt_sgc_users_v1', JSON.stringify(updated));
+
+  addActivityLog({
+    userName: adminName,
+    userRole: 'Administrador del Sistema',
+    action: 'Eliminó y revocó registro de usuario por oficina no correspondiente',
+    entityType: 'sistema',
+    entityId: userId,
+    details: `Usuario dado de baja: ${targetUser?.name || email} (${cleanEmail}) - Dependencia que tenía: ${targetUser?.officeName || ''}`,
+  });
+  broadcastChange('USER_CHANGED', updated);
+  return updated;
+}
+
+export function reassignRegisteredUserUnit(userId: string, newUnitId: string, adminName: string): UserProfile[] {
+  const unit = getOrganizationUnitById(newUnitId);
+  if (!unit) return getUsers();
+
+  const currentUsers = getUsers();
+  const updated = currentUsers.map(u => {
+    if (u.id === userId) {
+      const updatedUser: UserProfile = {
+        ...u,
+        unitId: unit.id,
+        organName: unit.organName,
+        areaName: unit.areaName,
+        department: unit.organName,
+        officeName: unit.displayName,
+        procedureCodes: unit.consolidatedProcedures,
+        processCodes: unit.processCodes,
+      };
+      return updatedUser;
+    }
+    return u;
+  });
+
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(updated));
+  localStorage.setItem('upt_sgc_users_v1', JSON.stringify(updated));
+
+  const targetUser = updated.find(u => u.id === userId);
+  if (targetUser) {
+    addActivityLog({
+      userName: adminName,
+      userRole: 'Administrador del Sistema',
+      action: 'Reasignó dependencia/área a funcionario registrado',
+      entityType: 'sistema',
+      entityId: userId,
+      details: `Funcionario: ${targetUser.name} (${targetUser.email}) -> Nueva unidad: ${unit.displayName} (${unit.consolidatedProcedures.length} procedimientos)`,
+    });
+  }
+  broadcastChange('USER_CHANGED', updated);
+  return updated;
+}
+
+export function mergeCloudRegisteredUsers(cloudUsers: UserProfile[], cloudRevokedEmails: string[]): UserProfile[] {
+  if (typeof window === 'undefined') return getUsers();
+  const localRevoked = new Set([...getRevokedEmails(), ...cloudRevokedEmails.map(e => e.trim().toLowerCase())]);
+  localStorage.setItem(REVOKED_EMAILS_KEY, JSON.stringify(Array.from(localRevoked)));
+
+  const current = getUsers();
+  const existingEmails = new Set(current.map(u => (u.email || '').trim().toLowerCase()));
+  let changed = false;
+
+  for (const cu of cloudUsers) {
+    const cleanEmail = (cu.email || '').trim().toLowerCase();
+    if (!cleanEmail || localRevoked.has(cleanEmail)) continue;
+    if (!existingEmails.has(cleanEmail)) {
+      current.push(normalizeUserProfile({ ...cu, isCustomRegistered: true }));
+      existingEmails.add(cleanEmail);
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(current));
+    localStorage.setItem('upt_sgc_users_v1', JSON.stringify(current));
+  }
+  return current;
 }
 
 // --- HISTORIAL DE ACTIVIDADES ---

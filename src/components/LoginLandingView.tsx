@@ -1,3 +1,4 @@
+import { ORGAN_GROUPS, ORGANIZATION_UNITS, OrganGroupKey, getOrganizationUnitById } from '../data/organizationHierarchy';
 import React, { useState, useEffect } from 'react';
 import { UserProfile, UserRole, ProcessLevel0 } from '../types';
 import { 
@@ -69,8 +70,19 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [regCharge, setRegCharge] = useState('');
-  const [regOfficeIndex, setRegOfficeIndex] = useState(0);
+  const [regOrganGroup, setRegOrganGroup] = useState<OrganGroupKey>('RECTORADO');
+  const [regOfficeId, setRegOfficeId] = useState<string>('opla');
+  const [regAreaId, setRegAreaId] = useState<string>('diga-alog');
   const [regRole, setRegRole] = useState<UserRole>('colaborador');
+
+  // Obtener la unidad final seleccionada según la cascada (Órgano -> Oficina -> Área)
+  const getSelectedUnitId = () => {
+    if (regOfficeId === 'diga') {
+      return regAreaId;
+    }
+    return regOfficeId;
+  };
+  const selectedUnitObj = getOrganizationUnitById(getSelectedUnitId()) || ORGANIZATION_UNITS[1];
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
   const getFullLoginEmail = () => {
@@ -175,18 +187,23 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
     const isOwnerAdmin = emailHash === '6883e3e5753f7ccd55ae6cd6974a540b0826dc132e48f0196f459a889526ae4b';
 
     const finalRole: UserRole = isOwnerAdmin ? 'geca' : regRole;
-    const selectedOfficeDef = OFFICE_DIRECTORY[regOfficeIndex];
+    const unitObj = selectedUnitObj;
 
     const newUser: Omit<UserProfile, 'id'> = {
       name: regName.trim(),
       email: fullRegEmail,
-      charge: isOwnerAdmin ? 'Administrador del Sistema' : (regCharge.trim() || selectedOfficeDef.charge),
-      department: isOwnerAdmin ? 'Administrador del Sistema' : selectedOfficeDef.name,
-      officeName: isOwnerAdmin ? 'Administrador del Sistema' : selectedOfficeDef.name,
+      charge: isOwnerAdmin ? 'Administrador del Sistema' : (regCharge.trim() || unitObj.defaultCharge),
+      department: isOwnerAdmin ? 'Administrador del Sistema' : unitObj.organName,
+      officeName: isOwnerAdmin ? 'Administrador del Sistema' : unitObj.displayName,
+      unitId: isOwnerAdmin ? undefined : unitObj.id,
+      organName: isOwnerAdmin ? 'Administrador del Sistema' : unitObj.organName,
+      areaName: isOwnerAdmin ? undefined : unitObj.areaName,
+      procedureCodes: isOwnerAdmin ? undefined : unitObj.consolidatedProcedures,
       role: finalRole,
       processCodes: isOwnerAdmin 
         ? ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'] 
-        : [selectedOfficeDef.code as ProcessLevel0],
+        : unitObj.processCodes,
+      isCustomRegistered: true,
       avatar: undefined,
     };
 
@@ -619,19 +636,94 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                           </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Oficina Asignada *</label>
-                          <select
-                            value={regOfficeIndex}
-                            onChange={(e) => setRegOfficeIndex(Number(e.target.value))}
-                            className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none cursor-pointer font-medium"
-                          >
-                            {OFFICE_DIRECTORY.map((off, idx) => (
-                              <option key={off.code} value={idx}>
-                                {off.name} {off.proc.length > 0 ? `[${off.proc.join(', ')}]` : ''}
-                              </option>
-                            ))}
-                          </select>
+                        {/* PASO 1: ÓRGANO / DEPENDENCIA SUPERIOR */}
+                        <div className="space-y-2 p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/90">
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">
+                              1. Órgano / Dependencia Principal *
+                            </label>
+                            <select
+                              value={regOrganGroup}
+                              onChange={(e) => {
+                                const newGroup = e.target.value as OrganGroupKey;
+                                setRegOrganGroup(newGroup);
+                                const firstOffice = ORGANIZATION_UNITS.find(
+                                  (u) => u.organGroup === newGroup && u.level !== 'area'
+                                );
+                                if (firstOffice) {
+                                  setRegOfficeId(firstOffice.id);
+                                }
+                              }}
+                              className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none cursor-pointer font-bold"
+                            >
+                              {ORGAN_GROUPS.map((g) => (
+                                <option key={g.key} value={g.key}>
+                                  {g.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* PASO 2: OFICINA O FACULTAD */}
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">
+                              2. {regOrganGroup === 'FACULTADES' ? 'Facultad Asignada *' : 'Oficina / Despacho *'}
+                            </label>
+                            <select
+                              value={regOfficeId}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setRegOfficeId(val);
+                                if (val === 'diga') {
+                                  setRegAreaId('diga-alog');
+                                }
+                              }}
+                              className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none cursor-pointer font-medium"
+                            >
+                              {ORGANIZATION_UNITS.filter(
+                                (u) => u.organGroup === regOrganGroup && u.level !== 'area'
+                              ).map((u) => (
+                                <option key={u.id} value={u.id}>
+                                  {u.officeName} ({u.consolidatedProcedures.length} proc.)
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* PASO 3: ÁREA ESPECÍFICA (SI ELIGIÓ DIGA) */}
+                          {regOfficeId === 'diga' && (
+                            <div className="pt-1 border-t border-slate-200/80">
+                              <label className="block text-[11px] font-bold text-[#0d2d3f] mb-0.5 font-outfit">
+                                3. Área Específica dentro de DIGA *
+                              </label>
+                              <select
+                                value={regAreaId}
+                                onChange={(e) => setRegAreaId(e.target.value)}
+                                className="glass-input w-full px-3 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none cursor-pointer font-semibold border-[#0d2d3f]/40"
+                              >
+                                <option value="diga">
+                                  Jefatura / Dirección DIGA (Ver las 6 Áreas consolidadas - 25 proc.)
+                                </option>
+                                {ORGANIZATION_UNITS.filter(
+                                  (u) => u.officeId === 'diga' && u.level === 'area'
+                                ).map((area) => (
+                                  <option key={area.id} value={area.id}>
+                                    {area.areaName} ({area.consolidatedProcedures.length} proc.)
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+
+                          {/* Resumen de alcance asignado */}
+                          <div className="text-[10px] text-slate-600 bg-white/90 px-2.5 py-1.5 rounded-lg border border-slate-200 flex items-center justify-between">
+                            <span className="truncate pr-2">
+                              Unidad: <strong className="text-[#0d2d3f]">{selectedUnitObj.displayName}</strong>
+                            </span>
+                            <span className="shrink-0 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              {selectedUnitObj.consolidatedProcedures.length} procedimientos
+                            </span>
+                          </div>
                         </div>
 
                         {/* Selector de Roles: SIN OPCIÓN VISIBLE DE ADMINISTRADOR */}

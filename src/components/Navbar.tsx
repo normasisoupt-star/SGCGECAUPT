@@ -17,6 +17,7 @@ interface NavbarProps {
   scopeMode: 'my_office' | 'all';
   onToggleScopeMode: (mode: 'my_office' | 'all') => void;
   onLogout?: () => void;
+  isAdminSession?: boolean;
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -47,9 +48,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   scopeMode,
   onToggleScopeMode,
   onLogout,
+  isAdminSession,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const isAdmin = activeUser?.role === 'geca';
+  const isAdmin = isAdminSession ?? (activeUser?.role === 'geca');
 
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 shadow-xs before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[2px] before:bg-gradient-to-r before:from-[#0d2d3f] before:via-[#e63b2e] before:to-[#9C7D0F]">
@@ -122,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {activeUser?.name}
                 </div>
                 <div className="text-[11px] text-slate-500 truncate">
-                  {isAdmin ? 'Administrador del Sistema' : (activeUser?.officeName || activeUser?.department)}
+                  {activeUser?.officeName === 'Administrador del Sistema' ? 'Administrador del Sistema' : (activeUser?.officeName || activeUser?.department)}
                 </div>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />

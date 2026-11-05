@@ -1,3 +1,4 @@
+import { ORGAN_GROUPS, ORGANIZATION_UNITS, getOrganizationUnitById, resolveUserOrganizationUnit } from '../data/organizationHierarchy';
 import React, { useState, useEffect } from 'react';
 import { 
   FileText,
@@ -204,16 +205,31 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
 
     let matchesDependency = true;
     if (selectedDependency !== 'all') {
-      const depObj = UPT_DEPENDENCIES.find((d) => d.id === selectedDependency);
-      if (depObj && depObj.filterKeywords.length > 0) {
-        const combinedMeta = `${normUploadedBy} ${normProcName} ${normCode} ${normTitle}`.toLowerCase();
-        matchesDependency = depObj.filterKeywords.some((kw) => combinedMeta.includes(kw.toLowerCase()));
+      const unitFilter = getOrganizationUnitById(selectedDependency);
+      if (unitFilter) {
+        matchesDependency = unitFilter.consolidatedProcedures.includes(doc.code);
+      } else {
+        const depObj = UPT_DEPENDENCIES.find((d) => d.id === selectedDependency);
+        if (depObj && depObj.filterKeywords.length > 0) {
+          const combinedMeta = `${normUploadedBy} ${normProcName} ${normCode} ${normTitle}`.toLowerCase();
+          matchesDependency = depObj.filterKeywords.some((kw) => combinedMeta.includes(kw.toLowerCase()));
+        }
       }
     }
 
+    const activeUserUnit = resolveUserOrganizationUnit(activeUser);
+    const exactUserProcedures = activeUserUnit?.consolidatedProcedures || activeUser.procedureCodes || [];
+    const isGlobalSystemAdmin =
+      activeUser?.role === 'geca' &&
+      (activeUser?.id === 'u-geca' || activeUser?.officeName === 'Administrador del Sistema');
+
     let matchesScope = true;
-    if (scopeMode === 'my_office' && activeUser.processCodes && activeUser.processCodes.length > 0) {
-      matchesScope = activeUser.processCodes.includes(doc.processCode);
+    if (scopeMode === 'my_office' && !isGlobalSystemAdmin) {
+      if (exactUserProcedures.length > 0) {
+        matchesScope = exactUserProcedures.includes(doc.code);
+      } else if (activeUser.processCodes && activeUser.processCodes.length > 0) {
+        matchesScope = activeUser.processCodes.includes(doc.processCode);
+      }
     }
 
     return matchesSearch && matchesType && matchesStatus && matchesProcess && matchesDependency && matchesScope;
@@ -475,17 +491,22 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
             <span>Filtrar:</span>
           </div>
 
-          {/* Filtro por Oficina / Dependencia */}
+          {/* Filtro por Oficina / Área / Facultad según Excel Oficial */}
           <select
             value={selectedDependency}
             onChange={(e) => setSelectedDependency(e.target.value)}
-            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[250px]"
-            title="Filtrar por oficina o área responsable de la UPT"
+            className="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] bg-slate-50 hover:bg-white cursor-pointer font-medium max-w-[290px]"
+            title="Filtrar por Órgano, Oficina, Área de DIGA o Facultad de la UPT"
           >
-            {UPT_DEPENDENCIES.map((dep) => (
-              <option key={dep.id} value={dep.id}>
-                {dep.name}
-              </option>
+            <option value="all">Todas las Oficinas, Áreas y Facultades (28)</option>
+            {ORGAN_GROUPS.map((group) => (
+              <optgroup key={group.key} label={group.label}>
+                {ORGANIZATION_UNITS.filter((u) => u.organGroup === group.key).map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.displayName} ({u.consolidatedProcedures.length} proc.)
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
 
