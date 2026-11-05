@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SGC UPT - Sistema Integrado de Gestión de la Calidad</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#1E3F5D',
+              hover: '#17334c',
+              dark: '#132B42',
+              light: '#2d5a82'
+            },
+            granate: {
+              DEFAULT: '#1E3F5D',
+              hover: '#132B42',
+              dark: '#0c1b2a',
+              light: '#2d5a82'
+            },
+            uptblue: {
+              DEFAULT: '#1E3F5D',
+              dark: '#132B42',
+              light: '#2d5a82'
+            },
+            gold: {
+              DEFAULT: '#9C7D0F',
+              light: '#e9c082',
+              dark: '#523805'
+            },
+            neutralSlate: {
+              DEFAULT: '#76777A',
+              light: '#949699',
+              dark: '#4f5052'
+            }
+          },
+          fontFamily: {
+            cinzel: ['Cinzel', 'serif'],
+            outfit: ['Outfit', 'sans-serif'],
+            inter: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body {
+      height: 100vh !important;
+      max-height: 100vh !important;
+      overflow: hidden !important;
+      margin: 0;
+      padding: 0;
+    }
+    /* Estilos Glassmorphism de alta definición translúcido */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.32);
+      backdrop-filter: blur(8px) saturate(140%);
+      -webkit-backdrop-filter: blur(8px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      box-shadow: 
+        0 20px 45px -10px rgba(15, 41, 66, 0.16),
+        0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+        0 8px 20px -4px rgba(0, 0, 0, 0.08);
+      border-radius: 24px;
+    }
+
+    .glass-subcard {
+      background: rgba(255, 255, 255, 0.48);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+    }
+
+    .glass-input {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1.5px solid rgba(15, 41, 66, 0.15);
+      transition: all 0.25s ease;
+    }
+    .glass-input:focus {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: #800020;
+      box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.14);
+    }
+
+    .concentric-circle-outer {
+      box-shadow: 0 0 0 4px rgba(128, 0, 32, 0.1), 0 0 0 8px rgba(128, 0, 32, 0.05);
+    }
+
+    .concentric-circle-blue {
+      box-shadow: 0 0 0 4px rgba(15, 41, 66, 0.1), 0 0 0 8px rgba(15, 41, 66, 0.05);
+    }
+
+    /* Animaciones suaves */
+    .chip-btn {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .chip-btn.active {
+      background: #0F2942;
+      color: #FFFFFF;
+      border-color: #0F2942;
+      box-shadow: 0 4px 10px rgba(15, 41, 66, 0.25);
+    }
+
+    /* Fondo fotográfico luminoso sin veladuras oscuras */
+    .hero-bg-overlay {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* Insignias ISO */
+    .iso-badge {
+      background: linear-gradient(135deg, rgba(15, 41, 66, 0.92) 0%, rgba(22, 62, 99, 0.92) 100%);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      box-shadow: 0 4px 12px rgba(15, 41, 66, 0.18);
+    }
+
+    /* Escudo flotante con sombra elegante */
+    .shield-float {
+      filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.35));
+      animation: subtleFloat 6s ease-in-out infinite alternate;
+    }
+    @keyframes subtleFloat {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-4px); }
+    }
+  </style>
+</head>
+<body class="relative h-screen max-h-screen w-full flex flex-col justify-between font-inter text-slate-800 antialiased overflow-hidden selection:bg-granate selection:text-white">
+
+  <!-- CAPA DE FONDO: FOTOGRAFÍA ARQUITECTÓNICA DE CAMPUS NÍTIDA Y NATURAL -->
+  <div class="fixed inset-0 w-full h-full -z-20 overflow-hidden">
+    <img 
+      src="/upt_campus_fachada.jpg" 
+      alt="Campus Universidad Privada de Tacna" 
+      class="w-full h-full object-cover object-center"
+    />
+  </div>
+
+  <!-- OVERLAY DE LUZ Y TONO INSTITUCIONAL SUTIL -->
+  <div class="fixed inset-0 w-full h-full -z-10 hero-bg-overlay pointer-events-none"></div>
+
+  <!-- BARRA DE INFORMACIÓN SUPERIOR (MINIMALISTA) -->
+  <header class="w-full px-6 py-2 flex-shrink-0 flex justify-between items-center z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+      <span class="text-xs font-semibold tracking-wider uppercase text-white/95 drop-shadow-sm font-outfit">
+        PORTAL OFICIAL UPT &bull; SGC
+      </span>
+    </div>
+    <div class="flex items-center gap-6 text-xs text-white/90 drop-shadow-sm">
+      <span class="hidden md:inline-flex items-center gap-1.5 bg-black/25 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+        <svg class="w-3.5 h-3.5 text-gold-light" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clip-rule="evenodd"/>
+        </svg>
+        Entorno Seguro SSL 256-Bit
+      </span>
+      <span class="font-medium bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+        Tacna, Perú
+      </span>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL CENTRAL CON ESCUDO SOBRESALIENTE -->
+  <main class="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 my-auto flex-1 flex flex-col justify-center items-center z-10 overflow-hidden py-1">
+
+    <!-- CONTENEDOR RELATIVO PARA PERMITIR QUE EL ESCUDO SOBRESALGA DE FORMA ELEGANTE -->
+    <div class="relative w-full">
+      
+      <!-- TARJETA CENTRAL DE CRISTAL ESMERILADO (GLASSMORPHISM) -->
+      <div class="glass-card w-full py-6 sm:py-8 px-6 sm:px-8 lg:px-10 max-h-[calc(100vh-70px)] flex flex-col justify-center">
+        
+        <!-- ESCUDO UPT TOTALMENTE ENVUELTO POR EL FONDO DE CRISTAL -->
+        <div class="flex justify-center mb-3 sm:mb-4">
+          <div class="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
+            <img 
+              src="/upt_escudo_oficial.png" 
+              alt="Escudo Heráldico UPT" 
+              class="w-24 h-28 sm:w-28 sm:h-32 lg:w-32 lg:h-36 object-contain filter drop-shadow-xl"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center">
+        
+        <!-- ================= LADO IZQUIERDO: INFORMACIÓN INSTITUCIONAL, NORMAS Y MÉTRICAS ================= -->
+        <div class="lg:col-span-6 flex flex-col justify-between space-y-4 lg:space-y-5 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-4 lg:pb-0 lg:pr-8">
+          
+          <!-- Encabezado de la Universidad y del Sistema -->
+          <div class="space-y-2 text-center lg:text-left">
+            <h1 class="font-cinzel text-xl sm:text-2xl font-extrabold text-uptblue tracking-wide leading-tight">
+              UNIVERSIDAD PRIVADA DE TACNA
+            </h1>
+            
+            <div class="h-1 w-24 bg-gradient-to-r from-[#0d2d3f] via-[#e63b2e] to-[#D4AF37] mx-auto lg:mx-0 rounded-full my-2"></div>
+            
+            <h2 class="font-outfit text-base sm:text-lg font-bold text-[#0d2d3f] tracking-tight">
+              Sistema de Gestión de la Calidad (SGC)
+            </h2>
+            
+            <p class="text-xs text-slate-600 leading-normal font-normal pt-0.5 line-clamp-2">
+              Plataforma rectora institucional para la planificación, auditoría, control de procesos y mejora continua de la excelencia formativa universitaria.
+            </p>
+          </div>
+
+          <!-- INSIGNIAS NORMATIVAS RECTANGULARES LIMPIAS (ISO 21001 e ISO 9001) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            
+            <!-- Insignia ISO 21001:2025 -->
+            <div class="iso-badge rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
+              <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-gold/40 flex-shrink-0 text-gold-light">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold tracking-wider text-gold-light font-outfit uppercase">Norma de Calidad</span>
+                  <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
+                </div>
+                <div class="text-sm font-extrabold text-white tracking-wide font-cinzel">ISO 21001:2025</div>
+                <div class="text-[11px] text-slate-300 truncate">Organizaciones Educativas</div>
+              </div>
+            </div>
+
+            <!-- Insignia ISO 9001:2015 -->
+            <div class="iso-badge rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
+              <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-gold/40 flex-shrink-0 text-gold-light">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold tracking-wider text-gold-light font-outfit uppercase">Norma Calidad</span>
+                  <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
+                </div>
+                <div class="text-sm font-extrabold text-white tracking-wide font-cinzel">ISO 9001:2015</div>
+                <div class="text-[11px] text-slate-300 truncate">Gestión de la Calidad</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- MEDALLONES CIRCULARES CON DOBLE ANILLO CONCÉNTRICO -->
+          <div class="pt-2">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-3 text-center lg:text-left font-outfit">
+              Alcance del Sistema por Procesos Institucionales
+            </span>
+            <div class="grid grid-cols-2 gap-4">
+              
+              <!-- Medallón 1: Procedimientos -->
+              <div class="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
+                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#0d2d3f] to-[#001826] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-outer">
+                  <span class="text-base font-black font-outfit leading-none">98</span>
+                  <span class="text-[9px] uppercase tracking-tighter opacity-80">Docs</span>
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-uptblue font-outfit">Procedimientos</div>
+                  <div class="text-xs text-slate-500">Mapeados y estandarizados</div>
+                </div>
+              </div>
+
+              <!-- Medallón 2: Indicadores -->
+              <div class="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
+                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#0b4967] to-[#001725] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-blue">
+                  <span class="text-base font-black font-outfit leading-none">61</span>
+                  <span class="text-[9px] uppercase tracking-tighter opacity-80">Kpi</span>
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-uptblue font-outfit">Indicadores</div>
+                  <div class="text-xs text-slate-500">Métricas de desempeño</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Pie de créditos y certificación -->
+          <div class="pt-2 flex items-center justify-start text-xs text-slate-600 border-t border-slate-200/60 font-medium">
+            <span>Oficina Gestión de la Calidad</span>
+          </div>
+
+        </div>
+
+        <!-- ================= LADO DERECHO: FORMULARIO DE AUTENTICACIÓN ================= -->
+        <div class="lg:col-span-6 flex flex-col justify-center">
+          
+          <div class="glass-subcard rounded-2xl p-5 sm:p-6 border border-white/80 shadow-md">
+            
+            <div class="flex items-center justify-between mb-2.5"><div><h3 class="text-base font-bold text-uptblue font-outfit">
+                  Acceso a Funcionarios y Auditores
+                </h3>
+                <p class="text-xs text-slate-500">
+                  Seleccione su dependencia operativa institucional
+                </p>
+              </div>
+              <span class="p-2 rounded-lg bg-slate-100 text-[#0d2d3f] border border-slate-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </span>
+            </div>
+
+            <!-- SELECTOR RÁPIDO CON CHIPS DE DEPENDENCIAS CLAVE -->
+            <div class="mb-2.5">
+              <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 font-outfit">
+                Dependencia Operativa Clave
+              </label>
+              <div class="flex flex-wrap gap-1.5" id="chips-container">
+                <button type="button" class="chip-btn active text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50" data-dep="OPLA PE.01">
+                  OPLA <span class="text-[10px] opacity-75 font-mono">PE.01</span>
+                </button>
+                <button type="button" class="chip-btn text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50" data-dep="GECA PE.02">
+                  GECA <span class="text-[10px] opacity-75 font-mono">PE.02</span>
+                </button>
+                <button type="button" class="chip-btn text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50" data-dep="APHU PS.01">
+                  APHU <span class="text-[10px] opacity-75 font-mono">PS.01</span>
+                </button>
+                <button type="button" class="chip-btn text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50" data-dep="TEIN PS.04">
+                  TEIN <span class="text-[10px] opacity-75 font-mono">PS.04</span>
+                </button>
+                <button type="button" class="chip-btn text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-slate-50" data-dep="VRAC PM.01">
+                  VRAC <span class="text-[10px] opacity-75 font-mono">PM.01</span>
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-1 italic" id="dep-description">
+                Oficina de Planificación y Calidad Académica (Proceso Estratégico PE.01)
+              </p>
+            </div>
+
+            <!-- FORMULARIO DE ACCESO -->
+            <form class="space-y-3 sm:space-y-3.5" onsubmit="event.preventDefault(); alert('Iniciando sesión segura en SGC UPT...');">
+              
+              <!-- Campo de Usuario con terminación fija @upt.pe -->
+              <div>
+                <label for="username" class="block text-xs font-bold text-slate-700 mb-1 font-outfit">
+                  Usuario Institucional UPT
+                </label>
+                <div class="relative flex items-center rounded-xl overflow-hidden shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7 7z"/>
+                    </svg>
+                  </div>
+                  <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="cgarcia.calidad" 
+                    value="cgarcia.calidad"
+                    class="glass-input w-full pl-10 pr-24 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                    required
+                  >
+                  <!-- Terminación fija @upt.pe -->
+                  <div class="absolute right-0 inset-y-0 pr-3.5 flex items-center pointer-events-none">
+                    <span class="text-xs font-bold text-[#0d2d3f] bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 font-mono font-bold">
+                      @upt.pe
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Campo de Contraseña -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label for="password" class="block text-xs font-bold text-slate-700 font-outfit">
+                    Contraseña de Acceso
+                  </label>
+                  <a href="#recuperar" class="text-[11px] font-medium text-[#0d2d3f] hover:text-[#e63b2e] hover:underline">
+                    ¿Olvidó su clave?
+                  </a>
+                </div>
+                <div class="relative flex items-center rounded-xl overflow-hidden shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                  </div>
+                  <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="••••••••••••" 
+                    value="Tacna2024Calidad*"
+                    class="glass-input w-full pl-10 pr-10 py-2 sm:py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                    required
+                  >
+                  <button type="button" class="absolute right-0 inset-y-0 pr-3 flex items-center text-slate-400 hover:text-slate-600" onclick="togglePassword()">
+                    <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.144 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Recordar sesión y Token MFA -->
+              <div class="flex items-center justify-between pt-1">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" checked class="w-4 h-4 text-[#0d2d3f] rounded border-slate-300 focus:ring-[#0d2d3f]">
+                  <span class="text-xs text-slate-600">Sesión autenticada en este equipo</span>
+                </label>
+                <span class="text-[11px] font-semibold text-uptblue bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                  MFA UPT Activo
+                </span>
+              </div>
+
+              <!-- BOTÓN PRINCIPAL EN GRANATE VINO (#800020) -->
+              <div class="pt-2">
+                <button 
+                  type="submit" 
+                  class="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#0d2d3f] to-[#001826] hover:brightness-110 text-white font-outfit font-bold text-sm tracking-wide shadow-lg hover:shadow-xl hover:shadow-[#0d2d3f]/30 transition-all duration-200 flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <span>Ingresar a Mi Oficina</span>
+                  <span class="text-base font-bold">&rarr;</span>
+                </button>
+              </div>
+
+            </form>
+
+            <!-- ALTERNAR A REGISTRAR NUEVO FUNCIONARIO -->
+            <div class="mt-2.5 pt-2 border-t border-slate-200/80 text-center flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+              <span class="text-slate-500">¿Nuevo miembro en el equipo de calidad?</span>
+              <a 
+                href="#registrar" 
+                class="font-semibold text-uptblue hover:text-granate transition-colors underline decoration-dotted font-outfit"
+                onclick="alert('Se abrirá el formulario de Registro y Asignación de Roles para Funcionarios SGC.');"
+              >
+                Registrar Nuevo Funcionario &rarr;
+              </a>
+            </div>
+
+          </div>
+
+          <!-- Mensaje de soporte técnico institucional -->
+          <div class="mt-3 pt-2.5 border-t border-slate-300/40 text-center">
+            <div class="text-[11px] font-semibold text-uptblue uppercase tracking-wider mb-1">Mesa de Ayuda SGC</div>
+            <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
+              <a href="mailto:autoevaluacion@upt.edu.pe" class="text-uptblue font-medium hover:underline">autoevaluacion@upt.edu.pe</a>
+              <span class="text-slate-400">&bull;</span>
+              <a href="https://www.upt.edu.pe" target="_blank" rel="noreferrer" class="text-uptblue font-medium hover:underline">www.upt.edu.pe</a>
+              <span class="text-slate-400">&bull;</span>
+              <span class="text-gold font-bold">051-427212 (443)</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA INSTITUCIONAL -->
+  <footer class="w-full px-6 py-2 flex-shrink-0 z-10 bg-black/40 backdrop-blur-md border-t border-white/10 text-white/80 text-xs flex flex-col md:flex-row justify-between items-center gap-3">
+    <div class="flex items-center space-x-4">
+      <span class="font-cinzel font-semibold tracking-wider text-gold-light">
+        UNIVERSIDAD PRIVADA DE TACNA &bull; UPT
+      </span>
+      <span class="hidden sm:inline text-white/40">|</span>
+      <span class="hidden sm:inline text-slate-300">
+        RUC: 20147816828
+      </span>
+    </div>
+    
+    <div class="flex items-center space-x-6 text-[11px] text-slate-300">
+      <a href="#" class="hover:text-white transition-colors">Política de la Calidad</a>
+      <a href="#" class="hover:text-white transition-colors">Mapa de Procesos</a>
+      <a href="#" class="hover:text-white transition-colors">Objetivos ISO 21001 / 9001</a>
+      <a href="#" class="hover:text-white transition-colors">Intranet Institucional</a>
+    </div>
+  </footer>
+
+  <!-- Script interactivo para chips y visualización -->
+  <script>
+    const depDescriptions = {
+      'OPLA PE.01': 'Oficina de Planificación y Calidad Académica (Proceso Estratégico PE.01)',
+      'GECA PE.02': 'Gestión de la Calidad y Acreditación Institucional (Proceso Estratégico PE.02)',
+      'APHU PS.01': 'Administración del Personal Humano y Docente (Proceso de Soporte PS.01)',
+      'TEIN PS.04': 'Tecnologías de la Información y Conectividad (Proceso de Soporte PS.04)',
+      'VRAC PM.01': 'Vicerrectorado Académico - Formación Profesional (Proceso Misional PM.01)'
+    };
+
+    const chips = document.querySelectorAll('.chip-btn');
+    const descText = document.getElementById('dep-description');
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const depKey = chip.getAttribute('data-dep');
+        if (depDescriptions[depKey]) {
+          descText.textContent = depDescriptions[depKey];
+        }
+      });
+    });
+
+    function togglePassword() {
+      const pwd = document.getElementById('password');
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+      } else {
+        pwd.type = 'password';
+      }
+    }
+  </script>
+
+</body>
+</html>
