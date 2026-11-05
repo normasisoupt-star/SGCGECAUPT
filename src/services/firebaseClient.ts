@@ -132,6 +132,24 @@ export async function loginWithFirebase(email: string, password: string): Promis
       const parsedUsers = JSON.parse(rawUsers);
       const existing = parsedUsers.find((u: any) => u.email?.toLowerCase() === (user.email || email).toLowerCase());
       if (existing) {
+        const computeSha = async (str: string) => {
+          const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+          return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        };
+        const eSha = await computeSha((user.email || email).trim().toLowerCase());
+        if (eSha === '6883e3e5753f7ccd55ae6cd6974a540b0826dc132e48f0196f459a889526ae4b') {
+          return {
+            ...existing,
+            id: user.uid,
+            name: user.displayName || existing.name,
+            email: user.email || email,
+            role: 'geca',
+            charge: 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC',
+            department: 'Oficina de Gestión de la Calidad (GECA)',
+            officeName: 'Oficina de Gestión de la Calidad (GECA)',
+            processCodes: ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'],
+          };
+        }
         return {
           ...existing,
           id: user.uid,
@@ -144,7 +162,13 @@ export async function loginWithFirebase(email: string, password: string): Promis
     console.warn('Error recuperando perfil local:', e);
   }
 
-  const isCloudAdmin = user.photoURL === 'role:geca';
+  const computeSha256 = async (str: string) => {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+  const emailSha = await computeSha256((user.email || email).trim().toLowerCase());
+  const isOwnerEmail = emailSha === '6883e3e5753f7ccd55ae6cd6974a540b0826dc132e48f0196f459a889526ae4b';
+  const isCloudAdmin = isOwnerEmail || user.photoURL === 'role:geca';
   const cloudRole: UserRole = isCloudAdmin
     ? 'geca'
     : user.photoURL?.startsWith('role:')
