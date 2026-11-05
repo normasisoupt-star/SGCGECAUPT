@@ -60,6 +60,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   useEffect(() => {
     setEmailUsername('');
     setPassword('');
+    setAdminPin('');
   }, [activeTab]);
 
   // Registration State
@@ -71,6 +72,8 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [regCharge, setRegCharge] = useState('');
   const [regOfficeIndex, setRegOfficeIndex] = useState(0);
   const [regRole, setRegRole] = useState<UserRole>('colaborador');
+  const [adminPin, setAdminPin] = useState('');
+  const [showAdminPin, setShowAdminPin] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
   const getFullLoginEmail = () => {
@@ -80,7 +83,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   };
 
   // ========================================================
-  // INICIO DE SESIÓN (FIREBASE AUTH + CREDENCIAL MAESTRA ADMIN)
+  // INICIO DE SESIÓN SEGURO Y AUTENTICADO CON FIREBASE AUTH
   // ========================================================
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,43 +92,9 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
     const fullEmail = getFullLoginEmail();
 
-    // 1. CREDENCIAL MAESTRA OCULTA DE ADMINISTRADOR (GECA)
-    if (fullEmail === 'licencia_institucional@upt.pe' && password === 'ISO21001-gecaupt') {
-      const masterAdminUser: UserProfile = {
-        id: 'u-master-admin',
-        name: 'Administrador General SGC (GECA)',
-        email: 'licencia_institucional@upt.pe',
-        role: 'geca',
-        charge: 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC',
-        department: 'Oficina de Gestión de la Calidad',
-        officeName: 'Oficina de Gestión de la Calidad',
-        processCodes: ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'],
-        avatar: undefined,
-      };
-
-      // Si existe o no en Firebase, intentamos autenticarlo o crearlo silenciosamente
-      try {
-        await loginWithFirebase(fullEmail, password);
-      } catch {
-        try {
-          await registerWithFirebase(fullEmail, password, masterAdminUser);
-        } catch {}
-      }
-
-      setStatusMessage({
-        type: 'success',
-        text: 'Acceso de Administrador General concedido.',
-      });
-      setTimeout(() => {
-        onLogin(masterAdminUser);
-      }, 700);
-      return;
-    }
-
-    // 2. Autenticación regular en Firebase Auth
     try {
       const firebaseUser = await loginWithFirebase(fullEmail, password);
-      // Combinar con los datos registrados localmente si existen para mantener cargo, oficina y proceso
+      // Combinar con los datos registrados localmente para mantener cargo, oficina y procesos
       const matchedLocal = users.find(u => 
         u.email.toLowerCase() === fullEmail.toLowerCase() || 
         u.email.toLowerCase().startsWith(emailUsername.toLowerCase().split('@')[0] + '@')
@@ -135,6 +104,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         id: firebaseUser.id,
         name: firebaseUser.name || matchedLocal.name,
         email: firebaseUser.email || matchedLocal.email,
+        role: matchedLocal.role || firebaseUser.role,
       } : firebaseUser;
 
       setStatusMessage({
@@ -147,30 +117,13 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       return;
     } catch (err: any) {
       console.warn('Firebase Login intento:', err);
-      let errorMsg = 'Error al iniciar sesión.';
+      let errorMsg = 'Correo electrónico o contraseña incorrectos.';
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
-        errorMsg = 'Credenciales no válidas. Si es tu primera vez, regístrate en "Registrar Nuevo Funcionario".';
+        errorMsg = 'Credenciales no válidas. Si aún no tienes cuenta registrada, regístrate en "Registrar Nuevo Funcionario".';
       } else if (err.code === 'auth/operation-not-allowed') {
-        errorMsg = 'Por favor asegúrate de activar Correo/Contraseña en la consola de Firebase (Authentication > Sign-in method).';
+        errorMsg = 'Debe activar el método Correo/Contraseña en la consola de Firebase Authentication.';
       } else if (err.message) {
         errorMsg = err.message;
-      }
-
-      // Fallback a cuentas institucionales de prueba
-      const matchedLocal = users.find(u => 
-        u.email.toLowerCase() === fullEmail || 
-        u.email.toLowerCase().startsWith(emailUsername.toLowerCase().split('@')[0] + '@')
-      );
-
-      if (matchedLocal) {
-        setStatusMessage({
-          type: 'info',
-          text: `Acceso concedido mediante credencial institucional (${matchedLocal.charge}).`,
-        });
-        setTimeout(() => {
-          onLogin(matchedLocal);
-        }, 1000);
-        return;
       }
 
       setStatusMessage({ type: 'error', text: errorMsg });
@@ -202,6 +155,20 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
     setIsLoading(true);
 
+    // Validación de PIN Secreto para Administrador General
+    if (regRole === 'geca') {
+      const pinTrimmed = adminPin.trim().toUpperCase();
+      if (pinTrimmed !== 'GECA2026' && pinTrimmed !== '21001') {
+        setStatusMessage({
+          type: 'error',
+          text: 'El PIN de seguridad para Administrador General es incorrecto. Comuníquese con la Dirección de Calidad.',
+        });
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    const isAdminRole = regRole === 'geca';
     const selectedOfficeDef = OFFICE_DIRECTORY[regOfficeIndex];
     const fullRegEmail = regEmail.trim().toLowerCase().includes('@') 
       ? regEmail.trim().toLowerCase() 
@@ -210,11 +177,13 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
     const newUser: Omit<UserProfile, 'id'> = {
       name: regName.trim(),
       email: fullRegEmail,
-      charge: regCharge.trim() || selectedOfficeDef.charge,
-      department: selectedOfficeDef.name,
-      officeName: selectedOfficeDef.name,
-      role: regRole, // Solo 'colaborador', 'director_escuela', o 'auditor'
-      processCodes: [selectedOfficeDef.code as ProcessLevel0],
+      charge: regCharge.trim() || (isAdminRole ? 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC' : selectedOfficeDef.charge),
+      department: isAdminRole ? 'Oficina de Gestión de la Calidad (GECA)' : selectedOfficeDef.name,
+      officeName: isAdminRole ? 'Oficina de Gestión de la Calidad (GECA)' : selectedOfficeDef.name,
+      role: regRole,
+      processCodes: isAdminRole 
+        ? ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'] 
+        : [selectedOfficeDef.code as ProcessLevel0],
       avatar: undefined,
     };
 
@@ -662,9 +631,9 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                           </select>
                         </div>
 
-                        {/* Selector de Roles: SIN ADMINISTRADOR */}
+                        {/* Selector de Roles: CON OPCIÓN DE ADMINISTRADOR GENERAL */}
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Rol en el SGC</label>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-0.5 font-outfit">Rol en el SGC *</label>
                           <select
                             value={regRole}
                             onChange={(e) => setRegRole(e.target.value as UserRole)}
@@ -673,8 +642,39 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             <option value="colaborador">Colaborador Administrativo</option>
                             <option value="director_escuela">Dueño de Proceso / Director</option>
                             <option value="auditor">Auditor Interno (NTP-ISO 21001:2026)</option>
+                            <option value="geca">🛡️ Administrador General SGC (GECA)</option>
                           </select>
                         </div>
+
+                        {/* Campo de PIN Secreto si selecciona Administrador General */}
+                        {regRole === 'geca' && (
+                          <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 space-y-1.5 animate-in fade-in">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
+                              <ShieldCheck className="w-4 h-4 text-amber-800" />
+                              <span>PIN Secreto de Activación de Administrador *</span>
+                            </div>
+                            <p className="text-[11px] text-amber-900 leading-tight">
+                              Ingrese el código de seguridad institucional para validar los privilegios de Administrador General.
+                            </p>
+                            <div className="relative flex items-center">
+                              <input
+                                type={showAdminPin ? 'text' : 'password'}
+                                placeholder="Ingrese el PIN de Seguridad"
+                                value={adminPin}
+                                onChange={(e) => setAdminPin(e.target.value)}
+                                required
+                                className="glass-input w-full px-3 pr-8 py-1.5 rounded-lg text-xs text-slate-900 focus:outline-none bg-white font-mono"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowAdminPin(!showAdminPin)}
+                                className="absolute right-2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                              >
+                                {showAdminPin ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="pt-2">
                           <button

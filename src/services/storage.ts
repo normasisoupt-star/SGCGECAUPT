@@ -520,6 +520,7 @@ export function registerUser(newUser: Omit<UserProfile, 'id'>): UserProfile {
   };
   users.push(created);
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  localStorage.setItem('upt_sgc_users_v1', JSON.stringify(users));
   setActiveUser(created);
   addActivityLog({
     userName: created.name,
