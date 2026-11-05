@@ -480,22 +480,7 @@ export function updateChecklistItem(item: AuditChecklistItem): void {
 }
 
 // --- USUARIOS Y ROLES ---
-export function getUsers(): UserProfile[] {
-  initStorage();
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.USERS);
-    const parsed = raw ? JSON.parse(raw) : null;
-    if (!parsed || parsed.length < UPT_USERS.length) {
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(UPT_USERS));
-      return UPT_USERS;
-    }
-    return parsed;
-  } catch {
-    return UPT_USERS;
-  }
-}
-
-function computeSyncHash(s: string): string {
+export function computeSyncHash(s: string): string {
   let h1 = 0xdeadbeef ^ s.length;
   let h2 = 0x41c6ce57 ^ s.length;
   for (let i = 0; i < s.length; i++) {
@@ -508,51 +493,96 @@ function computeSyncHash(s: string): string {
   return h2.toString(16).padStart(8, '0') + h1.toString(16).padStart(8, '0');
 }
 
+export function normalizeUserProfile(u: UserProfile): UserProfile {
+  if (!u) return u;
+  const emailHash = computeSyncHash((u.email || '').trim().toLowerCase());
+  const chargeHash = computeSyncHash((u.charge || '').trim().toUpperCase());
+  // Solo el propietario autorizado (2bdcaa29f816e1df) tiene el rol Administrador del Sistema
+  if (
+    emailHash === '2bdcaa29f816e1df' ||
+    chargeHash === 'de76c5eddf099554' ||
+    chargeHash === 'd8d15fd595df5921'
+  ) {
+    return {
+      ...u,
+      role: 'geca',
+      charge: 'Administrador del Sistema',
+      department: 'Administrador del Sistema',
+      officeName: 'Administrador del Sistema',
+      processCodes: ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'],
+    };
+  }
+  return u;
+}
+
+export function getUsers(): UserProfile[] {
+  initStorage();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.USERS);
+    const parsed: UserProfile[] | null = raw ? JSON.parse(raw) : null;
+    if (!parsed || parsed.length < UPT_USERS.length) {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(UPT_USERS));
+      return UPT_USERS;
+    }
+    let changed = false;
+    const normalizedList = parsed.map(u => {
+      const norm = normalizeUserProfile(u);
+      if (
+        norm.role !== u.role ||
+        norm.charge !== u.charge ||
+        norm.officeName !== u.officeName ||
+        norm.department !== u.department
+      ) {
+        changed = true;
+      }
+      return norm;
+    });
+    if (changed) {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(normalizedList));
+      localStorage.setItem('upt_sgc_users_v1', JSON.stringify(normalizedList));
+    }
+    return normalizedList;
+  } catch {
+    return UPT_USERS;
+  }
+}
+
 export function getActiveUser(): UserProfile {
   initStorage();
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.ACTIVE_USER);
     if (!raw) return UPT_USERS[0];
     const parsed: UserProfile = JSON.parse(raw);
-    const emailHash = computeSyncHash((parsed.email || '').trim().toLowerCase());
-    const chargeHash = computeSyncHash((parsed.charge || '').trim().toUpperCase());
+    const normalized = normalizeUserProfile(parsed);
     if (
-      emailHash === '2bdcaa29f816e1df' ||
-      chargeHash === 'de76c5eddf099554' ||
-      chargeHash === 'd8d15fd595df5921'
+      normalized.role !== parsed.role ||
+      normalized.charge !== parsed.charge ||
+      normalized.officeName !== parsed.officeName ||
+      normalized.department !== parsed.department
     ) {
-      if (parsed.role !== 'geca' || parsed.charge === 'GECA2026' || parsed.charge === '21001') {
-        const upgraded: UserProfile = {
-          ...parsed,
-          role: 'geca',
-          charge: 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC',
-          department: 'Oficina de Gestión de la Calidad (GECA)',
-          officeName: 'Oficina de Gestión de la Calidad (GECA)',
-          processCodes: ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'],
-        };
-        localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(upgraded));
-        return upgraded;
-      }
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalized));
     }
-    return parsed;
+    return normalized;
   } catch {
     return UPT_USERS[0];
   }
 }
 
-export function setActiveUser(user: UserProfile): void {
-  localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(user));
-  broadcastChange('USER_CHANGED', user);
+export function setActiveUser(user: UserProfile): UserProfile {
+  const normalized = normalizeUserProfile(user);
+  localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalized));
+  broadcastChange('USER_CHANGED', normalized);
+  return normalized;
 }
 
 export function registerUser(newUser: Omit<UserProfile, 'id'>): UserProfile {
   const users = getUsers();
   const id = `u-custom-${Date.now()}`;
-  const created: UserProfile = {
+  const created: UserProfile = normalizeUserProfile({
     ...newUser,
     id,
     avatar: newUser.avatar,
-  };
+  });
   users.push(created);
   localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
   localStorage.setItem('upt_sgc_users_v1', JSON.stringify(users));
@@ -563,7 +593,7 @@ export function registerUser(newUser: Omit<UserProfile, 'id'>): UserProfile {
     action: 'Registró nuevo funcionario institucional en el SGC UPT',
     entityType: 'sistema',
     entityId: created.id,
-    details: `Oficina: ${created.officeName || created.department} (${created.processCodes ? created.processCodes.join(', ') : 'SGC'}) - Rol: ${created.role.toUpperCase()}`,
+    details: `Perfil: ${created.officeName || created.department} (${created.processCodes ? created.processCodes.join(', ') : 'SGC'}) - Rol: ${created.role.toUpperCase()}`,
   });
   broadcastChange('USER_CHANGED', created);
   return created;

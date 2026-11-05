@@ -96,13 +96,24 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         u.email.toLowerCase() === fullEmail.toLowerCase() || 
         u.email.toLowerCase().startsWith(emailUsername.toLowerCase().split('@')[0] + '@')
       );
-      const finalUser = matchedLocal ? {
+      const isSystemAdmin = firebaseUser.role === 'geca' || matchedLocal?.role === 'geca';
+      const finalUser: UserProfile = isSystemAdmin ? {
+        ...(matchedLocal || firebaseUser),
+        id: firebaseUser.id,
+        name: (matchedLocal?.name && !matchedLocal.name.includes('Jefe de la Oficina')) ? matchedLocal.name : firebaseUser.name,
+        email: firebaseUser.email || matchedLocal?.email || fullEmail,
+        role: 'geca',
+        charge: 'Administrador del Sistema',
+        department: 'Administrador del Sistema',
+        officeName: 'Administrador del Sistema',
+        processCodes: ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'],
+      } : (matchedLocal ? {
         ...matchedLocal,
         id: firebaseUser.id,
         name: firebaseUser.name || matchedLocal.name,
         email: firebaseUser.email || matchedLocal.email,
         role: matchedLocal.role || firebaseUser.role,
-      } : firebaseUser;
+      } : firebaseUser);
 
       setStatusMessage({
         type: 'success',
@@ -157,26 +168,23 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
     };
-    const chargeHash = await computeSha256(regCharge.trim().toUpperCase());
-    const isAdminHash =
-      chargeHash === 'a16deca5af72532365bd3cc18db2985818432a620c073f4e73b714ccd514958f' ||
-      chargeHash === 'ada02680e214f4a148fba73212ee960b04603ca19b2a90bc2ec49a23c3a89eb6';
-
-    const isAdminRole = isAdminHash;
-    const finalRole: UserRole = isAdminRole ? 'geca' : regRole;
-    const selectedOfficeDef = OFFICE_DIRECTORY[regOfficeIndex];
     const fullRegEmail = regEmail.trim().toLowerCase().includes('@') 
       ? regEmail.trim().toLowerCase() 
       : `${regEmail.trim().toLowerCase()}@upt.pe`;
+    const emailHash = await computeSha256(fullRegEmail);
+    const isOwnerAdmin = emailHash === '6883e3e5753f7ccd55ae6cd6974a540b0826dc132e48f0196f459a889526ae4b';
+
+    const finalRole: UserRole = isOwnerAdmin ? 'geca' : regRole;
+    const selectedOfficeDef = OFFICE_DIRECTORY[regOfficeIndex];
 
     const newUser: Omit<UserProfile, 'id'> = {
       name: regName.trim(),
       email: fullRegEmail,
-      charge: isAdminRole ? 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC' : (regCharge.trim() || selectedOfficeDef.charge),
-      department: isAdminRole ? 'Oficina de Gestión de la Calidad (GECA)' : selectedOfficeDef.name,
-      officeName: isAdminRole ? 'Oficina de Gestión de la Calidad (GECA)' : selectedOfficeDef.name,
+      charge: isOwnerAdmin ? 'Administrador del Sistema' : (regCharge.trim() || selectedOfficeDef.charge),
+      department: isOwnerAdmin ? 'Administrador del Sistema' : selectedOfficeDef.name,
+      officeName: isOwnerAdmin ? 'Administrador del Sistema' : selectedOfficeDef.name,
       role: finalRole,
-      processCodes: isAdminRole 
+      processCodes: isOwnerAdmin 
         ? ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'] 
         : [selectedOfficeDef.code as ProcessLevel0],
       avatar: undefined,

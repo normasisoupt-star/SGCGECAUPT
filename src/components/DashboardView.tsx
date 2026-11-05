@@ -69,39 +69,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[#F3E5AB] text-xs font-semibold font-outfit">
               <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Universidad Privada de Tacna &bull; {activeUser?.officeName || activeUser?.department || 'Oficina de Gestión de la Calidad (GECA)'}</span>
+              <span>Universidad Privada de Tacna &bull; {isAdmin ? 'Administrador del Sistema' : (activeUser?.officeName || activeUser?.department || 'Dependencia Institucional UPT')}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white capitalize">
               {activeUser?.name || 'Funcionario UPT'}
             </h1>
 
-            {/* Metadatos Institucionales del Funcionario: Oficina, Cargo, Proceso Relacionado */}
+            {/* Metadatos Institucionales del Funcionario: Rol/Oficina, Cargo, Alcance */}
             <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
-              {/* Oficina Asignada */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white shadow-xs">
-                <Building2 className="w-3.5 h-3.5 text-[#F3E5AB] shrink-0" />
-                <span className="text-slate-300 font-normal">Oficina:</span>
-                <span className="font-bold text-white tracking-wide">
-                  {activeUser?.officeName || activeUser?.department || 'Dependencia Institucional UPT'}
-                </span>
-              </div>
+              {/* Oficina Asignada (solo para usuarios de oficina, no para el Administrador del Sistema) */}
+              {!isAdmin && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white shadow-xs">
+                  <Building2 className="w-3.5 h-3.5 text-[#F3E5AB] shrink-0" />
+                  <span className="text-slate-300 font-normal">Oficina:</span>
+                  <span className="font-bold text-white tracking-wide">
+                    {activeUser?.officeName || activeUser?.department || 'Dependencia Institucional UPT'}
+                  </span>
+                </div>
+              )}
 
-              {/* Cargo Institucional */}
+              {/* Rol / Cargo Institucional */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white shadow-xs">
                 <Briefcase className="w-3.5 h-3.5 text-[#F3E5AB] shrink-0" />
-                <span className="text-slate-300 font-normal">Cargo:</span>
+                <span className="text-slate-300 font-normal">{isAdmin ? 'Rol:' : 'Cargo:'}</span>
                 <span className="font-bold text-white tracking-wide">
-                  {activeUser?.charge || 'Funcionario'}
+                  {isAdmin ? 'Administrador del Sistema' : (activeUser?.charge || 'Funcionario')}
                 </span>
               </div>
 
-              {/* Proceso SGC Relacionado */}
+              {/* Alcance / Proceso SGC Relacionado */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#9C7D0F]/30 backdrop-blur-md border border-[#9C7D0F]/50 text-xs text-[#F3E5AB] shadow-xs">
                 <Network className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
-                <span className="text-slate-200 font-normal">Proceso Relacionado:</span>
+                <span className="text-slate-200 font-normal">{isAdmin ? 'Alcance SGC:' : 'Proceso Relacionado:'}</span>
                 <span className="font-bold text-white">
                   {isAdmin
-                    ? 'Todos los 13 Procesos UPT (Acceso Global GECA)'
+                    ? 'Acceso Total a los 13 Procesos Institucionales UPT'
                     : userProcesses.length > 0
                     ? userProcesses.map((p) => `${p.code} - ${p.name}`).join(' • ')
                     : activeUser?.processCodes && activeUser.processCodes.length > 0

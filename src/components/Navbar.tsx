@@ -122,7 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {activeUser?.name}
                 </div>
                 <div className="text-[11px] text-slate-500 truncate">
-                  {activeUser?.officeName || activeUser?.department}
+                  {isAdmin ? 'Administrador del Sistema' : (activeUser?.officeName || activeUser?.department)}
                 </div>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />

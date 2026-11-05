@@ -144,9 +144,9 @@ export async function loginWithFirebase(email: string, password: string): Promis
             name: user.displayName || existing.name,
             email: user.email || email,
             role: 'geca',
-            charge: 'Jefe de la Oficina de Gestión de la Calidad / Administrador SGC',
-            department: 'Oficina de Gestión de la Calidad (GECA)',
-            officeName: 'Oficina de Gestión de la Calidad (GECA)',
+            charge: 'Administrador del Sistema',
+            department: 'Administrador del Sistema',
+            officeName: 'Administrador del Sistema',
             processCodes: ['PE.01', 'PE.02', 'PE.03', 'PE.04', 'PM.01', 'PM.02', 'PM.03', 'PS.01', 'PS.02', 'PS.03', 'PS.04', 'PS.05', 'PS.06'],
           };
         }

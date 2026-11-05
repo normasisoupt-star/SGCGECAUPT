@@ -31,6 +31,7 @@ import {
   getUsers,
   getActiveUser,
   setActiveUser,
+  normalizeUserProfile,
   getLogs,
   subscribeToRealtime,
   initStorage,
@@ -98,10 +99,26 @@ export function App() {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    const normalized = normalizeUserProfile(activeUser);
+    if (
+      normalized &&
+      (normalized.role !== activeUser.role ||
+        normalized.charge !== activeUser.charge ||
+        normalized.officeName !== activeUser.officeName)
+    ) {
+      setActiveUser(normalized);
+      setActiveUserState(normalized);
+      setScopeMode('all');
+    } else if (activeUser?.role === 'geca' && scopeMode !== 'all') {
+      setScopeMode('all');
+    }
+  }, [activeUser]);
+
   const handleSwitchUser = (user: UserProfile) => {
-    setActiveUser(user);
-    setActiveUserState(user);
-    if (user.role === 'geca' || user.role === 'rectorado' || user.role === 'auditor') {
+    const normalized = setActiveUser(user);
+    setActiveUserState(normalized);
+    if (normalized.role === 'geca' || normalized.role === 'rectorado' || normalized.role === 'auditor') {
       setScopeMode('all');
     } else {
       setScopeMode('my_office');
