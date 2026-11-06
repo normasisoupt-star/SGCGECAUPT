@@ -650,3 +650,465 @@ export function resolveUserOrganizationUnit(user: {
   if (text.includes('geca') || text.includes('gestión de la calidad')) return getOrganizationUnitById('geca-office');
   return undefined;
 }
+
+export interface SubordinateUnitBreakdown {
+  id: string;
+  label: string;
+  shortLabel: string;
+  procedureCodes: string[];
+  isDirect?: boolean;
+  kind: 'direct' | 'office' | 'area' | 'faculty';
+}
+
+export function getSubordinateUnitsForParent(parentUnitId?: string): SubordinateUnitBreakdown[] {
+  if (!parentUnitId) return [];
+
+  if (parentUnitId === 'vrac') {
+    return [
+      {
+        id: 'vrac-direct',
+        label: 'Vicerrectorado Académico (Directos Despacho VRAC)',
+        shortLabel: 'Directos VRAC',
+        procedureCodes: VRAC_OWN,
+        isDirect: true,
+        kind: 'direct',
+      },
+      {
+        id: 'gpad',
+        label: 'Gestión de Procesos Académicos y Docencia (GPAD)',
+        shortLabel: 'GPAD (Procesos Académicos)',
+        procedureCodes: GPAD_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'adma',
+        label: 'Oficina de Admisión y Marketing (ADMA)',
+        shortLabel: 'Admisión y Marketing (ADMA)',
+        procedureCodes: ADMA_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'obun',
+        label: 'Oficina de Bienestar Universitario (OBUN)',
+        shortLabel: 'Bienestar Universitario (OBUN)',
+        procedureCodes: OBUN_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'resu',
+        label: 'Oficina de Responsabilidad Social Universitaria (RESU)',
+        shortLabel: 'Responsabilidad Social (RESU)',
+        procedureCodes: RESU_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'facultades-group',
+        label: 'Facultades UPT (FAING, FACSA, FACEM, FAEDCOH, FAU, FADE)',
+        shortLabel: 'Facultades UPT (6)',
+        procedureCodes: FACULTY_PROCEDURE_CODES,
+        kind: 'faculty',
+      },
+    ];
+  }
+
+  if (parentUnitId === 'vrin') {
+    return [
+      {
+        id: 'pitt',
+        label: 'Oficina de Procesos de Investigación y Transferencia Tecnológica (PITT)',
+        shortLabel: 'Investigación y Transferencia (PITT)',
+        procedureCodes: PITT_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'bisa',
+        label: 'Oficina de Biblioteca y Servicios Académicos (BISA)',
+        shortLabel: 'Biblioteca y Servicios Académicos (BISA)',
+        procedureCodes: BISA_OWN,
+        kind: 'office',
+      },
+    ];
+  }
+
+  if (parentUnitId === 'diga') {
+    return [
+      {
+        id: 'diga-direct',
+        label: 'Dirección General de Administración (Directos Despacho DIGA)',
+        shortLabel: 'Directos DIGA',
+        procedureCodes: DIGA_OWN,
+        isDirect: true,
+        kind: 'direct',
+      },
+      {
+        id: 'diga-aima',
+        label: 'Área de Infraestructura y Mantenimiento (AIMA)',
+        shortLabel: 'Área Infraestructura (AIMA)',
+        procedureCodes: AIMA_OWN,
+        kind: 'area',
+      },
+      {
+        id: 'diga-alog',
+        label: 'Área de Logística (ALOG)',
+        shortLabel: 'Área Logística (ALOG)',
+        procedureCodes: ALOG_OWN,
+        kind: 'area',
+      },
+      {
+        id: 'diga-patrimonio',
+        label: 'Área de Patrimonio',
+        shortLabel: 'Área Patrimonio',
+        procedureCodes: PATRIMONIO_OWN,
+        kind: 'area',
+      },
+      {
+        id: 'diga-aphu',
+        label: 'Área del Potencial Humano (APHU)',
+        shortLabel: 'Área Potencial Humano (APHU)',
+        procedureCodes: APHU_OWN,
+        kind: 'area',
+      },
+      {
+        id: 'diga-tesoreria',
+        label: 'Área de Tesorería',
+        shortLabel: 'Área Tesorería',
+        procedureCodes: TESORERIA_OWN,
+        kind: 'area',
+      },
+      {
+        id: 'diga-contabilidad',
+        label: 'Área de Contabilidad',
+        shortLabel: 'Área Contabilidad',
+        procedureCodes: CONTABILIDAD_OWN,
+        kind: 'area',
+      },
+    ];
+  }
+
+  if (parentUnitId === 'rectorado') {
+    return [
+      {
+        id: 'rectorado-direct',
+        label: 'Rectorado (Directos Despacho Rectoral)',
+        shortLabel: 'Directos Rectorado',
+        procedureCodes: RECTORADO_OWN,
+        isDirect: true,
+        kind: 'direct',
+      },
+      {
+        id: 'opla',
+        label: 'Oficina de Planeamiento y Desarrollo (OPLA)',
+        shortLabel: 'Planeamiento (OPLA)',
+        procedureCodes: OPLA_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'sege',
+        label: 'Oficina de Secretaría General (SEGE)',
+        shortLabel: 'Secretaría General (SEGE)',
+        procedureCodes: SEGE_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'ajul',
+        label: 'Oficina de Asesoría Jurídica y Legal (AJUL)',
+        shortLabel: 'Asesoría Legal (AJUL)',
+        procedureCodes: AJUL_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'diga-all',
+        label: 'Dirección General de Administración (DIGA y sus 6 Áreas)',
+        shortLabel: 'DIGA y sus 6 Áreas',
+        procedureCodes: DIGA_CONSOLIDATED,
+        kind: 'office',
+      },
+      {
+        id: 'tein',
+        label: 'Oficina de Tecnología de Información (TEIN)',
+        shortLabel: 'Tecnología TI (TEIN)',
+        procedureCodes: TEIN_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'reni',
+        label: 'Oficina de Relaciones Nacionales e Internacionales (RENI)',
+        shortLabel: 'Relaciones Interinst. (RENI)',
+        procedureCodes: RENI_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'geca-office',
+        label: 'Oficina de Gestión de la Calidad (GECA)',
+        shortLabel: 'Gestión de la Calidad (GECA)',
+        procedureCodes: GECA_OWN,
+        kind: 'office',
+      },
+      {
+        id: 'imai',
+        label: 'Oficina de Imagen Institucional (IMAI)',
+        shortLabel: 'Imagen Institucional (IMAI)',
+        procedureCodes: IMAI_OWN,
+        kind: 'office',
+      },
+    ];
+  }
+
+  return [];
+}
+
+export interface ProcedureResponsibilityBadge {
+  unitId: string;
+  label: string;
+  prefix: string;
+  isDirect: boolean;
+  kind: 'direct' | 'office' | 'area' | 'faculty';
+}
+
+export function getProcedureResponsibleBadges(
+  procedureCode: string,
+  activeUnit?: OrganizationUnit
+): ProcedureResponsibilityBadge[] {
+  // Si el usuario pertenece a una dependencia matriz (VRAC, VRIN, DIGA, RECTORADO),
+  // mostramos exactamente qué oficina/área bajo su mando ejecuta ese procedimiento
+  if (activeUnit) {
+    const subUnits = getSubordinateUnitsForParent(activeUnit.id);
+    if (subUnits.length > 0) {
+      const matched: ProcedureResponsibilityBadge[] = [];
+      for (const sub of subUnits) {
+        if (sub.procedureCodes.includes(procedureCode)) {
+          // Si es Rectorado y cayó en DIGA consolidado, detallamos también el área específica de DIGA
+          if (sub.id === 'diga-all') {
+            const digaSubUnits = getSubordinateUnitsForParent('diga').filter((d) =>
+              d.procedureCodes.includes(procedureCode)
+            );
+            for (const dSub of digaSubUnits) {
+              if (!dSub.isDirect) {
+                matched.push({
+                  unitId: dSub.id,
+                  label: `DIGA • ${dSub.label}`,
+                  prefix: 'Área adscrita',
+                  isDirect: false,
+                  kind: 'area',
+                });
+              }
+            }
+          } else {
+            matched.push({
+              unitId: sub.id,
+              label: sub.label,
+              prefix: sub.isDirect
+                ? 'Directo'
+                : sub.kind === 'area'
+                ? 'Área adscrita'
+                : sub.kind === 'faculty'
+                ? 'Unidades adscritas'
+                : 'Oficina adscrita',
+              isDirect: Boolean(sub.isDirect),
+              kind: sub.kind,
+            });
+          }
+        }
+      }
+      if (matched.length > 0) return matched;
+    }
+  }
+
+  // Vista general (o para cualquier otra unidad): identificar la oficina/área dueña del procedimiento
+  const badges: ProcedureResponsibilityBadge[] = [];
+  if (RECTORADO_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'rectorado',
+      label: 'Rectorado / VRAC / DIGA (Alta Dirección)',
+      prefix: 'Responsable',
+      isDirect: activeUnit?.id === 'rectorado' || activeUnit?.id === 'vrac' || activeUnit?.id === 'diga',
+      kind: 'direct',
+    });
+  }
+  if (OPLA_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'opla',
+      label: 'Oficina de Planeamiento y Desarrollo (OPLA)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'opla',
+      kind: 'office',
+    });
+  }
+  if (SEGE_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'sege',
+      label: 'Oficina de Secretaría General (SEGE)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'sege',
+      kind: 'office',
+    });
+  }
+  if (AJUL_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'ajul',
+      label: 'Oficina de Asesoría Jurídica y Legal (AJUL)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'ajul',
+      kind: 'office',
+    });
+  }
+  if (AIMA_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'diga-aima',
+      label: 'DIGA • Área de Infraestructura y Mantenimiento (AIMA)',
+      prefix: 'Área',
+      isDirect: activeUnit?.id === 'diga-aima',
+      kind: 'area',
+    });
+  }
+  if (ALOG_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'diga-alog',
+      label: 'DIGA • Área de Logística (ALOG)',
+      prefix: 'Área',
+      isDirect: activeUnit?.id === 'diga-alog',
+      kind: 'area',
+    });
+  }
+  if (PATRIMONIO_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'diga-patrimonio',
+      label: 'DIGA • Área de Patrimonio',
+      prefix: 'Área',
+      isDirect: activeUnit?.id === 'diga-patrimonio',
+      kind: 'area',
+    });
+  }
+  if (APHU_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'diga-aphu',
+      label: 'DIGA • Área del Potencial Humano (APHU)',
+      prefix: 'Área',
+      isDirect: activeUnit?.id === 'diga-aphu',
+      kind: 'area',
+    });
+  }
+  if (TESORERIA_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'diga-tesoreria',
+      label: 'DIGA • Área de Tesorería',
+      prefix: 'Área',
+      isDirect: activeUnit?.id === 'diga-tesoreria',
+      kind: 'area',
+    });
+  }
+  if (CONTABILIDAD_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'diga-contabilidad',
+      label: 'DIGA • Área de Contabilidad',
+      prefix: 'Área',
+      isDirect: activeUnit?.id === 'diga-contabilidad',
+      kind: 'area',
+    });
+  }
+  if (TEIN_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'tein',
+      label: 'Oficina de Tecnología de Información (TEIN)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'tein',
+      kind: 'office',
+    });
+  }
+  if (RENI_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'reni',
+      label: 'Oficina de Relaciones Nacionales e Internacionales (RENI)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'reni',
+      kind: 'office',
+    });
+  }
+  if (GECA_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'geca-office',
+      label: 'Oficina de Gestión de la Calidad (GECA)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'geca-office',
+      kind: 'office',
+    });
+  }
+  if (IMAI_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'imai',
+      label: 'Oficina de Imagen Institucional (IMAI)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'imai',
+      kind: 'office',
+    });
+  }
+  if (GPAD_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'gpad',
+      label: 'Gestión de Procesos Académicos y Docencia (GPAD)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'gpad',
+      kind: 'office',
+    });
+  }
+  if (ADMA_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'adma',
+      label: 'Oficina de Admisión y Marketing (ADMA)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'adma',
+      kind: 'office',
+    });
+  }
+  if (OBUN_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'obun',
+      label: 'Oficina de Bienestar Universitario (OBUN)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'obun',
+      kind: 'office',
+    });
+  }
+  if (RESU_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'resu',
+      label: 'Oficina de Responsabilidad Social Universitaria (RESU)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'resu',
+      kind: 'office',
+    });
+  }
+  if (PITT_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'pitt',
+      label: 'Oficina de Procesos de Investigación y Transferencia Tecnológica (PITT)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'pitt',
+      kind: 'office',
+    });
+  }
+  if (BISA_OWN.includes(procedureCode)) {
+    badges.push({
+      unitId: 'bisa',
+      label: 'Oficina de Biblioteca y Servicios Académicos (BISA)',
+      prefix: 'Oficina',
+      isDirect: activeUnit?.id === 'bisa',
+      kind: 'office',
+    });
+  }
+  if (FACULTY_PROCEDURE_CODES.includes(procedureCode)) {
+    badges.push({
+      unitId: 'facultades-group',
+      label:
+        activeUnit?.level === 'facultad'
+          ? activeUnit.officeName
+          : 'Facultades UPT (FAING, FACSA, FACEM, FAEDCOH, FAU, FADE)',
+      prefix: activeUnit?.level === 'facultad' ? 'Facultad' : 'Facultades',
+      isDirect: activeUnit?.level === 'facultad',
+      kind: 'faculty',
+    });
+  }
+
+  return badges;
+}
+

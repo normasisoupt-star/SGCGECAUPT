@@ -1,4 +1,4 @@
-import { ORGAN_GROUPS, ORGANIZATION_UNITS, getOrganizationUnitById, resolveUserOrganizationUnit } from '../data/organizationHierarchy';
+import { ORGAN_GROUPS, ORGANIZATION_UNITS, getOrganizationUnitById, resolveUserOrganizationUnit, getSubordinateUnitsForParent, getProcedureResponsibleBadges } from '../data/organizationHierarchy';
 import React, { useState, useEffect } from 'react';
 import { 
   FileText,
@@ -171,9 +171,17 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
 
   // Estados para búsqueda asistida y por dependencias
   const [selectedDependency, setSelectedDependency] = useState('all');
+  const [selectedSubUnitFilter, setSelectedSubUnitFilter] = useState('all');
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [selectedGuidePillar, setSelectedGuidePillar] = useState<'all' | 'Misional' | 'Soporte' | 'Estratégico'>('all');
   const [selectedGuideTopicId, setSelectedGuideTopicId] = useState<string | null>(null);
+
+  const activeUserUnit = resolveUserOrganizationUnit(activeUser);
+  const subordinateUnits = getSubordinateUnitsForParent(activeUserUnit?.id);
+
+  useEffect(() => {
+    setSelectedSubUnitFilter('all');
+  }, [activeUser?.id, activeUserUnit?.id]);
 
   const canApprove = activeUser?.role === 'geca';
   const canCreate = activeUser?.role === 'geca';
@@ -217,13 +225,21 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
       }
     }
 
-    const activeUserUnit = resolveUserOrganizationUnit(activeUser);
+    let matchesSubUnit = true;
+    if (selectedSubUnitFilter !== 'all' && subordinateUnits.length > 0) {
+      const targetSub = subordinateUnits.find((s) => s.id === selectedSubUnitFilter);
+      if (targetSub) {
+        matchesSubUnit = targetSub.procedureCodes.includes(doc.code);
+      }
+    }
+
     const exactUserProcedures = activeUserUnit?.consolidatedProcedures || activeUser.procedureCodes || [];
     const isGlobalSystemAdmin =
       activeUser?.role === 'geca' &&
       (activeUser?.id === 'u-geca' || activeUser?.officeName === 'Administrador del Sistema');
     const isGecaOfficeMember =
       activeUserUnit?.id === 'geca' ||
+      activeUserUnit?.id === 'geca-office' ||
       activeUser?.unitId === 'geca' ||
       (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)');
 
@@ -238,12 +254,13 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
       }
     }
 
-    return matchesSearch && matchesType && matchesStatus && matchesProcess && matchesDependency && matchesScope;
+    return matchesSearch && matchesType && matchesStatus && matchesProcess && matchesDependency && matchesSubUnit && matchesScope;
   });
 
   const isFilterActive =
     searchTerm.trim() !== '' ||
     selectedDependency !== 'all' ||
+    selectedSubUnitFilter !== 'all' ||
     selectedType !== 'all' ||
     selectedStatus !== 'all' ||
     selectedProcess !== 'all';
@@ -251,6 +268,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   const resetAllFilters = () => {
     setSearchTerm('');
     setSelectedDependency('all');
+    setSelectedSubUnitFilter('all');
     setSelectedType('all');
     setSelectedStatus('all');
     setSelectedProcess('all');
@@ -463,6 +481,70 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
         </div>
       </div>
 
+      {/* Panel Desglose de Oficinas y Áreas Involucradas (Exclusivo para Órganos/Direcciones con dependencias adscritas: VRAC, Rectorado, VRIN, DIGA) */}
+      {subordinateUnits.length > 0 && activeUserUnit && (
+        <div className="bg-gradient-to-r from-[#0d2d3f]/[0.03] via-white to-amber-50/30 p-4 rounded-2xl border border-[#9C7D0F]/35 shadow-2xs space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#9C7D0F]" />
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[#0d2d3f] font-outfit">
+                Oficinas y Áreas Involucradas en {activeUserUnit.officeName}:
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-500 font-medium">
+              Haz clic en una dependencia para filtrar sus procedimientos ({activeUserUnit.consolidatedProcedures.length} en total)
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedSubUnitFilter('all')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                selectedSubUnitFilter === 'all'
+                  ? 'bg-[#0d2d3f] text-white border-[#0d2d3f] shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:border-[#0d2d3f]/40 hover:bg-slate-50'
+              }`}
+            >
+              Todos ({activeUserUnit.consolidatedProcedures.length})
+            </button>
+
+            {subordinateUnits.map((sub) => {
+              const isSelected = selectedSubUnitFilter === sub.id;
+              return (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setSelectedSubUnitFilter(isSelected ? 'all' : sub.id)}
+                  title={sub.label}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                    isSelected
+                      ? 'bg-[#9C7D0F] text-white border-[#9C7D0F] shadow-xs'
+                      : sub.isDirect
+                      ? 'bg-amber-50/80 text-[#0d2d3f] border-amber-300 hover:bg-amber-100/80'
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-[#9C7D0F]/50 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>{sub.isDirect ? '🏛️' : sub.kind === 'faculty' ? '🎓' : '🏢'}</span>
+                  <span>{sub.shortLabel}</span>
+                  <span
+                    className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold ${
+                      isSelected
+                        ? 'bg-white/25 text-white'
+                        : sub.isDirect
+                        ? 'bg-[#0d2d3f] text-white'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    {sub.procedureCodes.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Barra de Filtros y Búsqueda */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
         <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
@@ -671,7 +753,27 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                         <div className={`font-medium text-slate-900 whitespace-normal break-words leading-snug ${doc.documentType !== 'Manual' && !doc.code.startsWith('MN') ? 'mt-1.5' : ''}`}>
                           {doc.title}
                         </div>
-                        <div className="text-[11px] text-slate-400 mt-0.5">{doc.isoClause}</div>
+                        {subordinateUnits.length > 0 && doc.documentType !== 'Manual' && !doc.code.startsWith('MN') && (
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            {getProcedureResponsibleBadges(doc.code, activeUserUnit).map((badge, idx) => (
+                              <span
+                                key={`${doc.id}-badge-${idx}`}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border ${
+                                  badge.isDirect
+                                    ? 'bg-amber-50 text-[#0d2d3f] border-amber-300'
+                                    : badge.kind === 'faculty'
+                                    ? 'bg-indigo-50/80 text-indigo-900 border-indigo-200'
+                                    : 'bg-blue-50/80 text-blue-900 border-blue-200'
+                                }`}
+                              >
+                                <span>{badge.isDirect ? '🏛️' : badge.kind === 'faculty' ? '🎓' : '🏢'}</span>
+                                <span className="font-bold">{badge.prefix}:</span>
+                                <span>{badge.label}</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="text-[11px] text-slate-400 mt-1">{doc.isoClause}</div>
                       </td>
                       <td className="px-4 py-4 text-xs font-medium text-slate-700">
                         <div className="font-semibold text-slate-900">{doc.processCode}</div>
