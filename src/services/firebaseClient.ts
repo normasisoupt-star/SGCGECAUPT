@@ -7,6 +7,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendPasswordResetEmail,
+  verifyPasswordResetCode,
+  confirmPasswordReset,
   User as FirebaseUser,
   Auth
 } from 'firebase/auth';
@@ -57,6 +59,7 @@ export function initFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore | 
       firebaseApp = initializeApp(OFFICIAL_FIREBASE_CONFIG);
     }
     firebaseAuth = getAuth(firebaseApp);
+    firebaseAuth.languageCode = 'es';
     try {
       firebaseDb = getFirestore(firebaseApp);
     } catch {
@@ -67,6 +70,7 @@ export function initFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore | 
     console.error('Error al inicializar Firebase SGCUPT:', error);
     firebaseApp = getApp();
     firebaseAuth = getAuth(firebaseApp);
+    firebaseAuth.languageCode = 'es';
     return { app: firebaseApp, auth: firebaseAuth, db: firebaseDb, isConfigured: true };
   }
 }
@@ -396,12 +400,44 @@ export async function loginWithFirebase(email: string, password: string): Promis
 
 export async function resetPasswordWithFirebase(email: string): Promise<void> {
   const auth = firebaseAuth || getAuth();
+  auth.languageCode = 'es';
   const cleanEmail = email.trim().toLowerCase();
-  const resetPromise = sendPasswordResetEmail(auth, cleanEmail);
+
+  const sendReset = async () => {
+    try {
+      await sendPasswordResetEmail(auth, cleanEmail, {
+        url: 'https://normasisoupt-star.github.io/SGCGECAUPT/',
+        handleCodeInApp: false,
+      });
+    } catch (err: any) {
+      if (
+        err?.code === 'auth/unauthorized-continue-uri' ||
+        err?.code === 'auth/invalid-continue-uri' ||
+        err?.code === 'auth/missing-continue-uri'
+      ) {
+        await sendPasswordResetEmail(auth, cleanEmail);
+      } else {
+        throw err;
+      }
+    }
+  };
+
   const timeoutPromise = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error('Tiempo de espera agotado al conectar con Firebase Auth.')), 8000)
   );
-  await Promise.race([resetPromise, timeoutPromise]);
+  await Promise.race([sendReset(), timeoutPromise]);
+}
+
+export async function verifyResetCodeWithFirebase(oobCode: string): Promise<string> {
+  const auth = firebaseAuth || getAuth();
+  auth.languageCode = 'es';
+  return await verifyPasswordResetCode(auth, oobCode);
+}
+
+export async function confirmNewPasswordWithFirebase(oobCode: string, newPassword: string): Promise<void> {
+  const auth = firebaseAuth || getAuth();
+  auth.languageCode = 'es';
+  await confirmPasswordReset(auth, oobCode, newPassword);
 }
 
 export async function logoutFromFirebase(): Promise<void> {

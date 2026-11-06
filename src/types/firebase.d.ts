@@ -20,6 +20,11 @@ declare module 'firebase/auth' {
   }
   export interface Auth {
     currentUser: User | null;
+    languageCode: string | null;
+  }
+  export interface ActionCodeSettings {
+    url: string;
+    handleCodeInApp?: boolean;
   }
   export function getAuth(app?: any): Auth;
   export function signInWithEmailAndPassword(auth: Auth, email: string, password: string): Promise<UserCredential>;
@@ -27,7 +32,9 @@ declare module 'firebase/auth' {
   export function signOut(auth: Auth): Promise<void>;
   export function onAuthStateChanged(auth: Auth, nextOrObserver: (user: User | null) => void): () => void;
   export function updateProfile(user: User, profile: { displayName?: string | null; photoURL?: string | null }): Promise<void>;
-  export function sendPasswordResetEmail(auth: Auth, email: string): Promise<void>;
+  export function sendPasswordResetEmail(auth: Auth, email: string, actionCodeSettings?: ActionCodeSettings): Promise<void>;
+  export function verifyPasswordResetCode(auth: Auth, code: string): Promise<string>;
+  export function confirmPasswordReset(auth: Auth, oobCode: string, newPassword: string): Promise<void>;
 }
 
 declare module 'firebase/firestore' {

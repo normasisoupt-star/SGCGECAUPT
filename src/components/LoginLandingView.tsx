@@ -17,7 +17,9 @@ import {
 import { 
   loginWithFirebase, 
   registerWithFirebase,
-  resetPasswordWithFirebase
+  resetPasswordWithFirebase,
+  verifyResetCodeWithFirebase,
+  confirmNewPasswordWithFirebase
 } from '../services/firebaseClient';
 
 interface LoginLandingViewProps {
@@ -51,7 +53,12 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   users = [],
   onRegisterUser,
 }) => {
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [activeTab, setActiveTab] = useState<'login' | 'register' | 'reset'>('login');
+  const [resetOobCode, setResetOobCode] = useState<string>('');
+  const [resetVerifiedEmail, setResetVerifiedEmail] = useState<string>('');
+  const [newResetPassword, setNewResetPassword] = useState<string>('');
+  const [confirmResetPassword, setConfirmResetPassword] = useState<string>('');
+  const [showNewResetPassword, setShowNewResetPassword] = useState<boolean>(false);
   const [emailUsername, setEmailUsername] = useState<string>('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -60,9 +67,41 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
   // Asegurar que los campos de inicio de sesión SIEMPRE inicien limpios y vacíos
   useEffect(() => {
-    setEmailUsername('');
+    if (activeTab === 'login' && !resetVerifiedEmail) {
+      setEmailUsername('');
+    }
     setPassword('');
   }, [activeTab]);
+
+  // Detectar automáticamente si el funcionario abrió el enlace de restablecimiento de contraseña desde su correo (?mode=resetPassword&oobCode=...)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    const oobCode = params.get('oobCode');
+    if (mode === 'resetPassword' && oobCode) {
+      setResetOobCode(oobCode);
+      setActiveTab('reset');
+      setStatusMessage({
+        type: 'info',
+        text: 'Verificando enlace oficial de seguridad SGC UPT...',
+      });
+      verifyResetCodeWithFirebase(oobCode)
+        .then((verifiedEmail) => {
+          setResetVerifiedEmail(verifiedEmail);
+          setStatusMessage({
+            type: 'success',
+            text: `Identidad verificada para ${verifiedEmail}. Ingrese su nueva contraseña institucional.`,
+          });
+        })
+        .catch(() => {
+          setStatusMessage({
+            type: 'error',
+            text: 'Este enlace de recuperación ya fue utilizado o ha expirado. Solicite uno nuevo en "¿Olvidó su clave?".',
+          });
+        });
+    }
+  }, []);
 
   // Registration State
   const [regName, setRegName] = useState('');
@@ -185,6 +224,54 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         errorMsg = err.message;
       }
       setStatusMessage({ type: 'error', text: errorMsg });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleConfirmResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusMessage(null);
+
+    if (!newResetPassword || newResetPassword.length < 6) {
+      setStatusMessage({
+        type: 'error',
+        text: 'La nueva contraseña debe tener al menos 6 caracteres.',
+      });
+      return;
+    }
+
+    if (newResetPassword !== confirmResetPassword) {
+      setStatusMessage({
+        type: 'error',
+        text: 'Las contraseñas ingresadas no coinciden.',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await confirmNewPasswordWithFirebase(resetOobCode, newResetPassword);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      const recoveredMail = resetVerifiedEmail;
+      setResetOobCode('');
+      setNewResetPassword('');
+      setConfirmResetPassword('');
+      setActiveTab('login');
+      if (recoveredMail) {
+        setEmailUsername(recoveredMail);
+      }
+      setStatusMessage({
+        type: 'success',
+        text: '¡Contraseña actualizada con éxito! Ahora puede iniciar sesión con su nueva clave.',
+      });
+    } catch (err: any) {
+      setStatusMessage({
+        type: 'error',
+        text: 'El código de seguridad expiró o ya fue utilizado. Solicite un nuevo enlace desde "¿Olvidó su clave?".',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -451,10 +538,18 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                   <div className="flex items-center justify-between mb-2.5">
                     <div>
                       <h3 className="text-base sm:text-lg font-bold text-[#0F2942] font-outfit">
-                        {activeTab === 'login' ? 'Acceso a Funcionarios y Auditores' : 'Registro de Nuevo Funcionario'}
+                        {activeTab === 'login'
+                          ? 'Acceso a Funcionarios y Auditores'
+                          : activeTab === 'reset'
+                          ? 'Restablecer Contraseña Institucional'
+                          : 'Registro de Nuevo Funcionario'}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        {activeTab === 'login' ? 'Ingrese con su cuenta de correo electrónico' : 'Complete sus datos para incorporarse al SGC'}
+                        {activeTab === 'login'
+                          ? 'Ingrese con su cuenta de correo electrónico'
+                          : activeTab === 'reset'
+                          ? 'Cree su nueva clave de acceso al Sistema de Gestión de la Calidad UPT'
+                          : 'Complete sus datos para incorporarse al SGC'}
                       </p>
                     </div>
                     <span className="p-2 rounded-lg bg-slate-100 text-[#0d2d3f] border border-slate-200">
@@ -480,7 +575,102 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     </div>
                   )}
 
-                  {activeTab === 'login' ? (
+                  {activeTab === 'reset' ? (
+                    <div>
+                      <form className="space-y-3.5" onSubmit={handleConfirmResetSubmit}>
+                        {resetVerifiedEmail && (
+                          <div className="p-2.5 rounded-xl bg-[#0d2d3f]/5 border border-[#0d2d3f]/20 text-xs text-slate-700 flex items-center justify-between">
+                            <span>Cuenta institucional verificada:</span>
+                            <strong className="text-[#0d2d3f] font-bold">{resetVerifiedEmail}</strong>
+                          </div>
+                        )}
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1 font-outfit">
+                            Nueva Contraseña de Acceso (mín. 6 caracteres) *
+                          </label>
+                          <div className="relative flex items-center rounded-xl overflow-hidden shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                              <KeyRound className="w-4 h-4" />
+                            </div>
+                            <input
+                              type={showNewResetPassword ? 'text' : 'password'}
+                              value={newResetPassword}
+                              onChange={(e) => setNewResetPassword(e.target.value)}
+                              placeholder="Escriba su nueva contraseña"
+                              minLength={6}
+                              required
+                              className="glass-input w-full pl-10 pr-10 py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowNewResetPassword(!showNewResetPassword)}
+                              className="absolute right-0 inset-y-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                            >
+                              {showNewResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 mb-1 font-outfit">
+                            Confirmar Nueva Contraseña *
+                          </label>
+                          <div className="relative flex items-center rounded-xl overflow-hidden shadow-sm">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                              <Lock className="w-4 h-4" />
+                            </div>
+                            <input
+                              type={showNewResetPassword ? 'text' : 'password'}
+                              value={confirmResetPassword}
+                              onChange={(e) => setConfirmResetPassword(e.target.value)}
+                              placeholder="Repita su nueva contraseña"
+                              minLength={6}
+                              required
+                              className="glass-input w-full pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 font-medium focus:outline-none rounded-xl"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-1">
+                          <button
+                            type="submit"
+                            disabled={isLoading || !resetOobCode}
+                            className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#0d2d3f] to-[#001826] hover:brightness-110 text-white font-outfit font-bold text-sm tracking-wide shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-60"
+                          >
+                            {isLoading ? (
+                              <>
+                                <RefreshCw className="w-4 h-4 animate-spin text-[#F3E5AB]" />
+                                <span>Guardando nueva contraseña...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>Guardar Nueva Contraseña e Ingresar</span>
+                                <ArrowRight className="w-4 h-4" />
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </form>
+
+                      <div className="mt-3 pt-2.5 border-t border-slate-200/80 text-center flex items-center justify-between text-xs">
+                        <span className="text-slate-500">¿Recordó su contraseña anterior?</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (typeof window !== 'undefined') {
+                              window.history.replaceState({}, document.title, window.location.pathname);
+                            }
+                            setActiveTab('login');
+                            setStatusMessage(null);
+                          }}
+                          className="font-semibold text-[#0F2942] hover:text-[#e63b2e] underline decoration-dotted font-outfit cursor-pointer"
+                        >
+                          &larr; Volver al Inicio de Sesión
+                        </button>
+                      </div>
+                    </div>
+                  ) : activeTab === 'login' ? (
                     <div>
                       {/* FORMULARIO DE ACCESO CON FIREBASE AUTH */}
                       <form className="space-y-3 sm:space-y-3.5" onSubmit={handleLoginSubmit} autoComplete="off">
