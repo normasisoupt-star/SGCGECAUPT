@@ -370,7 +370,7 @@ export async function loginWithFirebase(email: string, password: string): Promis
   }
 
   const unit = getOrganizationUnitById(parsedUnitId) || getOrganizationUnitById('opla')!;
-  return {
+  const builtProfile: UserProfile = {
     id: user.uid,
     name: user.displayName || cleanEmail.split('@')[0].replace(/[._]/g, ' '),
     email: user.email || cleanEmail,
@@ -383,8 +383,14 @@ export async function loginWithFirebase(email: string, password: string): Promis
     procedureCodes: unit.consolidatedProcedures,
     role: parsedRole,
     processCodes: unit.processCodes,
+    isCustomRegistered: true,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   };
+
+  // Guardar también en Firestore cuando un usuario antiguo de Firebase Auth inicia sesión
+  saveUserToCloudRegistry(builtProfile).catch(() => {});
+
+  return builtProfile;
 }
 
 export async function logoutFromFirebase(): Promise<void> {

@@ -568,18 +568,77 @@ export function getUsers(): UserProfile[] {
 
     // Asegurar que las 28 unidades oficiales + u-geca estén siempre presentes y actualizadas
     const officialById = new Map(UPT_USERS.map(u => [u.id, u]));
-    const customUsers: UserProfile[] = [];
+    const officialEmails = new Set(UPT_USERS.map(u => (u.email || '').trim().toLowerCase()));
+    const customByEmail = new Map<string, UserProfile>();
+
+    const collectCustomUser = (u: UserProfile) => {
+      if (!u || !u.email) return;
+      const cleanEmail = u.email.trim().toLowerCase();
+      if (!cleanEmail || revokedSet.has(cleanEmail)) return;
+      // Ignorar plantillas predefinidas y al propietario Administrador del Sistema
+      if (officialById.has(u.id) || officialEmails.has(cleanEmail)) return;
+      if (computeSyncHash(cleanEmail) === '2bdcaa29f816e1df') return;
+      if (u.id && u.id.startsWith('u-unit-')) return;
+
+      const normalized = normalizeUserProfile({ ...u, isCustomRegistered: true });
+      customByEmail.set(cleanEmail, normalized);
+    };
+
     if (parsed && Array.isArray(parsed)) {
-      for (const u of parsed) {
-        if (!officialById.has(u.id)) {
-          const cleanEmail = (u.email || '').trim().toLowerCase();
-          if (!revokedSet.has(cleanEmail)) {
-            customUsers.push(normalizeUserProfile({ ...u, isCustomRegistered: true }));
+      parsed.forEach(collectCustomUser);
+    }
+
+    // Recuperar también usuarios registrados en llaves anteriores de localStorage
+    const legacyKeys = ['upt_iso21001_users', 'upt_sgc_users_v1', 'upt_iso21001_users_v1'];
+    for (const k of legacyKeys) {
+      try {
+        const legacyRaw = localStorage.getItem(k);
+        if (legacyRaw) {
+          const legacyParsed: UserProfile[] = JSON.parse(legacyRaw);
+          if (Array.isArray(legacyParsed)) {
+            legacyParsed.forEach(collectCustomUser);
           }
         }
+      } catch {
+        // Ignorar errores de parseo en llaves antiguas
       }
     }
 
+    // Reconstruir usuarios registrados desde el Historial de Actividades local si existieran
+    try {
+      const rawLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
+      if (rawLogs) {
+        const parsedLogs: ActivityLog[] = JSON.parse(rawLogs);
+        for (const log of parsedLogs) {
+          if (log.action && log.action.includes('Registró nuevo funcionario') && log.details) {
+            const emailMatch = log.details.match(/Correo:\s*([^\s|]+)/i);
+            const depMatch = log.details.match(/Dependencia:\s*([^(|-]+)/i);
+            if (emailMatch && emailMatch[1]) {
+              const logEmail = emailMatch[1].trim().toLowerCase();
+              if (!customByEmail.has(logEmail) && !revokedSet.has(logEmail) && !officialEmails.has(logEmail)) {
+                const depName = depMatch ? depMatch[1].trim() : 'Oficina de Planeamiento y Presupuesto (OPLA)';
+                collectCustomUser({
+                  id: log.entityId && log.entityId.startsWith('u-') ? log.entityId : `u-rec-${log.id}`,
+                  name: log.userName || logEmail.split('@')[0],
+                  email: logEmail,
+                  charge: log.userRole || 'Funcionario Institucional',
+                  department: depName,
+                  officeName: depName,
+                  role: 'colaborador',
+                  processCodes: ['PE.01'],
+                  registeredAt: log.timestamp,
+                  isCustomRegistered: true,
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Continuar
+    }
+
+    const customUsers = Array.from(customByEmail.values());
     const merged = [...UPT_USERS.map(normalizeUserProfile), ...customUsers];
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(merged));
     localStorage.setItem('upt_sgc_users_v1', JSON.stringify(merged));
@@ -614,6 +673,31 @@ export function getActiveUser(): UserProfile {
 export function setActiveUser(user: UserProfile): UserProfile {
   const normalized = normalizeUserProfile(user);
   localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalized));
+
+  // Si es un usuario real autenticado con Firebase (no es una de las 28 plantillas u-unit-* ni el Administrador del Sistema),
+  // asegurar que quede registrado en el padrón local para que el Administrador pueda supervisarlo.
+  const cleanEmail = (normalized.email || '').trim().toLowerCase();
+  const isOwner = computeSyncHash(cleanEmail) === '2bdcaa29f816e1df' || normalized.id === 'u-geca';
+  const isTemplate = normalized.id?.startsWith('u-unit-') || UPT_USERS.some(u => u.id === normalized.id || u.email.toLowerCase() === cleanEmail);
+
+  if (cleanEmail && !isOwner && !isTemplate && !isUserEmailRevoked(cleanEmail)) {
+    const current = getUsers();
+    const existsIdx = current.findIndex(u => (u.email || '').trim().toLowerCase() === cleanEmail);
+    const nowStr = new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0, 5);
+    const entry: UserProfile = {
+      ...normalized,
+      isCustomRegistered: true,
+      registeredAt: normalized.registeredAt || (existsIdx >= 0 ? current[existsIdx].registeredAt : nowStr),
+    };
+    if (existsIdx >= 0) {
+      current[existsIdx] = entry;
+    } else {
+      current.push(entry);
+    }
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(current));
+    localStorage.setItem('upt_sgc_users_v1', JSON.stringify(current));
+  }
+
   broadcastChange('USER_CHANGED', normalized);
   return normalized;
 }
