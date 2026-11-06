@@ -773,15 +773,18 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
                       </form>
 
-                      {/* ALTERNAR A REGISTRAR NUEVO FUNCIONARIO */}
-                      <div className="mt-3 pt-2.5 border-t border-slate-200/80 text-center flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
-                        <span className="text-slate-500">¿Nuevo miembro en el equipo de calidad?</span>
+                      {/* ALTERNAR A REGISTRAR NUEVO FUNCIONARIO (DESTACADO Y VISIBLE) */}
+                      <div className="mt-3.5 pt-3 border-t border-slate-300/70 flex flex-col items-center gap-2 text-center">
+                        <span className="text-xs sm:text-sm font-semibold text-slate-700">
+                          ¿Nuevo miembro en el equipo de calidad?
+                        </span>
                         <button 
                           type="button"
-                          className="font-semibold text-[#0F2942] hover:text-[#e63b2e] transition-colors underline decoration-dotted font-outfit cursor-pointer"
+                          className="w-full py-2.5 px-4 rounded-xl bg-amber-50 hover:bg-amber-100/90 text-[#0d2d3f] border-2 border-[#9C7D0F] font-outfit font-extrabold text-sm tracking-wide shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5"
                           onClick={() => { setActiveTab('register'); setStatusMessage(null); }}
                         >
-                          Registrar Nuevo Funcionario &rarr;
+                          <UserPlus className="w-4 h-4 text-[#9C7D0F]" />
+                          <span>Registrar Nuevo Funcionario &rarr;</span>
                         </button>
                       </div>
                     </div>
