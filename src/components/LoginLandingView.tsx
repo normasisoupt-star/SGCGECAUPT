@@ -16,7 +16,8 @@ import {
 } from 'lucide-react';
 import { 
   loginWithFirebase, 
-  registerWithFirebase 
+  registerWithFirebase,
+  resetPasswordWithFirebase
 } from '../services/firebaseClient';
 
 interface LoginLandingViewProps {
@@ -147,6 +148,44 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       }
 
       setStatusMessage({ type: 'error', text: errorMsg });
+      setIsLoading(false);
+    }
+  };
+
+  // ========================================================
+  // RECUPERACIÓN AUTOMÁTICA DE CONTRASEÑA CON FIREBASE AUTH
+  // ========================================================
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setStatusMessage(null);
+
+    if (!emailUsername.trim()) {
+      setStatusMessage({
+        type: 'info',
+        text: 'Escriba primero su correo electrónico en la casilla superior y luego haga clic en "¿Olvidó su clave?" para enviarle el enlace de restablecimiento.',
+      });
+      return;
+    }
+
+    const fullEmail = getFullLoginEmail();
+    setIsLoading(true);
+    try {
+      await resetPasswordWithFirebase(fullEmail);
+      setStatusMessage({
+        type: 'success',
+        text: `¡Enlace enviado a ${fullEmail}! Revise su bandeja de entrada (o carpeta de Spam/No deseados) para crear su nueva contraseña.`,
+      });
+    } catch (err: any) {
+      let errorMsg = 'No se pudo enviar el correo de recuperación.';
+      if (err.code === 'auth/user-not-found') {
+        errorMsg = `El correo ${fullEmail} no se encuentra registrado en el sistema.`;
+      } else if (err.code === 'auth/invalid-email') {
+        errorMsg = 'El formato del correo electrónico no es válido.';
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      setStatusMessage({ type: 'error', text: errorMsg });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -477,7 +516,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                             <label className="block text-xs font-bold text-slate-700 font-outfit">
                               Contraseña de Acceso
                             </label>
-                            <a href="#recuperar" onClick={(e) => { e.preventDefault(); alert('Para restablecer su clave comuníquese con la Mesa de Ayuda SGC (anexo 443).'); }} className="text-[11px] font-medium text-[#0d2d3f] hover:text-[#e63b2e] hover:underline">
+                            <a href="#recuperar" onClick={handleForgotPassword} className="text-[11px] font-medium text-[#0d2d3f] hover:text-[#e63b2e] hover:underline cursor-pointer">
                               ¿Olvidó su clave?
                             </a>
                           </div>

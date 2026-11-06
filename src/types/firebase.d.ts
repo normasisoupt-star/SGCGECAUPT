@@ -27,6 +27,7 @@ declare module 'firebase/auth' {
   export function signOut(auth: Auth): Promise<void>;
   export function onAuthStateChanged(auth: Auth, nextOrObserver: (user: User | null) => void): () => void;
   export function updateProfile(user: User, profile: { displayName?: string | null; photoURL?: string | null }): Promise<void>;
+  export function sendPasswordResetEmail(auth: Auth, email: string): Promise<void>;
 }
 
 declare module 'firebase/firestore' {

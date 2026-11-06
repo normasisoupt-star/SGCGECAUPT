@@ -6,6 +6,7 @@ import {
   signOut, 
   onAuthStateChanged,
   updateProfile,
+  sendPasswordResetEmail,
   User as FirebaseUser,
   Auth
 } from 'firebase/auth';
@@ -391,6 +392,16 @@ export async function loginWithFirebase(email: string, password: string): Promis
   saveUserToCloudRegistry(builtProfile).catch(() => {});
 
   return builtProfile;
+}
+
+export async function resetPasswordWithFirebase(email: string): Promise<void> {
+  const auth = firebaseAuth || getAuth();
+  const cleanEmail = email.trim().toLowerCase();
+  const resetPromise = sendPasswordResetEmail(auth, cleanEmail);
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('Tiempo de espera agotado al conectar con Firebase Auth.')), 8000)
+  );
+  await Promise.race([resetPromise, timeoutPromise]);
 }
 
 export async function logoutFromFirebase(): Promise<void> {
