@@ -131,12 +131,13 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
     const enabled = isProcessEnabled(code);
     const procCount = getProcedureCountForProcess(code);
 
-    const badgeBg =
-      variant === 'missional-main'
-        ? 'bg-[#800020] text-white'
-        : variant === 'support'
-        ? 'bg-slate-800 text-white'
-        : 'bg-[#0d2d3f] text-white';
+    const badgeBg = !enabled
+      ? 'bg-[#8e959e] text-white'
+      : variant === 'missional-main'
+      ? 'bg-[#800020] text-white'
+      : variant === 'support'
+      ? 'bg-slate-800 text-white'
+      : 'bg-[#0d2d3f] text-white';
 
     return (
       <div
@@ -149,14 +150,14 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
         title={
           enabled
             ? `Haga clic para ver los procedimientos de ${code} - ${meta.manualTitle}`
-            : `Proceso correspondiente a otra dependencia (${meta.responsibleLabel})`
+            : `Modo solo lectura — Proceso correspondiente a otra dependencia (${meta.responsibleLabel})`
         }
         className={`rounded-2xl p-4 transition-all duration-300 relative flex flex-col justify-between group ${
           enabled
             ? variant === 'missional-main'
-              ? 'bg-gradient-to-r from-white via-amber-50/30 to-white border-2 border-[#9C7D0F] shadow-md hover:shadow-xl hover:-translate-y-0.5 cursor-pointer'
-              : 'bg-white border-2 border-[#9C7D0F]/85 shadow-sm hover:shadow-lg hover:-translate-y-0.5 cursor-pointer'
-            : 'bg-slate-50/75 border-2 border-slate-200/90 opacity-45 grayscale cursor-not-allowed select-none'
+              ? 'bg-gradient-to-r from-white via-amber-50/40 to-white border-2 border-[#9C7D0F] ring-2 ring-[#9C7D0F]/20 shadow-[0_16px_34px_-6px_rgba(13,45,63,0.24),0_6px_16px_-4px_rgba(156,125,15,0.32)] -translate-y-1 hover:-translate-y-1.5 hover:shadow-[0_22px_42px_-6px_rgba(13,45,63,0.30),0_8px_20px_-4px_rgba(156,125,15,0.42)] cursor-pointer z-10'
+              : 'bg-white border-2 border-[#9C7D0F] ring-2 ring-[#9C7D0F]/20 shadow-[0_14px_30px_-6px_rgba(13,45,63,0.22),0_6px_14px_-4px_rgba(156,125,15,0.28)] -translate-y-1 hover:-translate-y-1.5 hover:shadow-[0_20px_38px_-6px_rgba(13,45,63,0.28),0_8px_18px_-4px_rgba(156,125,15,0.38)] cursor-pointer z-10'
+            : 'bg-white border-2 border-[#0d2d3f]/75 shadow-2xs cursor-default'
         }`}
       >
         <div>
@@ -175,13 +176,13 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
             </div>
 
             {enabled ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                 <span>Habilitado ({procCount})</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-600 border border-slate-300">
-                <Lock className="w-2.5 h-2.5" />
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-300">
+                <Lock className="w-2.5 h-2.5 text-slate-500" />
                 <span>Solo lectura</span>
               </span>
             )}
@@ -207,7 +208,11 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
         <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] gap-2">
           <span
             className={`font-bold truncate ${
-              variant === 'missional-main' ? 'text-[#0d2d3f] text-xs' : 'text-[#9C7D0F]'
+              !enabled
+                ? 'text-[#0d2d3f]/80'
+                : variant === 'missional-main'
+                ? 'text-[#0d2d3f] text-xs'
+                : 'text-[#9C7D0F]'
             }`}
           >
             {meta.responsibleLabel}
@@ -218,7 +223,7 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
               <ChevronRight className="w-3.5 h-3.5" />
             </span>
           ) : (
-            <span className="text-slate-400 shrink-0">🔒 Otra área</span>
+            <span className="text-slate-500 font-medium shrink-0">🔒 Otra área</span>
           )}
         </div>
       </div>
@@ -263,8 +268,8 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
           </div>
           <div className="h-3 w-px bg-slate-300"></div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-slate-300 border border-white"></span>
-            <span className="font-medium text-slate-500">{totalDimmed} Atenuados</span>
+            <span className="w-3 h-3 rounded-full bg-[#0d2d3f]/75 border border-white"></span>
+            <span className="font-medium text-slate-600">{totalDimmed} Solo lectura</span>
           </div>
           <div className="h-3 w-px bg-slate-300"></div>
           <div className="flex items-center gap-1 text-slate-600">
