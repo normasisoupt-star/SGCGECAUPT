@@ -33,52 +33,52 @@ const PROCESS_METADATA: Record<
   'PE.01': {
     manualTitle: 'Gestión del Planeamiento Institucional',
     shortDesc: 'Plan Estratégico, POA, presupuesto operativo, modelo educativo y políticas rectoras.',
-    responsibleLabel: 'Oficina: OPLA / Alta Dirección',
+    responsibleLabel: 'Oficinas: RECTORADO / VRAC / DIGA / OPLA / GPAD / GECA',
   },
   'PE.02': {
     manualTitle: 'Gestión de la Calidad',
     shortDesc: 'Auditorías internas, mejora continua, revisión por la dirección y certificación ISO 21001/9001.',
-    responsibleLabel: 'Oficina: GECA',
+    responsibleLabel: 'Oficinas: GECA / AJUL',
   },
   'PE.03': {
     manualTitle: 'Gestión de Riesgos Institucionales',
     shortDesc: 'Matriz de riesgos organizacionales, seguridad y salud ocupacional (IPERC) y continuidad operacional.',
-    responsibleLabel: 'Comité Integral / OPLA / GECA',
+    responsibleLabel: 'Oficinas: GECA / AIMA / APHU / TEIN',
   },
   'PE.04': {
     manualTitle: 'Gestión Interinstitucional',
     shortDesc: 'Convenios nacionales e internacionales, movilidad académica, cooperación e imagen institucional.',
-    responsibleLabel: 'Relaciones Interinst. / COOP / IMAG',
+    responsibleLabel: 'Oficinas: RENI / IMAI',
   },
   'PM.01': {
     manualTitle: 'Formación Integral de Pregrado y Postgrado',
     shortDesc: 'Diseño curricular, admisión, matrícula, docencia universitaria, evaluación del aprendizaje, bienestar, titulación y seguimiento al graduado en facultades y escuela de posgrado UPT.',
-    responsibleLabel: 'Oficina Responsable: VRAC / Facultades / ESPG / DBUN / OADM',
+    responsibleLabel: 'Oficinas: ADMA / FACULTADES / SEGE / RENI / OBUN / RESU',
   },
   'PM.02': {
     manualTitle: 'Investigación, Desarrollo, Innovación y Emprendimiento',
     shortDesc: 'Proyectos científicos, semilleros, patentes, publicaciones indizadas e incubadora de empresas.',
-    responsibleLabel: 'Oficina: VRIN (Investigación)',
+    responsibleLabel: 'Oficina: PITT',
   },
   'PM.03': {
     manualTitle: 'Responsabilidad Social Universitaria',
     shortDesc: 'Extensión cultural, voluntariado, proyectos de impacto comunitario y gestión ambiental en Tacna.',
-    responsibleLabel: 'Dirección: RSU (DESA)',
+    responsibleLabel: 'Oficinas: RESU / AIMA',
   },
   'PS.01': {
     manualTitle: 'Gestión de Potencial Humano',
     shortDesc: 'Selección, contratación, inducción, capacitación docente/administrativa y clima laboral.',
-    responsibleLabel: 'Oficina: REHU (Recursos Humanos)',
+    responsibleLabel: 'Área: APHU',
   },
   'PS.02': {
     manualTitle: 'Gestión de Centros de Información',
     shortDesc: 'Bibliotecas físicas, repositorio institucional de tesis y bases de datos científicas.',
-    responsibleLabel: 'Biblioteca Central / VRAC / VRIN',
+    responsibleLabel: 'Oficina: BISA',
   },
   'PS.03': {
     manualTitle: 'Gestión de Infraestructura y Patrimonio',
     shortDesc: 'Proyectos de inversión, inventario patrimonial y mantenimiento de campus Capanique y equipos.',
-    responsibleLabel: 'Oficina: INFR / LOGI / PATR',
+    responsibleLabel: 'Áreas: AIMA / ALOG / Patrimonio',
   },
   'PS.04': {
     manualTitle: 'Gestión de las Tecnologías de Información y Comunicación',
@@ -88,12 +88,12 @@ const PROCESS_METADATA: Record<
   'PS.05': {
     manualTitle: 'Gestión Administrativa y Financiera',
     shortDesc: 'Tesorería, contabilidad, adquisiciones por selección/directo y servicios institucionales.',
-    responsibleLabel: 'Dirección: DGA / CONT / TESO / LOGI',
+    responsibleLabel: 'Áreas: AIMA / ALOG / Tesorería / Contabilidad',
   },
   'PS.06': {
     manualTitle: 'Gestión Legal',
     shortDesc: 'Asesoría jurídica, revisión de actos institucionales, resoluciones y defensa de procesos legales.',
-    responsibleLabel: 'Oficina: ASJU (Asesoría Jurídica)',
+    responsibleLabel: 'Oficina: AJUL',
   },
 };
 
@@ -207,7 +207,7 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
 
         <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] gap-2">
           <span
-            className={`font-bold truncate ${
+            className={`font-bold leading-snug ${
               !enabled
                 ? 'text-[#0d2d3f]/80'
                 : variant === 'missional-main'
