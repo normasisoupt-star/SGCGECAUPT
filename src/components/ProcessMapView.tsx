@@ -341,11 +341,8 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
             </div>
 
             {/* FLECHA VERTICAL: ESTRATÉGICOS -> MISIONALES */}
-            <div className="flex items-center justify-center -my-1.5 z-20">
-              <div className="bg-[#0d2d3f] text-[#f6eedb] px-4 py-1 rounded-full text-[11px] font-extrabold flex items-center gap-1.5 shadow-md border border-[#9C7D0F]/40">
-                <span>Directrices Estratégicas</span>
-                <ArrowDown className="w-3.5 h-3.5 text-[#caa424]" />
-              </div>
+            <div className="flex items-center justify-center z-20">
+              <ArrowDown className="w-8 h-8 text-[#9C7D0F] stroke-[3]" />
             </div>
 
             {/* NIVEL B: PROCESOS MISIONALES (ESTRUCTURA TRIANGULAR PÁG. 12) */}
@@ -405,11 +402,8 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
             </div>
 
             {/* FLECHA VERTICAL: SOPORTE -> MISIONALES (HACIA ARRIBA) */}
-            <div className="flex items-center justify-center -my-1.5 z-20">
-              <div className="bg-[#0d2d3f] text-[#f6eedb] px-4 py-1 rounded-full text-[11px] font-extrabold flex items-center gap-1.5 shadow-md border border-[#9C7D0F]/40">
-                <ArrowUp className="w-3.5 h-3.5 text-[#caa424]" />
-                <span>Recursos y Soporte Operativo Integral</span>
-              </div>
+            <div className="flex items-center justify-center z-20">
+              <ArrowUp className="w-8 h-8 text-[#9C7D0F] stroke-[3]" />
             </div>
 
             {/* NIVEL C: PROCESOS DE SOPORTE (CUADRÍCULA 2 FILAS × 3 COLUMNAS) */}
