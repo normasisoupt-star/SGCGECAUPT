@@ -44,9 +44,9 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
   const [isSyncing, setIsSyncing] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  // Filtrar usuarios registrados por formulario (excluyendo las 28 plantillas base u-unit-* y u-geca)
+  // Mostrar el Administrador del Sistema (u-geca) y todos los usuarios registrados en Firebase Auth (excluyendo las 28 plantillas base u-unit-*)
   const registeredOfficials = users.filter(
-    (u) => u.isCustomRegistered || (!u.id.startsWith('u-unit-') && u.id !== 'u-geca')
+    (u) => u.id === 'u-geca' || u.isCustomRegistered || !u.id.startsWith('u-unit-')
   );
 
   const filteredOfficials = registeredOfficials.filter((u) => {

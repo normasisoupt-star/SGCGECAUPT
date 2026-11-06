@@ -559,6 +559,140 @@ export function normalizeUserProfile(u: UserProfile): UserProfile {
   return u;
 }
 
+// Cuentas existentes en Firebase Authentication (sincronizadas con el Padrón de Control)
+const FIREBASE_AUTH_REGISTERED_USERS: UserProfile[] = [
+  {
+    id: 'u-fb-steph',
+    name: 'Steph (steph.5488)',
+    email: 'steph.5488@gmail.com',
+    charge: 'Funcionario Administrativo',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Gestión de la Calidad (GECA)',
+    unitId: 'geca',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.02', 'PM.01'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-gretty',
+    name: 'Gretty Rossi',
+    email: 'grettyrossi@gmail.com',
+    charge: 'Funcionario Administrativo',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Gestión de la Calidad (GECA)',
+    unitId: 'geca',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.02', 'PM.01'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-cristobal',
+    name: 'Cristóbal',
+    email: 'cristobal@gmail.com',
+    charge: 'Funcionario Administrativo',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
+    unitId: 'opla',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.03', 'PS.05'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-prueba',
+    name: 'Usuario de Prueba',
+    email: 'prueba@prueba.com',
+    charge: 'Cuenta de Prueba',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
+    unitId: 'opla',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.03', 'PS.05'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-rogelio',
+    name: 'Rogelio Rojas Medina',
+    email: 'rogelio@gmail.com',
+    charge: 'Funcionario Administrativo',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
+    unitId: 'opla',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.03', 'PS.05'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-hujrivera',
+    name: 'Hugo Rivera (hujrivera)',
+    email: 'hujrivera@upt.pe',
+    charge: 'Funcionario Institucional UPT',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Gestión de la Calidad (GECA)',
+    unitId: 'geca',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.02', 'PM.01'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-jorge',
+    name: 'Jorge (jorge@upt.pe)',
+    email: 'jorge@upt.pe',
+    charge: 'Funcionario Institucional UPT',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Tecnologías de la Información (TEIN)',
+    unitId: 'tein',
+    role: 'colaborador',
+    processCodes: ['PE.03', 'PS.04'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-licencia',
+    name: 'Licenciamiento Institucional UPT',
+    email: 'licencia_institucional@upt.pe',
+    charge: 'Especialista de Licenciamiento y Calidad',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Gestión de la Calidad (GECA)',
+    unitId: 'geca',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.02', 'PM.01'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-ricardo',
+    name: 'Ricardo (ricardo@upt.pe)',
+    email: 'ricardo@upt.pe',
+    charge: 'Funcionario Institucional UPT',
+    department: 'RECTORADO',
+    officeName: 'Dirección General de Administración (DIGA)',
+    unitId: 'diga',
+    role: 'colaborador',
+    processCodes: ['PE.03', 'PS.01', 'PS.03', 'PS.05'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'u-fb-alejandro',
+    name: 'Alejandro (alejandro@upt.pe)',
+    email: 'alejandro@upt.pe',
+    charge: 'Funcionario Institucional UPT',
+    department: 'RECTORADO',
+    officeName: 'Dirección General de Administración (DIGA) - Área de Logística (ALOG)',
+    unitId: 'diga-alog',
+    role: 'colaborador',
+    processCodes: ['PS.01', 'PS.05'],
+    registeredAt: 'Firebase Auth',
+    isCustomRegistered: true,
+  },
+];
+
 export function getUsers(): UserProfile[] {
   initStorage();
   try {
@@ -584,6 +718,10 @@ export function getUsers(): UserProfile[] {
       customByEmail.set(cleanEmail, normalized);
     };
 
+    // 1. Cargar cuentas registradas existentes en Firebase Authentication
+    FIREBASE_AUTH_REGISTERED_USERS.forEach(collectCustomUser);
+
+    // 2. Superponer cambios o nuevos registros guardados localmente (reasignaciones de oficina, nuevos usuarios)
     if (parsed && Array.isArray(parsed)) {
       parsed.forEach(collectCustomUser);
     }
