@@ -28,6 +28,7 @@ interface DashboardViewProps {
   checklist: AuditChecklistItem[];
   logs: ActivityLog[];
   activeUser: UserProfile;
+  scopeMode?: 'my_office' | 'all';
   onNavigate: (tab: NavTab) => void;
   onOpenNewDoc: () => void;
   onOpenNewCapa: () => void;
@@ -39,6 +40,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   checklist,
   logs,
   activeUser,
+  scopeMode = 'my_office',
   onNavigate,
   onOpenNewDoc,
   onOpenNewCapa,
@@ -62,9 +64,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const isAdmin = activeUser?.role === 'geca' && activeUser?.officeName === 'Administrador del Sistema';
   const activeUnit = resolveUserOrganizationUnit(activeUser);
+  const isGecaOffice = activeUnit?.id === 'geca' || activeUser?.unitId === 'geca' || (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)');
+  const showAllSgcForGeca = isGecaOffice && scopeMode === 'all';
   const unitProcedureCodes = activeUnit?.consolidatedProcedures || activeUser?.procedureCodes || [];
-  const unitDocs = documents.filter((d) => unitProcedureCodes.includes(d.code));
-  const unitProceduresCount = unitDocs.length || unitProcedureCodes.length;
+  const allProcedureDocs = documents.filter((d) => d.documentType === 'Procedimiento' || (!d.code.startsWith('MN') && d.code !== 'doc-man-01'));
+  const unitDocs = showAllSgcForGeca ? allProcedureDocs : documents.filter((d) => unitProcedureCodes.includes(d.code));
+  const unitProceduresCount = showAllSgcForGeca ? allProcedureDocs.length : (unitDocs.length || unitProcedureCodes.length);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -246,17 +251,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-[#0d2d3f]/40 transition-all cursor-pointer group"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mis Procedimientos</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{showAllSgcForGeca ? 'Todo el SGC' : 'Mis Procedimientos'}</span>
               <div className="w-9 h-9 rounded-xl bg-[#0d2d3f]/10 text-[#0d2d3f] flex items-center justify-center group-hover:bg-[#0d2d3f] group-hover:text-white transition-colors">
                 <FileText className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-extrabold text-slate-900">{unitProceduresCount}</span>
-              <span className="text-xs text-slate-500">asignados a mi unidad</span>
+              <span className="text-xs text-slate-500">{showAllSgcForGeca ? 'procedimientos en el SGC' : 'asignados a mi unidad'}</span>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span>Ver mis procedimientos RG04</span>
+              <span>{showAllSgcForGeca ? 'Ver Lista Maestra Completa RG04' : 'Ver mis procedimientos RG04'}</span>
               <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#0d2d3f] transition-all" />
             </div>
           </div>
@@ -266,17 +271,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-[#9C7D0F]/40 transition-all cursor-pointer group"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Procesos de Mi Unidad</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{showAllSgcForGeca ? 'Procesos del SGC' : 'Procesos de Mi Unidad'}</span>
               <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#9C7D0F] flex items-center justify-center group-hover:bg-[#9C7D0F] group-hover:text-white transition-colors">
                 <Network className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-slate-900">{userProcesses.length || 1}</span>
+              <span className="text-3xl font-extrabold text-slate-900">{showAllSgcForGeca ? 13 : (userProcesses.length || 1)}</span>
               <span className="text-xs text-slate-500">Proceso(s) Nivel 0</span>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span className="truncate">{userProcesses.map(p => p.code).join(' • ') || 'SGC UPT'}</span>
+              <span className="truncate">{showAllSgcForGeca ? 'PE.01 a PS.06 (13 Procesos)' : (userProcesses.map(p => p.code).join(' • ') || 'SGC UPT')}</span>
               <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-[#9C7D0F] transition-all" />
             </div>
           </div>
@@ -451,13 +456,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div>
                 <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#0d2d3f]/10 text-[#0d2d3f] border border-[#0d2d3f]/20 mb-1">
-                  <span>Alcance Exclusivo de su Dependencia</span>
+                  <span>{showAllSgcForGeca ? 'Vista Global SGC Habilitada (Oficina GECA)' : 'Alcance Exclusivo de su Dependencia'}</span>
                 </div>
                 <h2 className="font-bold text-slate-900 text-lg">
-                  Procedimientos Correspondientes a: {activeUser?.officeName || activeUser?.department} ({unitDocs.length})
+                  {showAllSgcForGeca
+                    ? `Catálogo Completo de Procedimientos del SGC UPT (${unitDocs.length})`
+                    : `Procedimientos Correspondientes a: ${activeUser?.officeName || activeUser?.department} (${unitDocs.length})`}
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Estos son únicamente los procedimientos oficiales en los que participa o es responsable su unidad según la estructura del SGC UPT.
+                  {showAllSgcForGeca
+                    ? 'Visualización integral de todos los procedimientos estratégicos, misionales y de soporte habilitada para la Oficina de Gestión de la Calidad (GECA).'
+                    : 'Estos son únicamente los procedimientos oficiales en los que participa o es responsable su unidad según la estructura del SGC UPT.'}
                 </p>
               </div>
               <button

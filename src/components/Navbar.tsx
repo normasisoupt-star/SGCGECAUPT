@@ -78,8 +78,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Acciones, Selector de Alcance & Selector de Oficina UPT */}
         <div className="flex items-center gap-3">
-          {/* ALCANCE: Solo el Administrador puede alternar a Todo el SGC; los demás ven exclusivamente su Unidad */}
-          {isAdmin ? (
+          {/* ALCANCE: El Administrador y exclusivamente la Oficina de Gestión de la Calidad (GECA) pueden alternar a Todo el SGC */}
+          {(isAdmin || activeUser?.unitId === 'geca' || (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)')) ? (
             <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-2xs">
               <button
                 type="button"
@@ -91,8 +91,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
                 title={`Mostrar únicamente procedimientos de: ${activeUser?.officeName || activeUser?.department || ''}`}
               >
-                <Building2 className="w-3.5 h-3.5 text-blue-300" />
-                <span>Vista Unidad</span>
+                <Building2 className="w-3.5 h-3.5 text-[#F3E5AB]" />
+                <span>{isAdmin ? 'Vista Unidad' : `Mis Procedimientos (${activeUser?.procedureCodes?.length || 11})`}</span>
               </button>
 
               <button

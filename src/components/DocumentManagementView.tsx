@@ -222,11 +222,15 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
     const isGlobalSystemAdmin =
       activeUser?.role === 'geca' &&
       (activeUser?.id === 'u-geca' || activeUser?.officeName === 'Administrador del Sistema');
+    const isGecaOfficeMember =
+      activeUserUnit?.id === 'geca' ||
+      activeUser?.unitId === 'geca' ||
+      (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)');
 
-    // Si NO es Administrador del Sistema (o si el Administrador está previsualizando una unidad en modo 'my_office'),
-    // restringir estrictamente a los procedimientos que le corresponden a su Órgano / Oficina / Área / Facultad.
+    // El Administrador y la Oficina de Gestión de la Calidad (GECA) pueden ver 'Todo el SGC' cuando scopeMode === 'all'.
+    // Las demás oficinas siempre ven únicamente los procedimientos que les corresponden.
     let matchesScope = true;
-    if (!isGlobalSystemAdmin && (!isAdmin || scopeMode === 'my_office')) {
+    if (!isGlobalSystemAdmin && (!(isAdmin || isGecaOfficeMember) || scopeMode === 'my_office')) {
       if (exactUserProcedures.length > 0) {
         matchesScope = exactUserProcedures.includes(doc.code);
       } else if (activeUser.processCodes && activeUser.processCodes.length > 0) {

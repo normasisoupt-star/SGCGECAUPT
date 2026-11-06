@@ -295,7 +295,7 @@ export function App() {
         <Sidebar
           activeTab={activeTab}
           onSelectTab={handleSelectTab}
-          documentCount={isAdmin && scopeMode === 'all' ? documents.length : (resolveUserOrganizationUnit(activeUser)?.consolidatedProcedures.length || activeUser?.procedureCodes?.length || documents.length)}
+          documentCount={(isAdmin || activeUser?.unitId === 'geca' || (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)')) && scopeMode === 'all' ? documents.length : (resolveUserOrganizationUnit(activeUser)?.consolidatedProcedures.length || activeUser?.procedureCodes?.length || documents.length)}
           openCapaCount={openCapasCount}
           isAdmin={isAdmin}
         />
@@ -308,6 +308,7 @@ export function App() {
               checklist={checklist}
               logs={logs}
               activeUser={activeUser}
+              scopeMode={scopeMode}
               onNavigate={handleSelectTab}
               onOpenNewDoc={() => {
                 setSelectedProcessFilter('all');
@@ -322,7 +323,7 @@ export function App() {
           )}
 
           {activeTab === 'process_map' && (
-            <ProcessMapView onSelectProcessFilter={handleSelectProcessFilter} activeUser={activeUser} isAdmin={isAdmin && scopeMode === 'all'} />
+            <ProcessMapView onSelectProcessFilter={handleSelectProcessFilter} activeUser={activeUser} isAdmin={(isAdmin || activeUser?.unitId === 'geca' || (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)')) && scopeMode === 'all'} />
           )}
 
           {activeTab === 'documents' && (
