@@ -233,7 +233,10 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
       }
     }
 
-    const exactUserProcedures = activeUserUnit?.consolidatedProcedures || activeUser.procedureCodes || [];
+    const exactUserProcedures =
+      activeUser?.procedureCodes && activeUser.procedureCodes.length > 0
+        ? activeUser.procedureCodes
+        : activeUserUnit?.consolidatedProcedures || [];
     const isGlobalSystemAdmin =
       activeUser?.role === 'geca' &&
       (activeUser?.id === 'u-geca' || activeUser?.officeName === 'Administrador del Sistema');

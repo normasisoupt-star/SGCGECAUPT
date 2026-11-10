@@ -9,6 +9,7 @@ import {
   User
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types';
+import { resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from '../data/organizationHierarchy';
 
 interface NavbarProps {
   users: UserProfile[];
@@ -16,6 +17,8 @@ interface NavbarProps {
   onSwitchUser: (user: UserProfile) => void;
   scopeMode: 'my_office' | 'all';
   onToggleScopeMode: (mode: 'my_office' | 'all') => void;
+  activeUnitScope?: 'primary' | 'secondary' | 'both';
+  onChangeActiveUnitScope?: (scope: 'primary' | 'secondary' | 'both') => void;
   onLogout?: () => void;
   isAdminSession?: boolean;
 }
@@ -47,11 +50,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSwitchUser,
   scopeMode,
   onToggleScopeMode,
+  activeUnitScope = 'both',
+  onChangeActiveUnitScope,
   onLogout,
   isAdminSession,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const isAdmin = isAdminSession ?? (activeUser?.role === 'geca');
+  const primaryUnit = resolveUserOrganizationUnit(activeUser);
+  const secondaryUnit = resolveUserSecondaryUnit(activeUser);
+  const combinedDual = getCombinedUserProceduresAndProcesses(primaryUnit, secondaryUnit, activeUser?.procedureCodes, activeUser?.processCodes);
 
   return (
     <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 shadow-xs before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[2px] before:bg-gradient-to-r before:from-[#0d2d3f] before:via-[#e63b2e] before:to-[#9C7D0F]">
@@ -107,6 +115,50 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Globe className="w-3.5 h-3.5 text-emerald-300" />
                 <span className="hidden sm:inline">Todo el SGC (94)</span>
+              </button>
+            </div>
+          ) : secondaryUnit && onChangeActiveUnitScope ? (
+            <div className="hidden md:flex items-center bg-slate-100 p-1 rounded-2xl border border-[#D4AF37]/50 shadow-2xs gap-1">
+              <button
+                type="button"
+                onClick={() => onChangeActiveUnitScope('primary')}
+                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeUnitScope === 'primary'
+                    ? 'bg-[#0d2d3f] text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-200'
+                }`}
+                title={`Ver únicamente 1.ª Dependencia: ${primaryUnit?.displayName || activeUser?.officeName}`}
+              >
+                <Building2 className="w-3 h-3 text-[#F3E5AB]" />
+                <span className="max-w-[140px] truncate">1.ª: {primaryUnit?.officeName || activeUser?.officeName} ({primaryUnit?.consolidatedProcedures.length || 0})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onChangeActiveUnitScope('secondary')}
+                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeUnitScope === 'secondary'
+                    ? 'bg-[#9C7D0F] text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-200'
+                }`}
+                title={`Ver únicamente 2.ª Dependencia asignada por el Administrador: ${secondaryUnit.displayName}`}
+              >
+                <Building2 className="w-3 h-3 text-amber-200" />
+                <span className="max-w-[140px] truncate">2.ª: {secondaryUnit.officeName} ({secondaryUnit.consolidatedProcedures.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onChangeActiveUnitScope('both')}
+                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeUnitScope === 'both'
+                    ? 'bg-[#0d2d3f] text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-200'
+                }`}
+                title="Ver ambas dependencias consolidadas"
+              >
+                <Globe className="w-3 h-3 text-emerald-300" />
+                <span>Ambas ({combinedDual.procedureCodes.length})</span>
               </button>
             </div>
           ) : (
@@ -211,8 +263,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                       <div className="pt-2 flex flex-wrap items-center gap-1.5">
                         <span className={'inline-block px-2.5 py-1 text-[11px] font-bold rounded-lg border ' + (ROLE_COLORS[activeUser?.role || 'colaborador'] || 'bg-slate-100 text-slate-700')}>
-                          {activeUser?.officeName || activeUser?.department}
+                          1.ª: {activeUser?.officeName || activeUser?.department}
                         </span>
+                        {secondaryUnit && (
+                          <span className="inline-block px-2.5 py-1 text-[11px] font-bold rounded-lg border border-[#D4AF37]/60 bg-amber-50 text-[#9C7D0F]">
+                            2.ª: {secondaryUnit.displayName}
+                          </span>
+                        )}
                         {activeUser?.processCodes && activeUser.processCodes.length > 0 && (
                           <span className="text-[11px] font-mono text-slate-600 font-bold bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
                             Procesos: {activeUser.processCodes.join(', ')}

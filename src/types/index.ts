@@ -27,6 +27,8 @@ export interface UserProfile {
   department: string;
   officeName?: string;
   unitId?: string;
+  secondaryUnitId?: string;
+  secondaryOfficeName?: string;
   organName?: string;
   areaName?: string;
   procedureCodes?: string[];

@@ -11,12 +11,10 @@ import {
   Mail,
   Briefcase,
   CheckCircle2,
-  History,
-  UserX,
-  RotateCcw
+  History
 } from 'lucide-react';
 import { ActivityLog, UserProfile } from '../types';
-import { ORGAN_GROUPS, ORGANIZATION_UNITS, resolveUserOrganizationUnit } from '../data/organizationHierarchy';
+import { ORGAN_GROUPS, ORGANIZATION_UNITS, resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from '../data/organizationHierarchy';
 
 interface ActivityLogsViewProps {
   logs: ActivityLog[];
@@ -24,6 +22,7 @@ interface ActivityLogsViewProps {
   revokedEmails?: string[];
   onDeleteRegisteredUser?: (userId: string, email: string) => void;
   onReassignUserUnit?: (userId: string, email: string, newUnitId: string) => void;
+  onAssignUserSecondaryUnit?: (userId: string, email: string, secondaryUnitId: string) => void;
   onRestoreRevokedEmail?: (email: string) => void;
   onSyncCloudUsers?: () => Promise<void>;
 }
@@ -34,6 +33,7 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
   revokedEmails = [],
   onDeleteRegisteredUser,
   onReassignUserUnit,
+  onAssignUserSecondaryUnit,
   onRestoreRevokedEmail,
   onSyncCloudUsers,
 }) => {
@@ -188,12 +188,14 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
                 {filteredOfficials.map((u) => {
                   const isSystemOwner = u.role === 'geca' && u.officeName === 'Administrador del Sistema';
                   const unit = resolveUserOrganizationUnit(u);
-                  const procCount = isSystemOwner ? 94 : (unit?.consolidatedProcedures.length || u.procedureCodes?.length || 0);
+                  const secondaryUnit = resolveUserSecondaryUnit(u);
+                  const combined = getCombinedUserProceduresAndProcesses(unit, secondaryUnit, u.procedureCodes, u.processCodes);
+                  const procCount = isSystemOwner ? 94 : (combined.procedureCodes.length || u.procedureCodes?.length || 0);
 
                   return (
                     <div
                       key={u.id + u.email}
-                      className="p-4 sm:p-5 hover:bg-slate-50/80 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                      className="p-4 sm:p-5 hover:bg-slate-50/80 transition-colors flex flex-col xl:flex-row xl:items-center justify-between gap-4"
                     >
                       {/* Datos del Funcionario */}
                       <div className="space-y-1.5 flex-1 min-w-0">
@@ -206,6 +208,11 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
                           ) : (
                             <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-50 text-[#0d2d3f] border border-blue-200 uppercase">
                               {u.role === 'director_escuela' ? 'Dueño de Proceso / Jefe' : u.role === 'auditor' ? 'Auditor Interno' : 'Colaborador Administrativo'}
+                            </span>
+                          )}
+                          {secondaryUnit && (
+                            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-[#9C7D0F] border border-[#D4AF37]/50 uppercase">
+                              Doble Dependencia Asignada
                             </span>
                           )}
                           {u.registeredAt && (
@@ -226,8 +233,14 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
                           </span>
                           <span className="inline-flex items-center gap-1">
                             <Building2 className="w-3.5 h-3.5 text-[#0d2d3f]" />
-                            Unidad: <strong className="text-[#0d2d3f]">{isSystemOwner ? 'Administrador del Sistema (Sin oficina asignada)' : (u.officeName || u.department)}</strong>
+                            1.ª Dependencia: <strong className="text-[#0d2d3f]">{isSystemOwner ? 'Administrador del Sistema (Sin oficina asignada)' : (u.officeName || u.department)}</strong>
                           </span>
+                          {secondaryUnit && (
+                            <span className="inline-flex items-center gap-1 bg-amber-50/80 px-2 py-0.5 rounded-md border border-[#D4AF37]/40 text-[#0d2d3f]">
+                              <Building2 className="w-3.5 h-3.5 text-[#9C7D0F]" />
+                              2.ª Dependencia: <strong className="text-[#9C7D0F]">{secondaryUnit.displayName}</strong>
+                            </span>
+                          )}
                           <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
                             <CheckCircle2 className="w-3 h-3" />
                             {procCount} procedimientos habilitados
@@ -235,26 +248,62 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
                         </div>
                       </div>
 
-                      {/* Controles del Administrador: Cambiar Oficina/Área o Eliminar Registro */}
+                      {/* Controles del Administrador: Cambiar 1.ª Dependencia, Asignar 2.ª Dependencia o Eliminar Registro */}
                       {!isSystemOwner && (
-                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
                           {onReassignUserUnit && (
-                            <select
-                              value={unit?.id || u.unitId || 'opla'}
-                              onChange={(e) => onReassignUserUnit(u.id, u.email, e.target.value)}
-                              className="px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] cursor-pointer max-w-[240px]"
-                              title="Cambiar la Oficina, Área o Facultad asignada a este usuario"
-                            >
-                              {ORGAN_GROUPS.map((group) => (
-                                <optgroup key={group.key} label={group.label}>
-                                  {ORGANIZATION_UNITS.filter((unitItem) => unitItem.organGroup === group.key).map((unitItem) => (
-                                    <option key={unitItem.id} value={unitItem.id}>
-                                      {unitItem.displayName} ({unitItem.consolidatedProcedures.length} proc.)
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              ))}
-                            </select>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">
+                                1.ª Dependencia Principal
+                              </span>
+                              <select
+                                value={unit?.id || u.unitId || 'opla'}
+                                onChange={(e) => onReassignUserUnit(u.id, u.email, e.target.value)}
+                                className="px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#0d2d3f] cursor-pointer max-w-[230px]"
+                                title="Cambiar la Oficina, Área o Facultad principal asignada a este usuario"
+                              >
+                                {ORGAN_GROUPS.map((group) => (
+                                  <optgroup key={group.key} label={group.label}>
+                                    {ORGANIZATION_UNITS.filter((unitItem) => unitItem.organGroup === group.key).map((unitItem) => (
+                                      <option key={unitItem.id} value={unitItem.id}>
+                                        {unitItem.displayName} ({unitItem.consolidatedProcedures.length} proc.)
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+
+                          {onAssignUserSecondaryUnit && (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] font-bold text-[#9C7D0F] uppercase tracking-wider px-1">
+                                + 2.ª Dependencia (Admin)
+                              </span>
+                              <select
+                                value={secondaryUnit?.id || u.secondaryUnitId || ''}
+                                onChange={(e) => onAssignUserSecondaryUnit(u.id, u.email, e.target.value)}
+                                className={`px-2.5 py-1.5 text-xs rounded-xl border font-medium focus:outline-none focus:ring-2 focus:ring-[#9C7D0F] cursor-pointer max-w-[230px] ${
+                                  secondaryUnit
+                                    ? 'border-[#D4AF37] bg-amber-50/70 text-[#0d2d3f] font-bold'
+                                    : 'border-slate-200 bg-slate-50 hover:bg-white text-slate-600'
+                                }`}
+                                title="Asignar o quitar una segunda Oficina o Facultad adicional a este funcionario (exclusivo Administrador)"
+                              >
+                                <option value="">— Sin 2.ª dependencia —</option>
+                                {ORGAN_GROUPS.map((group) => (
+                                  <optgroup key={group.key} label={group.label}>
+                                    {ORGANIZATION_UNITS.filter(
+                                      (unitItem) => unitItem.organGroup === group.key && unitItem.id !== (unit?.id || u.unitId)
+                                    ).map((unitItem) => (
+                                      <option key={unitItem.id} value={unitItem.id}>
+                                        + {unitItem.displayName} ({unitItem.consolidatedProcedures.length} proc.)
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                ))}
+                              </select>
+                            </div>
                           )}
 
                           {onDeleteRegisteredUser && (
@@ -299,42 +348,6 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
               </div>
             )}
           </div>
-
-          {/* Lista de Correos Revocados / Bloqueados */}
-          {revokedEmails.length > 0 && (
-            <div className="bg-rose-50/60 rounded-2xl border border-rose-200 p-4 sm:p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wider">
-                  <UserX className="w-4 h-4 text-rose-600" />
-                  <span>Registros Eliminados / Correos con Acceso Revocado ({revokedEmails.length})</span>
-                </div>
-              </div>
-              <p className="text-xs text-rose-700">
-                Estos correos fueron dados de baja por registrarse en una dependencia no autorizada y tienen el inicio de sesión bloqueado. Si el trabajador vuelve a registrarse en su oficina correcta o usted lo restaura, podrá ingresar nuevamente.
-              </p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {revokedEmails.map((email) => (
-                  <div
-                    key={email}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-rose-200 text-xs text-slate-800 shadow-2xs"
-                  >
-                    <span className="font-semibold text-rose-800">{email}</span>
-                    {onRestoreRevokedEmail && (
-                      <button
-                        type="button"
-                        onClick={() => onRestoreRevokedEmail(email)}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-lg border border-emerald-200 cursor-pointer"
-                        title="Desbloquear este correo"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Desbloquear</span>
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         <div className="space-y-4">

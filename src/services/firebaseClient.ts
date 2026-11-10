@@ -23,7 +23,7 @@ import {
   Firestore
 } from 'firebase/firestore';
 import { UserProfile, UserRole, ProcessLevel0 } from '../types';
-import { getOrganizationUnitById, resolveUserOrganizationUnit } from '../data/organizationHierarchy';
+import { getOrganizationUnitById, resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from '../data/organizationHierarchy';
 import { isUserEmailRevoked, removeEmailFromRevoked } from './storage';
 
 export interface FirebaseConfig {
@@ -135,15 +135,47 @@ export async function reassignUserUnitInCloud(email: string, newUnitId: string):
   const unit = getOrganizationUnitById(newUnitId);
   if (!unit) return;
   const docId = encodeEmailDocId(email);
+  const existingSnap = await withTimeout(getDoc(doc(firebaseDb, 'sgc_registered_users', docId)), 2000);
+  const existingData = existingSnap && existingSnap.exists() ? (existingSnap.data() as UserProfile) : undefined;
+  const secUnit = resolveUserSecondaryUnit(existingData);
+  const cleanSec = secUnit && secUnit.id !== unit.id ? secUnit : undefined;
+  const combined = getCombinedUserProceduresAndProcesses(unit, cleanSec);
+
   await withTimeout(
     setDoc(doc(firebaseDb, 'sgc_registered_users', docId), {
       unitId: unit.id,
+      secondaryUnitId: cleanSec ? cleanSec.id : '',
+      secondaryOfficeName: cleanSec ? cleanSec.displayName : '',
       organName: unit.organName,
       areaName: unit.areaName || '',
       department: unit.organName,
       officeName: unit.displayName,
-      procedureCodes: unit.consolidatedProcedures,
-      processCodes: unit.processCodes,
+      procedureCodes: combined.procedureCodes,
+      processCodes: combined.processCodes,
+      updatedAt: new Date().toISOString(),
+    }, { merge: true })
+  );
+}
+
+/**
+ * Asigna o remueve una segunda dependencia (oficina/área/facultad) al usuario en la nube (exclusivo Administrador)
+ */
+export async function assignUserSecondaryUnitInCloud(email: string, secondaryUnitId: string): Promise<void> {
+  if (!firebaseDb || !email) return;
+  const docId = encodeEmailDocId(email);
+  const existingSnap = await withTimeout(getDoc(doc(firebaseDb, 'sgc_registered_users', docId)), 2000);
+  const existingData = existingSnap && existingSnap.exists() ? (existingSnap.data() as UserProfile) : undefined;
+  const primaryUnit = existingData ? (getOrganizationUnitById(existingData.unitId) || resolveUserOrganizationUnit(existingData)) : undefined;
+  const secUnit = secondaryUnitId ? getOrganizationUnitById(secondaryUnitId) : undefined;
+  const cleanSec = secUnit && secUnit.id !== primaryUnit?.id ? secUnit : undefined;
+  const combined = getCombinedUserProceduresAndProcesses(primaryUnit, cleanSec, existingData?.procedureCodes, existingData?.processCodes);
+
+  await withTimeout(
+    setDoc(doc(firebaseDb, 'sgc_registered_users', docId), {
+      secondaryUnitId: cleanSec ? cleanSec.id : '',
+      secondaryOfficeName: cleanSec ? cleanSec.displayName : '',
+      procedureCodes: combined.procedureCodes,
+      processCodes: combined.processCodes,
       updatedAt: new Date().toISOString(),
     }, { merge: true })
   );
@@ -304,24 +336,29 @@ export async function loginWithFirebase(email: string, password: string): Promis
     };
   }
 
-  // 4. Intentar recuperar desde Firestore por si el Administrador reasignó su oficina
+  // 4. Intentar recuperar desde Firestore por si el Administrador reasignó su oficina o le asignó 2.ª dependencia
   if (firebaseDb) {
     const cloudDoc = await withTimeout(getDoc(doc(firebaseDb, 'sgc_registered_users', encodeEmailDocId(cleanEmail))), 2000);
     if (cloudDoc && cloudDoc.exists()) {
       const cloudProfile = cloudDoc.data() as UserProfile;
       const unit = getOrganizationUnitById(cloudProfile.unitId) || resolveUserOrganizationUnit(cloudProfile);
+      const secUnit = resolveUserSecondaryUnit(cloudProfile);
+      const cleanSec = secUnit && secUnit.id !== unit?.id ? secUnit : undefined;
+      const combined = getCombinedUserProceduresAndProcesses(unit, cleanSec, cloudProfile.procedureCodes, cloudProfile.processCodes);
       return {
         ...cloudProfile,
         id: user.uid,
         name: user.displayName || cloudProfile.name,
         email: user.email || cleanEmail,
         unitId: unit?.id || cloudProfile.unitId,
+        secondaryUnitId: cleanSec?.id,
+        secondaryOfficeName: cleanSec?.displayName,
         organName: unit?.organName || cloudProfile.organName,
         areaName: unit?.areaName || cloudProfile.areaName,
         department: unit ? unit.organName : cloudProfile.department,
         officeName: unit ? unit.displayName : (cloudProfile.officeName || cloudProfile.department),
-        procedureCodes: unit ? unit.consolidatedProcedures : cloudProfile.procedureCodes,
-        processCodes: unit ? unit.processCodes : cloudProfile.processCodes,
+        procedureCodes: combined.procedureCodes,
+        processCodes: combined.processCodes,
       };
     }
   }
@@ -355,18 +392,23 @@ export async function loginWithFirebase(email: string, password: string): Promis
       const existing = parsedUsers.find((u) => u.email?.toLowerCase() === cleanEmail);
       if (existing) {
         const unit = getOrganizationUnitById(existing.unitId || parsedUnitId) || resolveUserOrganizationUnit(existing);
+        const secUnit = resolveUserSecondaryUnit(existing);
+        const cleanSec = secUnit && secUnit.id !== unit?.id ? secUnit : undefined;
+        const combined = getCombinedUserProceduresAndProcesses(unit, cleanSec, existing.procedureCodes, existing.processCodes);
         return {
           ...existing,
           id: user.uid,
           name: user.displayName || existing.name,
           email: user.email || cleanEmail,
           unitId: unit?.id || existing.unitId,
+          secondaryUnitId: cleanSec?.id,
+          secondaryOfficeName: cleanSec?.displayName,
           organName: unit?.organName || existing.organName,
           areaName: unit?.areaName || existing.areaName,
           department: unit ? unit.organName : existing.department,
           officeName: unit ? unit.displayName : (existing.officeName || existing.department),
-          procedureCodes: unit ? unit.consolidatedProcedures : existing.procedureCodes,
-          processCodes: unit ? unit.processCodes : existing.processCodes,
+          procedureCodes: combined.procedureCodes,
+          processCodes: combined.processCodes,
         };
       }
     }

@@ -103,8 +103,16 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
   isAdmin = false,
 }) => {
   const unit = activeUser ? resolveUserOrganizationUnit(activeUser) : undefined;
+  const userProcessCodes =
+    activeUser?.processCodes && activeUser.processCodes.length > 0
+      ? activeUser.processCodes
+      : unit?.processCodes || [];
+  const userProcedureCodes =
+    activeUser?.procedureCodes && activeUser.procedureCodes.length > 0
+      ? activeUser.procedureCodes
+      : unit?.consolidatedProcedures || [];
   const allowedProcesses =
-    !isAdmin && unit && unit.processCodes.length > 0 ? unit.processCodes : null;
+    !isAdmin && userProcessCodes.length > 0 ? userProcessCodes : null;
 
   const isProcessEnabled = (code: ProcessLevel0): boolean => {
     if (isAdmin || !allowedProcesses) return true;
@@ -112,8 +120,8 @@ export const ProcessMapView: React.FC<ProcessMapViewProps> = ({
   };
 
   const getProcedureCountForProcess = (code: ProcessLevel0): number => {
-    if (!isAdmin && unit && unit.consolidatedProcedures.length > 0) {
-      return unit.consolidatedProcedures.filter((procCode) => procCode.includes(code)).length;
+    if (!isAdmin && userProcedureCodes.length > 0) {
+      return userProcedureCodes.filter((procCode) => procCode.includes(code)).length;
     }
     return UPT_DOCUMENTS.filter(
       (doc) => doc.processCode === code && doc.documentType === 'Procedimiento'

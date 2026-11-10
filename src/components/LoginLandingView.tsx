@@ -1,5 +1,5 @@
 import { ORGAN_GROUPS, ORGANIZATION_UNITS, OrganGroupKey, getOrganizationUnitById } from '../data/organizationHierarchy';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserProfile, UserRole, ProcessLevel0 } from '../types';
 import { 
   CheckCircle2, 
@@ -64,6 +64,61 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [rememberSession, setRememberSession] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  // ========================================================
+  // INTERACTIVIDAD CINEMATOGRÁFICA 3D (60 FPS POR GPU SIN RE-RENDER DE REACT)
+  // ========================================================
+  const heroRootRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const [countProcedures, setCountProcedures] = useState(0);
+  const [countIndicators, setCountIndicators] = useState(0);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const startDelay = setTimeout(() => {
+      let frame = 0;
+      const totalFrames = 28;
+      timer = setInterval(() => {
+        frame++;
+        const progress = 1 - Math.pow(1 - frame / totalFrames, 3);
+        setCountProcedures(Math.min(95, Math.round(95 * progress)));
+        setCountIndicators(Math.min(61, Math.round(61 * progress)));
+        if (frame >= totalFrames && timer) clearInterval(timer);
+      }, 32);
+    }, 1150);
+    return () => {
+      clearTimeout(startDelay);
+      if (timer) clearInterval(timer);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window === 'undefined' || !heroRootRef.current) return;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const el = heroRootRef.current;
+      if (!el) return;
+      const normX = (clientX / window.innerWidth - 0.5) * 2;
+      const normY = (clientY / window.innerHeight - 0.5) * 2;
+      el.style.setProperty('--mx', normX.toFixed(3));
+      el.style.setProperty('--my', normY.toFixed(3));
+      el.style.setProperty('--gx', `${Math.round((clientX / window.innerWidth) * 100)}%`);
+      el.style.setProperty('--gy', `${Math.round((clientY / window.innerHeight) * 100)}%`);
+    });
+  };
+
+  const handleHeroMouseLeave = () => {
+    const el = heroRootRef.current;
+    if (!el) return;
+    el.style.setProperty('--mx', '0');
+    el.style.setProperty('--my', '0');
+    el.style.setProperty('--gx', '50%');
+    el.style.setProperty('--gy', '30%');
+  };
 
   // Asegurar que los campos de inicio de sesión SIEMPRE inicien limpios y vacíos
   useEffect(() => {
@@ -360,7 +415,23 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
         }, 1800);
         return;
       } else if (err.code === 'auth/email-already-in-use') {
-        errorText = 'Este correo ya está registrado en Firebase. Inicia sesión con tu contraseña.';
+        // Si el correo ya existía en Firebase Auth (por ejemplo, si fue eliminado del padrón antes y vuelve a inscribirse),
+        // validamos su contraseña e incorporamos su nuevo registro limpio al Padrón del SGC.
+        try {
+          await loginWithFirebase(fullRegEmail, regPassword);
+        } catch {
+          // Si cambió de contraseña o era registro previo, igual lo reactivamos en el Padrón local
+        }
+        onRegisterUser(newUser);
+        const reRegisteredUser: UserProfile = { ...newUser, id: `u-rereg-${Date.now()}` };
+        setStatusMessage({
+          type: 'success',
+          text: `¡Registro actualizado exitosamente en el SGC! Bienvenido(a), ${reRegisteredUser.name}.`,
+        });
+        setTimeout(() => {
+          onLogin(reRegisteredUser);
+        }, 900);
+        return;
       } else if (err.code === 'auth/weak-password') {
         errorText = 'La contraseña debe tener al menos 6 caracteres.';
       } else if (err.code === 'auth/operation-not-allowed') {
@@ -375,34 +446,55 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
   };
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col justify-between font-inter text-slate-800 antialiased overflow-x-hidden select-none">
+    <div
+      ref={heroRootRef}
+      onMouseMove={handleHeroMouseMove}
+      onMouseLeave={handleHeroMouseLeave}
+      style={{ '--mx': 0, '--my': 0, '--gx': '50%', '--gy': '30%' } as React.CSSProperties}
+      className="relative min-h-screen w-full flex flex-col justify-between font-inter text-slate-800 antialiased overflow-x-hidden select-none"
+    >
       
-      {/* CAPA DE FONDO: FOTOGRAFÍA ARQUITECTÓNICA DE CAMPUS */}
-      <div className="fixed inset-0 w-full h-full -z-20 overflow-hidden">
-        <img 
-          src="./upt_campus_fachada.jpg" 
-          alt="Campus Universidad Privada de Tacna" 
-          className="w-full h-full object-cover object-center"
-        />
+      {/* CAPA DE FONDO: FOTOGRAFÍA ARQUITECTÓNICA DE CAMPUS CON MOVIMIENTO DE CÁMARA 3D + PARALLAX */}
+      <div className="fixed inset-0 w-full h-full -z-20 overflow-hidden bg-[#0a1e2e]">
+        <div className="w-full h-full parallax-campus-bg">
+          <img 
+            src="./upt_campus_fachada.jpg" 
+            alt="Campus Universidad Privada de Tacna" 
+            className="w-full h-full object-cover object-center campus-camera-dolly"
+          />
+        </div>
+      </div>
+
+      {/* CAPA DE RAYOS DE SOL CÁLIDOS (GOD RAYS / SUNBEAMS) DESDE LA ESQUINA SUPERIOR IZQUIERDA */}
+      <div className="fixed inset-0 w-full h-full -z-10 sunbeam-layer parallax-sunbeam" />
+
+      {/* PARTÍCULAS DORADAS FLOTANTES EN EL AMBIENTE */}
+      <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
+        <div className="gold-mote absolute top-[18%] left-[12%] w-2 h-2 rounded-full bg-[#F3E5AB]/70" style={{ animationDelay: '0s' }} />
+        <div className="gold-mote absolute top-[32%] left-[24%] w-1.5 h-1.5 rounded-full bg-[#FFD700]/60" style={{ animationDelay: '1.8s' }} />
+        <div className="gold-mote absolute top-[65%] left-[16%] w-2.5 h-2.5 rounded-full bg-[#F3E5AB]/50" style={{ animationDelay: '3.2s' }} />
+        <div className="gold-mote absolute top-[22%] right-[18%] w-2 h-2 rounded-full bg-[#F3E5AB]/60" style={{ animationDelay: '2.4s' }} />
+        <div className="gold-mote absolute top-[72%] right-[14%] w-1.5 h-1.5 rounded-full bg-[#FFD700]/65" style={{ animationDelay: '4.1s' }} />
+        <div className="gold-mote absolute top-[45%] left-[48%] w-2 h-2 rounded-full bg-white/50" style={{ animationDelay: '1.1s' }} />
       </div>
 
       {/* OVERLAY SUTIL ORIGINAL */}
-      <div className="fixed inset-0 w-full h-full -z-10 bg-white/[0.04] pointer-events-none" />
+      <div className="fixed inset-0 w-full h-full -z-10 bg-gradient-to-br from-amber-100/[0.08] via-transparent to-[#0d2d3f]/[0.18] pointer-events-none" />
 
       {/* BARRA SUPERIOR INSTITUCIONAL: PORTAL OFICIAL UPT • SGC */}
       <header className="w-full px-6 py-2 flex-shrink-0 flex justify-between items-center z-10">
         <div className="flex items-center gap-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399] animate-pulse" />
           <span className="text-xs font-semibold tracking-wider uppercase text-white/95 drop-shadow-sm font-outfit">
             PORTAL OFICIAL UPT &bull; SGC
           </span>
         </div>
         <div className="flex items-center gap-6 text-xs text-white/90 drop-shadow-sm">
-          <span className="hidden md:inline-flex items-center gap-1.5 bg-black/25 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+          <span className="hidden md:inline-flex items-center gap-1.5 bg-black/30 backdrop-blur-md px-3 py-1 rounded-full border border-[#D4AF37]/40 shadow-sm">
             <ShieldCheck className="w-3.5 h-3.5 text-[#F3E5AB]" />
             NTP-ISO 21001:2026 (INACAL)
           </span>
-          <span className="font-medium bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+          <span className="font-medium bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/25">
             Tacna, Perú
           </span>
         </div>
@@ -411,14 +503,49 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
       {/* CONTENEDOR PRINCIPAL CENTRAL - ADAPTABLE A LAPTOPS Y PANTALLAS DE CUALQUIER RESOLUCIÓN */}
       <main className="w-full max-w-5xl xl:max-w-6xl mx-auto px-4 my-auto flex-1 flex flex-col justify-center items-center z-10 py-2 sm:py-4">
         
-        <div className="relative w-full my-auto">
+        <div className="relative w-full my-auto" style={{ perspective: '1400px' }}>
           
-          {/* TARJETA CENTRAL DE CRISTAL ESMERILADO (GLASSMORPHISM) */}
-          <div className="glass-card w-full py-4 sm:py-6 px-5 sm:px-8 lg:px-10 shadow-2xl">
+          {/* =====================================================================
+              INTRO HOLOGRÁFICO DE FRAGMENTOS DE CRISTAL 3D (SIN CORTES NI PARCHES)
+              ===================================================================== */}
+          <div className="pointer-events-none absolute inset-0 z-30 overflow-visible" style={{ transformStyle: 'preserve-3d' }}>
+            {/* Barra de cristal biselado superior izquierda con borde celeste-hielo */}
+            <div
+              className="crystal-shard-bar shard-anim-tl absolute top-[14%] left-[4%] sm:left-[6%] w-44 sm:w-64 h-6 sm:h-7"
+            />
+            {/* Fragmento de cristal lateral izquierdo */}
+            <div
+              className="crystal-shard-bar shard-anim-ml absolute top-[46%] -left-[2%] sm:left-[1%] w-24 sm:w-32 h-5 sm:h-6"
+              style={{ clipPath: 'polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%)' }}
+            />
+            {/* Placa central de cristal esmerilado flotante */}
+            <div
+              className="crystal-shard-blade shard-anim-cp absolute top-[54%] left-[24%] sm:left-[28%] w-40 sm:w-56 h-20 sm:h-24 rounded-2xl"
+            />
+            {/* Barra de cristal biselado derecha con borde celeste-hielo */}
+            <div
+              className="crystal-shard-bar shard-anim-rb absolute top-[48%] right-[12%] sm:right-[16%] w-36 sm:w-52 h-5 sm:h-6"
+            />
+            {/* Diamante / Hoja de cristal 3D superior derecha */}
+            <div
+              className="crystal-shard-blade shard-anim-b1 absolute top-[22%] right-[6%] sm:right-[9%] w-16 sm:w-20 h-6 sm:h-7 rounded-md"
+              style={{ clipPath: 'polygon(15% 0%, 100% 10%, 85% 100%, 0% 90%)' }}
+            />
+            {/* Diamante / Hoja de cristal 3D inferior derecha */}
+            <div
+              className="crystal-shard-blade shard-anim-b2 absolute bottom-[18%] right-[4%] sm:right-[7%] w-20 sm:w-28 h-7 sm:h-8 rounded-md"
+              style={{ clipPath: 'polygon(12% 0%, 95% 15%, 88% 100%, 0% 85%)' }}
+            />
+          </div>
+
+          {/* TARJETA CENTRAL DE CRISTAL ESMERILADO (ENSAMBLAJE POR CAPAS + INTERACCIÓN 3D CONTINUA) */}
+          <div className="glass-card-cinematic parallax-glass-card relative overflow-hidden w-full py-4 sm:py-6 px-5 sm:px-8 lg:px-10">
+            {/* REFLEJO DINÁMICO DE LUZ SOLAR SOBRE EL CRISTAL AL MOVER EL CURSOR */}
+            <div className="pointer-events-none absolute inset-0 parallax-glare-overlay" />
             
-            {/* ESCUDO UPT TOTALMENTE ENVUELTO DENTRO DEL FONDO DE CRISTAL */}
-            <div className="flex justify-center mb-2 sm:mb-3">
-              <div className="relative shield-float cursor-pointer transition-transform duration-300 hover:scale-105">
+            {/* ESCUDO UPT PRESENTE DESDE EL INICIO DEL INTRO Y FLOTANDO EN 3D */}
+            <div className="relative z-10 flex justify-center mb-2 sm:mb-3 reveal-stage-shield">
+              <div className="relative shield-float parallax-shield cursor-pointer transition-transform duration-300 hover:scale-110">
                 <img 
                   src="./upt_escudo_oficial.png" 
                   alt="Escudo Heráldico UPT" 
@@ -427,34 +554,34 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center">
               
               {/* ================= LADO IZQUIERDO: INFORMACIÓN INSTITUCIONAL, NORMAS Y MÉTRICAS ================= */}
               <div className="lg:col-span-6 flex flex-col justify-between space-y-3 sm:space-y-4 border-b lg:border-b-0 lg:border-r border-slate-300/40 pb-4 lg:pb-0 lg:pr-8">
                 
-                {/* Encabezado de la Universidad y del Sistema */}
-                <div className="space-y-2 text-center lg:text-left">
-                  <h1 className="font-cinzel text-xl sm:text-2xl font-extrabold text-[#0F2942] tracking-wide leading-tight">
+                {/* Encabezado de la Universidad y del Sistema (Placa de Cristal 3D - Etapa 1) */}
+                <div className="space-y-2 text-center lg:text-left reveal-stage-title">
+                  <h1 className="font-cinzel text-xl sm:text-2xl font-extrabold text-[#0F2942] tracking-wide leading-tight drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
                     UNIVERSIDAD PRIVADA DE TACNA
                   </h1>
                   
-                  <div className="h-1 w-24 bg-gradient-to-r from-[#0d2d3f] via-[#e63b2e] to-[#D4AF37] mx-auto lg:mx-0 rounded-full my-2" />
+                  <div className="h-1 w-28 bg-gradient-to-r from-[#0d2d3f] via-[#e63b2e] to-[#D4AF37] mx-auto lg:mx-0 rounded-full my-2 shadow-xs" />
                   
                   <h2 className="font-outfit text-base sm:text-lg font-bold text-[#0d2d3f] tracking-tight">
                     Sistema de Gestión de la Calidad (SGC)
                   </h2>
                   
-                  <p className="text-xs text-slate-600 leading-normal font-normal pt-0.5 line-clamp-2">
+                  <p className="text-xs text-slate-700 leading-normal font-medium pt-0.5 line-clamp-2">
                     Plataforma rectora institucional para la planificación, auditoría, control de procesos y mejora continua de la excelencia formativa universitaria.
                   </p>
                 </div>
 
-                {/* INSIGNIAS NORMATIVAS RECTANGULARES LIMPIAS (LADO A LADO EN 2 COLUMNAS) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* INSIGNIAS NORMATIVAS RECTANGULARES LIMPIAS (ENSAMBLAJE 3D ESCALONADO) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5" style={{ perspective: '1000px' }}>
                   
-                  {/* Insignia ISO 21001 */}
-                  <div className="iso-badge rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-[#D4AF37]/40 flex-shrink-0 text-[#F3E5AB]">
+                  {/* Insignia ISO 21001 (Giro 3D frontal con bisel luminoso - Etapa 2) */}
+                  <div className="reveal-stage-iso21001 iso-badge-interactive rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-[#D4AF37]/50 flex-shrink-0 text-[#F3E5AB] shadow-inner">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
@@ -462,16 +589,16 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold tracking-wider text-[#F3E5AB] font-outfit uppercase">Norma de Calidad</span>
-                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
+                        <span className="text-[10px] bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
                       </div>
                       <div className="text-sm font-extrabold text-white tracking-wide font-cinzel">ISO 21001:2025</div>
                       <div className="text-[11px] text-slate-300 truncate">Organizaciones Educativas</div>
                     </div>
                   </div>
 
-                  {/* Insignia ISO 9001 */}
-                  <div className="iso-badge rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-transform hover:-translate-y-0.5 duration-200">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-[#D4AF37]/40 flex-shrink-0 text-[#F3E5AB]">
+                  {/* Insignia ISO 9001 (Giro 3D secundario - Etapa 3) */}
+                  <div className="reveal-stage-iso9001 iso-badge-interactive rounded-xl p-2 sm:p-2.5 text-white flex items-center space-x-3 transition-all hover:-translate-y-1 hover:shadow-xl duration-300">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-[#D4AF37]/50 flex-shrink-0 text-[#F3E5AB] shadow-inner">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
@@ -479,7 +606,7 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold tracking-wider text-[#F3E5AB] font-outfit uppercase">Norma Calidad</span>
-                        <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
+                        <span className="text-[10px] bg-emerald-500/25 text-emerald-300 border border-emerald-400/30 px-1.5 py-0.5 rounded font-mono font-semibold">VIGENTE</span>
                       </div>
                       <div className="text-sm font-extrabold text-white tracking-wide font-cinzel">ISO 9001:2015</div>
                       <div className="text-[11px] text-slate-300 truncate">Gestión de la Calidad</div>
@@ -488,34 +615,34 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
 
                 </div>
 
-                {/* MEDALLONES CIRCULARES CON DOBLE ANILLO CONCÉNTRICO */}
-                <div className="pt-2">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-3 text-center lg:text-left font-outfit">
+                {/* MEDALLONES CIRCULARES CON DOBLE ANILLO CONCÉNTRICO Y CONTADOR ANIMADO (Etapa 4) */}
+                <div className="pt-2 reveal-stage-medallions">
+                  <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider block mb-3 text-center lg:text-left font-outfit">
                     Alcance del Sistema por Procesos Institucionales
                   </span>
                   <div className="grid grid-cols-2 gap-4">
                     
                     {/* Medallón 1: Procedimientos */}
-                    <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
+                    <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                       <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0d2d3f] to-[#001826] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-outer">
-                        <span className="text-base font-black font-outfit leading-none">95</span>
+                        <span className="text-base font-black font-outfit leading-none">{countProcedures}</span>
                         <span className="text-[9px] uppercase tracking-tighter opacity-80">Docs</span>
                       </div>
                       <div>
                         <div className="text-sm font-bold text-[#0F2942] font-outfit">Procedimientos</div>
-                        <div className="text-xs text-slate-500">Mapeados y estandarizados</div>
+                        <div className="text-xs text-slate-600">Mapeados y estandarizados</div>
                       </div>
                     </div>
 
                     {/* Medallón 2: Indicadores */}
-                    <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-md transition-all">
+                    <div className="glass-subcard rounded-xl p-2.5 flex items-center space-x-2.5 border border-white/90 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                       <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#0b4967] to-[#001725] text-white flex flex-col items-center justify-center flex-shrink-0 concentric-circle-blue">
-                        <span className="text-base font-black font-outfit leading-none">61</span>
+                        <span className="text-base font-black font-outfit leading-none">{countIndicators}</span>
                         <span className="text-[9px] uppercase tracking-tighter opacity-80">Kpi</span>
                       </div>
                       <div>
                         <div className="text-sm font-bold text-[#0F2942] font-outfit">Indicadores</div>
-                        <div className="text-xs text-slate-500">Métricas de desempeño</div>
+                        <div className="text-xs text-slate-600">Métricas de desempeño</div>
                       </div>
                     </div>
 
@@ -523,14 +650,14 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
                 </div>
 
                 {/* Pie de créditos y certificación */}
-                <div className="pt-2 flex items-center justify-start text-xs text-slate-600 border-t border-slate-200/60 font-medium">
+                <div className="pt-2 flex items-center justify-start text-xs text-slate-600 border-t border-slate-200/60 font-medium reveal-stage-medallions">
                   <span>Oficina Gestión de la Calidad</span>
                 </div>
 
               </div>
 
-              {/* ================= LADO DERECHO: FORMULARIO DE ACCESO Y REGISTRO ================= */}
-              <div className="lg:col-span-6 flex flex-col justify-center">
+              {/* ================= LADO DERECHO: FORMULARIO DE ACCESO Y REGISTRO (Etapa 3) ================= */}
+              <div className="lg:col-span-6 flex flex-col justify-center reveal-stage-right-panel">
                 
                 <div className="glass-subcard rounded-2xl p-4 sm:p-5 lg:p-6 border border-white/80 shadow-md">
                   

@@ -605,7 +605,45 @@ export const ORGANIZATION_UNITS: OrganizationUnit[] = [
 
 export function getOrganizationUnitById(unitId?: string): OrganizationUnit | undefined {
   if (!unitId) return undefined;
+  if (unitId === 'geca') {
+    return ORGANIZATION_UNITS.find((u) => u.id === 'geca-office');
+  }
   return ORGANIZATION_UNITS.find((u) => u.id === unitId);
+}
+
+export function resolveUserSecondaryUnit(user?: {
+  secondaryUnitId?: string;
+}): OrganizationUnit | undefined {
+  if (!user?.secondaryUnitId) return undefined;
+  return getOrganizationUnitById(user.secondaryUnitId);
+}
+
+export function getCombinedUserProceduresAndProcesses(
+  primaryUnit?: OrganizationUnit,
+  secondaryUnit?: OrganizationUnit,
+  fallbackProcedures: string[] = [],
+  fallbackProcesses: ProcessLevel0[] = []
+): { procedureCodes: string[]; processCodes: ProcessLevel0[] } {
+  const procSet = new Set<string>();
+  const processSet = new Set<ProcessLevel0>();
+
+  if (primaryUnit) {
+    primaryUnit.consolidatedProcedures.forEach((c) => procSet.add(c));
+    primaryUnit.processCodes.forEach((p) => processSet.add(p));
+  } else {
+    fallbackProcedures.forEach((c) => procSet.add(c));
+    fallbackProcesses.forEach((p) => processSet.add(p));
+  }
+
+  if (secondaryUnit && secondaryUnit.id !== primaryUnit?.id) {
+    secondaryUnit.consolidatedProcedures.forEach((c) => procSet.add(c));
+    secondaryUnit.processCodes.forEach((p) => processSet.add(p));
+  }
+
+  return {
+    procedureCodes: Array.from(procSet),
+    processCodes: Array.from(processSet),
+  };
 }
 
 export function resolveUserOrganizationUnit(user: {

@@ -1,4 +1,4 @@
-import { resolveUserOrganizationUnit } from '../data/organizationHierarchy';
+import { resolveUserOrganizationUnit, resolveUserSecondaryUnit } from '../data/organizationHierarchy';
 import React from 'react';
 import { 
   Building2,
@@ -64,9 +64,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const isAdmin = activeUser?.role === 'geca' && activeUser?.officeName === 'Administrador del Sistema';
   const activeUnit = resolveUserOrganizationUnit(activeUser);
-  const isGecaOffice = activeUnit?.id === 'geca' || activeUser?.unitId === 'geca' || (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)');
+  const secondaryUnit = resolveUserSecondaryUnit(activeUser);
+  const isGecaOffice = activeUnit?.id === 'geca' || activeUnit?.id === 'geca-office' || activeUser?.unitId === 'geca' || (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)');
   const showAllSgcForGeca = isGecaOffice && scopeMode === 'all';
-  const unitProcedureCodes = activeUnit?.consolidatedProcedures || activeUser?.procedureCodes || [];
+  const unitProcedureCodes = (activeUser?.procedureCodes && activeUser.procedureCodes.length > 0)
+    ? activeUser.procedureCodes
+    : (activeUnit?.consolidatedProcedures || []);
   const allProcedureDocs = documents.filter((d) => d.documentType === 'Procedimiento' || (!d.code.startsWith('MN') && d.code !== 'doc-man-01'));
   const unitDocs = showAllSgcForGeca ? allProcedureDocs : documents.filter((d) => unitProcedureCodes.includes(d.code));
   const unitProceduresCount = showAllSgcForGeca ? allProcedureDocs.length : (unitDocs.length || unitProcedureCodes.length);
@@ -91,9 +94,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {!isAdmin && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white shadow-xs">
                   <Building2 className="w-3.5 h-3.5 text-[#F3E5AB] shrink-0" />
-                  <span className="text-slate-300 font-normal">Oficina:</span>
+                  <span className="text-slate-300 font-normal">{secondaryUnit ? 'Dependencias:' : 'Oficina:'}</span>
                   <span className="font-bold text-white tracking-wide">
                     {activeUser?.officeName || activeUser?.department || 'Dependencia Institucional UPT'}
+                    {secondaryUnit ? ` + ${secondaryUnit.displayName}` : ''}
                   </span>
                 </div>
               )}

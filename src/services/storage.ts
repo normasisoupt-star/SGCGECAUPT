@@ -1,4 +1,4 @@
-import { getOrganizationUnitById, resolveUserOrganizationUnit } from '../data/organizationHierarchy';
+import { getOrganizationUnitById, resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from '../data/organizationHierarchy';
 import { 
   AuditProcessSession,
   ISODocument, 
@@ -24,7 +24,7 @@ const STORAGE_KEYS = {
   DOCS: 'upt_iso21001_documents_v26_10_c',
   CAPAS: 'upt_iso21001_non_conformities',
   CHECKLIST: 'upt_iso21001_audit_checklist',
-  USERS: 'upt_iso21001_users_v2_offices',
+  USERS: 'upt_iso21001_users_v3_firebase_exact',
   ACTIVE_USER: 'upt_iso21001_active_user',
   LOGS: 'upt_iso21001_activity_logs',
   INDICATORS: 'upt_iso21001_indicators_v26_10_denominations',
@@ -482,7 +482,7 @@ export function updateChecklistItem(item: AuditChecklistItem): void {
 }
 
 // --- USUARIOS, JERARQUÍA DE OFICINAS Y CONTROL DE REGISTROS ---
-const REVOKED_EMAILS_KEY = 'upt_sgc_revoked_emails_v1';
+const REVOKED_EMAILS_KEY = 'upt_sgc_revoked_emails_v3_firebase_exact';
 
 export function getRevokedEmails(): string[] {
   if (typeof window === 'undefined') return [];
@@ -544,51 +544,134 @@ export function normalizeUserProfile(u: UserProfile): UserProfile {
 
   // Resolver unidad organizacional (Órgano, Oficina, Área o Facultad) y sus procedimientos exactos
   const resolvedUnit = resolveUserOrganizationUnit(u);
+  const secondaryUnit = resolveUserSecondaryUnit(u);
   if (resolvedUnit) {
+    const cleanSecondary = secondaryUnit && secondaryUnit.id !== resolvedUnit.id ? secondaryUnit : undefined;
+    const combined = getCombinedUserProceduresAndProcesses(resolvedUnit, cleanSecondary);
     return {
       ...u,
       unitId: resolvedUnit.id,
+      secondaryUnitId: cleanSecondary?.id,
+      secondaryOfficeName: cleanSecondary?.displayName,
       organName: resolvedUnit.organName,
       areaName: resolvedUnit.areaName,
       department: resolvedUnit.organName,
       officeName: resolvedUnit.displayName,
-      procedureCodes: resolvedUnit.consolidatedProcedures,
-      processCodes: resolvedUnit.processCodes,
+      procedureCodes: combined.procedureCodes,
+      processCodes: combined.processCodes,
     };
   }
   return u;
 }
 
-// Cuentas existentes en Firebase Authentication (sincronizadas con el Padrón de Control)
+// Cuentas existentes en Firebase Authentication (sincronizadas 1:1 con Firebase Auth y Cloud Firestore)
 const FIREBASE_AUTH_REGISTERED_USERS: UserProfile[] = [
   {
-    id: 'u-fb-steph',
+    id: '2etJk0KRfgG6KOcf8KBBW',
+    name: 'Hugo Rivera',
+    email: 'hjrivera.upt@gmail.com',
+    charge: 'Funcionario Institucional UPT',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Gestión de la Calidad (GECA)',
+    unitId: 'geca-office',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.02', 'PM.01'],
+    registeredAt: '2026-11-10',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'ZiVMKJR8Hsd8KSKhDIFcU8s',
+    name: 'Cristóbal (cristobal4)',
+    email: 'cristobal4@gmail.com',
+    charge: 'Funcionario Administrativo',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
+    unitId: 'opla',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.03', 'PS.05'],
+    registeredAt: '2026-11-09',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'bXMsUJKaNPXV2REikBHqSR',
+    name: 'Cristóbal (cristobal3)',
+    email: 'cristobal3@gmail.com',
+    charge: 'Funcionario Administrativo',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
+    unitId: 'opla',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.03', 'PS.05'],
+    registeredAt: '2026-11-09',
+    isCustomRegistered: true,
+  },
+  {
+    id: '7p6GLjyDNoMKxjKI6X1uIKTL',
+    name: 'Cristóbal (cristobal2)',
+    email: 'cristobal2@gmail.com',
+    charge: 'Funcionario Administrativo',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
+    unitId: 'opla',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.03', 'PS.05'],
+    registeredAt: '2026-11-06',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'uOVJJr7T3lXGN7DiNWlBTg',
+    name: 'Cristóbal (cristobal1)',
+    email: 'cristobal1@gmail.com',
+    charge: 'Funcionario Administrativo',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
+    unitId: 'opla',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.03', 'PS.05'],
+    registeredAt: '2026-11-06',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'KdutH9kwYVGSXIU7e0VHzj',
+    name: 'Judith Bedoya (judbedoya@upt.pe)',
+    email: 'judbedoya@upt.pe',
+    charge: 'Funcionario Institucional UPT',
+    department: 'RECTORADO',
+    officeName: 'Oficina de Gestión de la Calidad (GECA)',
+    unitId: 'geca-office',
+    role: 'colaborador',
+    processCodes: ['PE.01', 'PE.02', 'PM.01'],
+    registeredAt: '2026-11-06',
+    isCustomRegistered: true,
+  },
+  {
+    id: 'mS9ow8TpoSBzOlmvsL1tCy',
     name: 'Steph (steph.5488)',
     email: 'steph.5488@gmail.com',
     charge: 'Funcionario Administrativo',
     department: 'RECTORADO',
     officeName: 'Oficina de Gestión de la Calidad (GECA)',
-    unitId: 'geca',
+    unitId: 'geca-office',
     role: 'colaborador',
     processCodes: ['PE.01', 'PE.02', 'PM.01'],
-    registeredAt: 'Firebase Auth',
+    registeredAt: '2026-11-06',
     isCustomRegistered: true,
   },
   {
-    id: 'u-fb-gretty',
+    id: 'LTFhJKAofrYe5yMVRJi1LAda',
     name: 'Gretty Rossi',
     email: 'grettyrossi@gmail.com',
     charge: 'Funcionario Administrativo',
     department: 'RECTORADO',
     officeName: 'Oficina de Gestión de la Calidad (GECA)',
-    unitId: 'geca',
+    unitId: 'geca-office',
     role: 'colaborador',
     processCodes: ['PE.01', 'PE.02', 'PM.01'],
-    registeredAt: 'Firebase Auth',
+    registeredAt: '2026-11-05',
     isCustomRegistered: true,
   },
   {
-    id: 'u-fb-cristobal',
+    id: 'csblDoA4WeOEy4ci5CQdTf',
     name: 'Cristóbal',
     email: 'cristobal@gmail.com',
     charge: 'Funcionario Administrativo',
@@ -597,98 +680,7 @@ const FIREBASE_AUTH_REGISTERED_USERS: UserProfile[] = [
     unitId: 'opla',
     role: 'colaborador',
     processCodes: ['PE.01', 'PE.03', 'PS.05'],
-    registeredAt: 'Firebase Auth',
-    isCustomRegistered: true,
-  },
-  {
-    id: 'u-fb-prueba',
-    name: 'Usuario de Prueba',
-    email: 'prueba@prueba.com',
-    charge: 'Cuenta de Prueba',
-    department: 'RECTORADO',
-    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
-    unitId: 'opla',
-    role: 'colaborador',
-    processCodes: ['PE.01', 'PE.03', 'PS.05'],
-    registeredAt: 'Firebase Auth',
-    isCustomRegistered: true,
-  },
-  {
-    id: 'u-fb-rogelio',
-    name: 'Rogelio Rojas Medina',
-    email: 'rogelio@gmail.com',
-    charge: 'Funcionario Administrativo',
-    department: 'RECTORADO',
-    officeName: 'Oficina de Planeamiento y Presupuesto (OPLA)',
-    unitId: 'opla',
-    role: 'colaborador',
-    processCodes: ['PE.01', 'PE.03', 'PS.05'],
-    registeredAt: 'Firebase Auth',
-    isCustomRegistered: true,
-  },
-  {
-    id: 'u-fb-hujrivera',
-    name: 'Hugo Rivera (hujrivera)',
-    email: 'hujrivera@upt.pe',
-    charge: 'Funcionario Institucional UPT',
-    department: 'RECTORADO',
-    officeName: 'Oficina de Gestión de la Calidad (GECA)',
-    unitId: 'geca',
-    role: 'colaborador',
-    processCodes: ['PE.01', 'PE.02', 'PM.01'],
-    registeredAt: 'Firebase Auth',
-    isCustomRegistered: true,
-  },
-  {
-    id: 'u-fb-jorge',
-    name: 'Jorge (jorge@upt.pe)',
-    email: 'jorge@upt.pe',
-    charge: 'Funcionario Institucional UPT',
-    department: 'RECTORADO',
-    officeName: 'Oficina de Tecnologías de la Información (TEIN)',
-    unitId: 'tein',
-    role: 'colaborador',
-    processCodes: ['PE.03', 'PS.04'],
-    registeredAt: 'Firebase Auth',
-    isCustomRegistered: true,
-  },
-  {
-    id: 'u-fb-licencia',
-    name: 'Licenciamiento Institucional UPT',
-    email: 'licencia_institucional@upt.pe',
-    charge: 'Especialista de Licenciamiento y Calidad',
-    department: 'RECTORADO',
-    officeName: 'Oficina de Gestión de la Calidad (GECA)',
-    unitId: 'geca',
-    role: 'colaborador',
-    processCodes: ['PE.01', 'PE.02', 'PM.01'],
-    registeredAt: 'Firebase Auth',
-    isCustomRegistered: true,
-  },
-  {
-    id: 'u-fb-ricardo',
-    name: 'Ricardo (ricardo@upt.pe)',
-    email: 'ricardo@upt.pe',
-    charge: 'Funcionario Institucional UPT',
-    department: 'RECTORADO',
-    officeName: 'Dirección General de Administración (DIGA)',
-    unitId: 'diga',
-    role: 'colaborador',
-    processCodes: ['PE.03', 'PS.01', 'PS.03', 'PS.05'],
-    registeredAt: 'Firebase Auth',
-    isCustomRegistered: true,
-  },
-  {
-    id: 'u-fb-alejandro',
-    name: 'Alejandro (alejandro@upt.pe)',
-    email: 'alejandro@upt.pe',
-    charge: 'Funcionario Institucional UPT',
-    department: 'RECTORADO',
-    officeName: 'Dirección General de Administración (DIGA) - Área de Logística (ALOG)',
-    unitId: 'diga-alog',
-    role: 'colaborador',
-    processCodes: ['PS.01', 'PS.05'],
-    registeredAt: 'Firebase Auth',
+    registeredAt: '2026-11-05',
     isCustomRegistered: true,
   },
 ];
@@ -718,68 +710,17 @@ export function getUsers(): UserProfile[] {
       customByEmail.set(cleanEmail, normalized);
     };
 
-    // 1. Cargar cuentas registradas existentes en Firebase Authentication
+    // 1. Cargar cuentas registradas actuales en Firebase Authentication
     FIREBASE_AUTH_REGISTERED_USERS.forEach(collectCustomUser);
 
-    // 2. Superponer cambios o nuevos registros guardados localmente (reasignaciones de oficina, nuevos usuarios)
+    // 2. Superponer cambios o nuevos registros guardados en la llave actual (reasignaciones de oficina, 2da dependencia, nuevos usuarios)
     if (parsed && Array.isArray(parsed)) {
       parsed.forEach(collectCustomUser);
-    }
-
-    // Recuperar también usuarios registrados en llaves anteriores de localStorage
-    const legacyKeys = ['upt_iso21001_users', 'upt_sgc_users_v1', 'upt_iso21001_users_v1'];
-    for (const k of legacyKeys) {
-      try {
-        const legacyRaw = localStorage.getItem(k);
-        if (legacyRaw) {
-          const legacyParsed: UserProfile[] = JSON.parse(legacyRaw);
-          if (Array.isArray(legacyParsed)) {
-            legacyParsed.forEach(collectCustomUser);
-          }
-        }
-      } catch {
-        // Ignorar errores de parseo en llaves antiguas
-      }
-    }
-
-    // Reconstruir usuarios registrados desde el Historial de Actividades local si existieran
-    try {
-      const rawLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
-      if (rawLogs) {
-        const parsedLogs: ActivityLog[] = JSON.parse(rawLogs);
-        for (const log of parsedLogs) {
-          if (log.action && log.action.includes('Registró nuevo funcionario') && log.details) {
-            const emailMatch = log.details.match(/Correo:\s*([^\s|]+)/i);
-            const depMatch = log.details.match(/Dependencia:\s*([^(|-]+)/i);
-            if (emailMatch && emailMatch[1]) {
-              const logEmail = emailMatch[1].trim().toLowerCase();
-              if (!customByEmail.has(logEmail) && !revokedSet.has(logEmail) && !officialEmails.has(logEmail)) {
-                const depName = depMatch ? depMatch[1].trim() : 'Oficina de Planeamiento y Presupuesto (OPLA)';
-                collectCustomUser({
-                  id: log.entityId && log.entityId.startsWith('u-') ? log.entityId : `u-rec-${log.id}`,
-                  name: log.userName || logEmail.split('@')[0],
-                  email: logEmail,
-                  charge: log.userRole || 'Funcionario Institucional',
-                  department: depName,
-                  officeName: depName,
-                  role: 'colaborador',
-                  processCodes: ['PE.01'],
-                  registeredAt: log.timestamp,
-                  isCustomRegistered: true,
-                });
-              }
-            }
-          }
-        }
-      }
-    } catch {
-      // Continuar
     }
 
     const customUsers = Array.from(customByEmail.values());
     const merged = [...UPT_USERS.map(normalizeUserProfile), ...customUsers];
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(merged));
-    localStorage.setItem('upt_sgc_users_v1', JSON.stringify(merged));
     return merged;
   } catch {
     return UPT_USERS;
@@ -798,6 +739,7 @@ export function getActiveUser(): UserProfile {
       normalized.charge !== parsed.charge ||
       normalized.officeName !== parsed.officeName ||
       normalized.unitId !== parsed.unitId ||
+      normalized.secondaryUnitId !== parsed.secondaryUnitId ||
       JSON.stringify(normalized.procedureCodes) !== JSON.stringify(parsed.procedureCodes)
     ) {
       localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalized));
@@ -910,15 +852,20 @@ export function reassignRegisteredUserUnit(userId: string, newUnitId: string, ad
   const currentUsers = getUsers();
   const updated = currentUsers.map(u => {
     if (u.id === userId) {
+      const secUnit = resolveUserSecondaryUnit(u);
+      const cleanSec = secUnit && secUnit.id !== unit.id ? secUnit : undefined;
+      const combined = getCombinedUserProceduresAndProcesses(unit, cleanSec);
       const updatedUser: UserProfile = {
         ...u,
         unitId: unit.id,
+        secondaryUnitId: cleanSec?.id,
+        secondaryOfficeName: cleanSec?.displayName,
         organName: unit.organName,
         areaName: unit.areaName,
         department: unit.organName,
         officeName: unit.displayName,
-        procedureCodes: unit.consolidatedProcedures,
-        processCodes: unit.processCodes,
+        procedureCodes: combined.procedureCodes,
+        processCodes: combined.processCodes,
       };
       return updatedUser;
     }
@@ -930,13 +877,63 @@ export function reassignRegisteredUserUnit(userId: string, newUnitId: string, ad
 
   const targetUser = updated.find(u => u.id === userId);
   if (targetUser) {
+    const active = getActiveUser();
+    if (active.id === targetUser.id || (active.email && active.email.trim().toLowerCase() === targetUser.email.trim().toLowerCase())) {
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(targetUser));
+    }
     addActivityLog({
       userName: adminName,
       userRole: 'Administrador del Sistema',
-      action: 'Reasignó dependencia/área a funcionario registrado',
+      action: 'Reasignó dependencia/área principal a funcionario registrado',
       entityType: 'sistema',
       entityId: userId,
-      details: `Funcionario: ${targetUser.name} (${targetUser.email}) -> Nueva unidad: ${unit.displayName} (${unit.consolidatedProcedures.length} procedimientos)`,
+      details: `Funcionario: ${targetUser.name} (${targetUser.email}) -> Nueva unidad: ${unit.displayName} (${targetUser.procedureCodes?.length || unit.consolidatedProcedures.length} procedimientos)`,
+    });
+  }
+  broadcastChange('USER_CHANGED', updated);
+  return updated;
+}
+
+export function assignRegisteredUserSecondaryUnit(userId: string, secondaryUnitId: string, adminName: string): UserProfile[] {
+  const secUnit = secondaryUnitId ? getOrganizationUnitById(secondaryUnitId) : undefined;
+  const currentUsers = getUsers();
+  const updated = currentUsers.map(u => {
+    if (u.id === userId) {
+      const primaryUnit = resolveUserOrganizationUnit(u);
+      const cleanSec = secUnit && secUnit.id !== primaryUnit?.id ? secUnit : undefined;
+      const combined = getCombinedUserProceduresAndProcesses(primaryUnit, cleanSec, u.procedureCodes, u.processCodes);
+      const updatedUser: UserProfile = {
+        ...u,
+        secondaryUnitId: cleanSec?.id,
+        secondaryOfficeName: cleanSec?.displayName,
+        procedureCodes: combined.procedureCodes,
+        processCodes: combined.processCodes,
+      };
+      return updatedUser;
+    }
+    return u;
+  });
+
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(updated));
+  localStorage.setItem('upt_sgc_users_v1', JSON.stringify(updated));
+
+  const targetUser = updated.find(u => u.id === userId);
+  if (targetUser) {
+    const active = getActiveUser();
+    if (active.id === targetUser.id || (active.email && active.email.trim().toLowerCase() === targetUser.email.trim().toLowerCase())) {
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(targetUser));
+    }
+    addActivityLog({
+      userName: adminName,
+      userRole: 'Administrador del Sistema',
+      action: targetUser.secondaryUnitId
+        ? 'Asignó 2.ª dependencia adicional a funcionario registrado'
+        : 'Removió 2.ª dependencia adicional a funcionario registrado',
+      entityType: 'sistema',
+      entityId: userId,
+      details: targetUser.secondaryUnitId
+        ? `Funcionario: ${targetUser.name} (${targetUser.email}) -> 1.ª: ${targetUser.officeName} | 2.ª: ${targetUser.secondaryOfficeName} (${targetUser.procedureCodes?.length || 0} procedimientos consolidados)`
+        : `Funcionario: ${targetUser.name} (${targetUser.email}) -> Quedó únicamente con su dependencia principal: ${targetUser.officeName}`,
     });
   }
   broadcastChange('USER_CHANGED', updated);
@@ -949,16 +946,43 @@ export function mergeCloudRegisteredUsers(cloudUsers: UserProfile[], cloudRevoke
   localStorage.setItem(REVOKED_EMAILS_KEY, JSON.stringify(Array.from(localRevoked)));
 
   const current = getUsers();
-  const existingEmails = new Set(current.map(u => (u.email || '').trim().toLowerCase()));
+  const existingIndexByEmail = new Map<string, number>();
+  current.forEach((u, idx) => {
+    const em = (u.email || '').trim().toLowerCase();
+    if (em) existingIndexByEmail.set(em, idx);
+  });
   let changed = false;
 
   for (const cu of cloudUsers) {
     const cleanEmail = (cu.email || '').trim().toLowerCase();
     if (!cleanEmail || localRevoked.has(cleanEmail)) continue;
-    if (!existingEmails.has(cleanEmail)) {
+    const existingIdx = existingIndexByEmail.get(cleanEmail);
+    if (existingIdx === undefined) {
       current.push(normalizeUserProfile({ ...cu, isCustomRegistered: true }));
-      existingEmails.add(cleanEmail);
+      existingIndexByEmail.set(cleanEmail, current.length - 1);
       changed = true;
+    } else {
+      const existingUser = current[existingIdx];
+      if (!existingUser.id?.startsWith('u-unit-') && existingUser.id !== 'u-geca') {
+        const normalizedCloud = normalizeUserProfile({
+          ...existingUser,
+          ...cu,
+          id: existingUser.id || cu.id,
+          isCustomRegistered: true,
+        });
+        if (
+          normalizedCloud.unitId !== existingUser.unitId ||
+          normalizedCloud.secondaryUnitId !== existingUser.secondaryUnitId ||
+          JSON.stringify(normalizedCloud.procedureCodes) !== JSON.stringify(existingUser.procedureCodes)
+        ) {
+          current[existingIdx] = normalizedCloud;
+          changed = true;
+          const active = getActiveUser();
+          if ((active.email || '').trim().toLowerCase() === cleanEmail) {
+            localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalizedCloud));
+          }
+        }
+      }
     }
   }
 

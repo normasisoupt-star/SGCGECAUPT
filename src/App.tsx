@@ -1,4 +1,4 @@
-import { resolveUserOrganizationUnit } from './data/organizationHierarchy';
+import { resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from './data/organizationHierarchy';
 import { initSystemSecurity } from './services/security';
 import React, { useState, useEffect } from 'react';
 import { GraduationCap, ArrowRight, UserCheck } from 'lucide-react';
@@ -39,6 +39,7 @@ import {
   registerUser,
   deleteRegisteredUser,
   reassignRegisteredUserUnit,
+  assignRegisteredUserSecondaryUnit,
   getRevokedEmails,
   removeEmailFromRevoked,
   mergeCloudRegisteredUsers,
@@ -47,7 +48,8 @@ import {
 import {
   fetchCloudRegisteredUsers,
   revokeUserInCloud,
-  reassignUserUnitInCloud
+  reassignUserUnitInCloud,
+  assignUserSecondaryUnitInCloud
 } from './services/firebaseClient';
 
 import { 
@@ -82,6 +84,7 @@ export function App() {
   const [isOpenNewDocModal, setIsOpenNewDocModal] = useState(false);
   const [isOpenNewCapaModal, setIsOpenNewCapaModal] = useState(false);
   const [scopeMode, setScopeMode] = useState<'my_office' | 'all'>('my_office');
+  const [activeUnitScope, setActiveUnitScope] = useState<'primary' | 'secondary' | 'both'>('both');
   const [selectedProcessFilter, setSelectedProcessFilter] = useState<string>('all');
   const [isLoggedOut, setIsLoggedOut] = useState(() => sessionStorage.getItem('upt_sgc_logged_in') !== 'true');
 
@@ -134,11 +137,14 @@ export function App() {
       normalized &&
       (normalized.role !== activeUser.role ||
         normalized.charge !== activeUser.charge ||
-        normalized.officeName !== activeUser.officeName)
+        normalized.officeName !== activeUser.officeName ||
+        normalized.secondaryUnitId !== activeUser.secondaryUnitId)
     ) {
       setActiveUser(normalized);
       setActiveUserState(normalized);
-      setScopeMode('all');
+      if (normalized.officeName === 'Administrador del Sistema') {
+        setScopeMode('all');
+      }
     } else if (activeUser?.officeName === 'Administrador del Sistema' && scopeMode !== 'all') {
       setScopeMode('all');
     }
@@ -151,6 +157,7 @@ export function App() {
     }
     const normalized = setActiveUser(user);
     setActiveUserState(normalized);
+    setActiveUnitScope('both');
     if (normalized.officeName === 'Administrador del Sistema') {
       setScopeMode('all');
     } else {
@@ -159,50 +166,69 @@ export function App() {
   };
 
   const handleDeleteRegisteredUser = async (userId: string, email: string) => {
-    deleteRegisteredUser(userId, email, activeUser.name);
-    refreshAll();
+    const updated = deleteRegisteredUser(userId, email, activeUser.name);
+    setUsers(updated);
+    setLogs(getLogs());
+    setRevokedEmails(getRevokedEmails());
     await revokeUserInCloud(email, activeUser.name);
   };
 
   const handleReassignUserUnit = async (userId: string, email: string, newUnitId: string) => {
-    reassignRegisteredUserUnit(userId, newUnitId, activeUser.name);
-    refreshAll();
+    const updated = reassignRegisteredUserUnit(userId, newUnitId, activeUser.name);
+    setUsers(updated);
+    setActiveUserState(getActiveUser());
+    setLogs(getLogs());
     await reassignUserUnitInCloud(email, newUnitId);
+  };
+
+  const handleAssignUserSecondaryUnit = async (userId: string, email: string, secondaryUnitId: string) => {
+    const updated = assignRegisteredUserSecondaryUnit(userId, secondaryUnitId, activeUser.name);
+    setUsers(updated);
+    setActiveUserState(getActiveUser());
+    setLogs(getLogs());
+    await assignUserSecondaryUnitInCloud(email, secondaryUnitId);
   };
 
   const handleRestoreRevokedEmail = (email: string) => {
     removeEmailFromRevoked(email);
-    refreshAll();
+    setUsers(getUsers());
+    setRevokedEmails(getRevokedEmails());
   };
 
   const handleSaveDocument = (doc: ISODocument) => {
     saveDocument(doc, activeUser.name);
-    refreshAll();
+    setDocuments(getDocuments());
+    setLogs(getLogs());
   };
 
   const handleApproveDocument = (id: string) => {
     approveDocument(id, activeUser.name);
-    refreshAll();
+    setDocuments(getDocuments());
+    setLogs(getLogs());
   };
 
   const handleDeleteDocument = (id: string) => {
     deleteDocument(id, activeUser.name);
-    refreshAll();
+    setDocuments(getDocuments());
+    setLogs(getLogs());
   };
 
   const handleSaveCAPA = (nc: NonConformity) => {
     saveNonConformity(nc, activeUser.name);
-    refreshAll();
+    setNonConformities(getNonConformities());
+    setLogs(getLogs());
   };
 
   const handleCloseCAPA = (id: string, verifierName: string, notes: string) => {
     closeNonConformity(id, verifierName, notes);
-    refreshAll();
+    setNonConformities(getNonConformities());
+    setLogs(getLogs());
   };
 
   const handleUpdateChecklistItem = (item: AuditChecklistItem) => {
     updateChecklistItem(item);
-    refreshAll();
+    setChecklist(getChecklist());
+    setLogs(getLogs());
   };
 
   const handleCreateCapaFromFinding = (item: AuditChecklistItem) => {
@@ -214,7 +240,8 @@ export function App() {
 
   const handleUpdateIndicator = (indicator: UPTIndicator) => {
     updateIndicator(indicator, activeUser.name);
-    refreshAll();
+    setIndicators(getIndicators());
+    setLogs(getLogs());
   };
 
   const handleAddMeasurement = (
@@ -222,7 +249,8 @@ export function App() {
     data: Omit<IndicatorMeasurement, 'id' | 'date'>
   ) => {
     addIndicatorMeasurement(indicatorCode, data, activeUser);
-    refreshAll();
+    setIndicators(getIndicators());
+    setLogs(getLogs());
   };
 
   const handleValidateMeasurement = (
@@ -232,7 +260,8 @@ export function App() {
     comment: string
   ) => {
     validateIndicatorMeasurement(indicatorCode, measurementId, status, comment, activeUser);
-    refreshAll();
+    setIndicators(getIndicators());
+    setLogs(getLogs());
   };
 
   const handleSelectProcessFilter = (processCode: ProcessLevel0) => {
@@ -244,11 +273,62 @@ export function App() {
 
   const handleRegisterUser = (newUser: Omit<UserProfile, 'id'>) => {
     const created = registerUser(newUser);
-    refreshAll();
+    setUsers(getUsers());
+    setLogs(getLogs());
     handleSwitchUser(created);
     sessionStorage.setItem('upt_sgc_logged_in', 'true');
     setIsLoggedOut(false);
   };
+
+  const handleSelectTab = (tab: NavTab) => {
+    if (!isAdmin && !['dashboard', 'process_map', 'documents', 'repository'].includes(tab)) {
+      return;
+    }
+    if (tab === 'documents') {
+      setSelectedProcessFilter('all');
+    }
+    setActiveTab(tab);
+  };
+
+  const primaryUnit = resolveUserOrganizationUnit(activeUser);
+  const secondaryUnit = resolveUserSecondaryUnit(activeUser);
+  const scopedActiveUser: UserProfile = React.useMemo(() => {
+    if (!activeUser || !secondaryUnit || isAdmin) return activeUser;
+    if (activeUnitScope === 'primary' && primaryUnit) {
+      return {
+        ...activeUser,
+        unitId: primaryUnit.id,
+        secondaryUnitId: undefined,
+        secondaryOfficeName: undefined,
+        organName: primaryUnit.organName,
+        areaName: primaryUnit.areaName,
+        department: primaryUnit.organName,
+        officeName: primaryUnit.displayName,
+        procedureCodes: primaryUnit.consolidatedProcedures,
+        processCodes: primaryUnit.processCodes,
+      };
+    }
+    if (activeUnitScope === 'secondary') {
+      return {
+        ...activeUser,
+        unitId: secondaryUnit.id,
+        secondaryUnitId: undefined,
+        secondaryOfficeName: undefined,
+        organName: secondaryUnit.organName,
+        areaName: secondaryUnit.areaName,
+        department: secondaryUnit.organName,
+        officeName: secondaryUnit.displayName,
+        procedureCodes: secondaryUnit.consolidatedProcedures,
+        processCodes: secondaryUnit.processCodes,
+      };
+    }
+    const combined = getCombinedUserProceduresAndProcesses(primaryUnit, secondaryUnit, activeUser.procedureCodes, activeUser.processCodes);
+    return {
+      ...activeUser,
+      procedureCodes: combined.procedureCodes,
+      processCodes: combined.processCodes,
+    };
+  }, [activeUser, primaryUnit, secondaryUnit, activeUnitScope, isAdmin]);
 
   if (isLoggedOut) {
     return (
@@ -265,16 +345,6 @@ export function App() {
     );
   }
 
-  const handleSelectTab = (tab: NavTab) => {
-    if (!isAdmin && !['dashboard', 'process_map', 'documents', 'repository'].includes(tab)) {
-      return;
-    }
-    if (tab === 'documents') {
-      setSelectedProcessFilter('all');
-    }
-    setActiveTab(tab);
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar
@@ -283,6 +353,8 @@ export function App() {
         onSwitchUser={handleSwitchUser}
         scopeMode={scopeMode}
         onToggleScopeMode={setScopeMode}
+        activeUnitScope={activeUnitScope}
+        onChangeActiveUnitScope={setActiveUnitScope}
         isAdminSession={isAdmin}
         onLogout={() => {
           setIsOwnerSession(false);
@@ -295,7 +367,7 @@ export function App() {
         <Sidebar
           activeTab={activeTab}
           onSelectTab={handleSelectTab}
-          documentCount={(isAdmin || activeUser?.unitId === 'geca' || (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)')) && scopeMode === 'all' ? documents.length : (resolveUserOrganizationUnit(activeUser)?.consolidatedProcedures.length || activeUser?.procedureCodes?.length || documents.length)}
+          documentCount={(isAdmin || scopedActiveUser?.unitId === 'geca' || scopedActiveUser?.unitId === 'geca-office' || (scopedActiveUser?.officeName || '').includes('Gestión de la Calidad (GECA)')) && scopeMode === 'all' ? documents.length : (scopedActiveUser?.procedureCodes?.length || resolveUserOrganizationUnit(scopedActiveUser)?.consolidatedProcedures.length || documents.length)}
           openCapaCount={openCapasCount}
           isAdmin={isAdmin}
         />
@@ -307,7 +379,7 @@ export function App() {
               nonConformities={nonConformities}
               checklist={checklist}
               logs={logs}
-              activeUser={activeUser}
+              activeUser={scopedActiveUser}
               scopeMode={scopeMode}
               onNavigate={handleSelectTab}
               onOpenNewDoc={() => {
@@ -323,13 +395,13 @@ export function App() {
           )}
 
           {activeTab === 'process_map' && (
-            <ProcessMapView onSelectProcessFilter={handleSelectProcessFilter} activeUser={activeUser} isAdmin={(isAdmin || activeUser?.unitId === 'geca' || (activeUser?.officeName || '').includes('Gestión de la Calidad (GECA)')) && scopeMode === 'all'} />
+            <ProcessMapView onSelectProcessFilter={handleSelectProcessFilter} activeUser={scopedActiveUser} isAdmin={(isAdmin || scopedActiveUser?.unitId === 'geca' || scopedActiveUser?.unitId === 'geca-office' || (scopedActiveUser?.officeName || '').includes('Gestión de la Calidad (GECA)')) && scopeMode === 'all'} />
           )}
 
           {activeTab === 'documents' && (
             <DocumentManagementView
               documents={documents}
-              activeUser={activeUser}
+              activeUser={scopedActiveUser}
               onSaveDocument={handleSaveDocument}
               onApproveDocument={handleApproveDocument}
               onDeleteDocument={handleDeleteDocument}
@@ -400,6 +472,7 @@ export function App() {
               revokedEmails={revokedEmails}
               onDeleteRegisteredUser={handleDeleteRegisteredUser}
               onReassignUserUnit={handleReassignUserUnit}
+              onAssignUserSecondaryUnit={handleAssignUserSecondaryUnit}
               onRestoreRevokedEmail={handleRestoreRevokedEmail}
               onSyncCloudUsers={handleSyncCloudUsers}
             />
