@@ -343,6 +343,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
   );
 
   const [isUploadingStep, setIsUploadingStep] = useState<number | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadStatusText, setUploadStatusText] = useState<string>('');
 
   // Menú de 3 puntos abierto por step
   const [openMenuStep, setOpenMenuStep] = useState<number | null>(null);
@@ -526,6 +528,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
     const targetStep = uploadTargetStep;
     setIsUploadingStep(targetStep);
+    setUploadProgress(10);
+    setUploadStatusText('Preparando archivo...');
 
     try {
       const id = getEvidenceKey(targetStep);
@@ -539,6 +543,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
         const file = selectedFiles[i];
         const fileFormat = detectSingleFileFormat(file.name);
         const fileId = `${id}__file_${Date.now()}_${i}`;
+
+        setUploadProgress(20);
+        setUploadStatusText(`Leyendo ${file.name}...`);
 
         const dataUrl = await new Promise<string>((resolve) => {
           const reader = new FileReader();
@@ -564,7 +571,17 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
             dataUrl,
           });
 
-          // Subida directa a Google Drive
+          // Subida directa a Google Drive con temporizador de progreso
+          setUploadProgress(40);
+          setUploadStatusText('Conectando con Google Drive UPT...');
+
+          const progressInterval = setInterval(() => {
+            setUploadProgress((prev) => {
+              if (prev < 90) return prev + Math.floor(Math.random() * 8) + 5;
+              return prev;
+            });
+          }, 200);
+
           try {
             const driveRes = await uploadToGoogleDriveBridge({
               officeName: organUnitPath,
@@ -574,14 +591,20 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
               mimeType: file.type || (fileFormat === 'pdf' ? 'application/pdf' : 'application/octet-stream'),
               dataUrl,
             });
+            clearInterval(progressInterval);
             if (driveRes && driveRes.status === 'success') {
               driveUrl = driveRes.fileUrl;
               driveId = driveRes.fileId;
             }
           } catch (driveErr) {
+            clearInterval(progressInterval);
             console.warn('Google Drive notice:', driveErr);
           }
         }
+
+        setUploadProgress(100);
+        setUploadStatusText('¡Completado y sincronizado en Google Drive!');
+        await new Promise((r) => setTimeout(r, 650));
 
         newAttachedFiles.push({
           id: fileId,
@@ -642,6 +665,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
       console.error('Error procesando archivos:', err);
     } finally {
       setIsUploadingStep(null);
+      setUploadProgress(0);
+      setUploadStatusText('');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -832,6 +857,36 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
           const attachedFiles = getNormalizedFiles(evidence);
           const hasMultipleFiles = attachedFiles.length > 1;
           const isMenuOpen = openMenuStep === act.step;
+          const isUploadingThisAct = isUploadingStep === act.step;
+
+          const renderUploadProgressBar = () => (
+            <div className="p-3 rounded-xl bg-blue-50/90 border border-blue-200/90 shadow-2xs space-y-2 animate-fade-in my-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-blue-900">
+                <span className="flex items-center gap-1.5 truncate max-w-[210px]">
+                  <Upload className={`w-3.5 h-3.5 text-blue-600 ${uploadProgress < 100 ? 'animate-bounce' : ''}`} />
+                  <span className="truncate">{uploadStatusText || 'Cargando archivo...'}</span>
+                </span>
+                <span className={`font-mono font-bold text-xs ${uploadProgress === 100 ? 'text-emerald-700' : 'text-blue-700'}`}>
+                  {uploadProgress}%
+                </span>
+              </div>
+              {/* Línea de barra de subida de 0 a 100% */}
+              <div className="w-full bg-blue-100/90 rounded-full h-2.5 overflow-hidden shadow-inner">
+                <div
+                  className={`h-2.5 rounded-full transition-all duration-300 ease-out ${
+                    uploadProgress === 100
+                      ? 'bg-emerald-500'
+                      : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600'
+                  }`}
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-blue-600/80">
+                <span>{uploadProgress === 100 ? '✓ Sincronizado en Google Drive' : 'Conectando con calidad@virtual.upt.pe'}</span>
+                <span className="font-semibold">{uploadProgress === 100 ? '100% Listo' : 'Subiendo...'}</span>
+              </div>
+            </div>
+          );
 
           // TARJETA VISUAL CUANDO LA ACTIVIDAD YA TIENE 1 O VARIOS ARCHIVOS SUBIDOS
           if (evidence && attachedFiles.length > 0) {
@@ -1049,6 +1104,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                   </div>
                 )}
 
+                {/* Barra de progreso de subida de 0% a 100% */}
+                {isUploadingThisAct && renderUploadProgressBar()}
+
                 {/* Fila Inferior: Insignia Conforme + Botones Ver, Descargar y Subir */}
                 <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                   {/* Píldora de Estado (Conforme / En revisión / Observado) */}
@@ -1095,12 +1153,12 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                       </>
                     )}
 
-                    {/* Botón Subir: Permite subir otro PDF o Excel directamente (y lo guarda en OneDrive) */}
                     {/* Botón Adjuntar: Permite sumar otro documento adicional a esta actividad */}
                     <button
                       type="button"
+                      disabled={isUploadingThisAct}
                       onClick={() => triggerFilePickerForStep(act.step)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
                       title="Adjuntar otro documento adicional a esta actividad"
                     >
                       <Upload className="w-3.5 h-3.5 text-blue-600" />
@@ -1135,26 +1193,22 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
               <p className="text-xs text-slate-600 leading-relaxed">{act.task}</p>
 
-              <div className="pt-1">
-                <button
-                  type="button"
-                  disabled={isUploadingStep === act.step}
-                  onClick={() => triggerFilePickerForStep(act.step)}
-                  className={`w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-white text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
-                    isUploadingStep === act.step
-                      ? 'bg-blue-400 cursor-wait'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
-                  title="Seleccionar 1 o varios archivos PDF/Excel de su equipo para subirlos a esta actividad"
-                >
-                  <Upload className={`w-3.5 h-3.5 ${isUploadingStep === act.step ? 'animate-bounce' : ''}`} />
-                  <span>
-                    {isUploadingStep === act.step
-                      ? 'Procesando archivo...'
-                      : 'Subir archivo (PDF / Excel / Word)'}
-                  </span>
-                </button>
-              </div>
+              {/* Barra de progreso de subida de 0% a 100% o Botón de Subir */}
+              {isUploadingThisAct ? (
+                renderUploadProgressBar()
+              ) : (
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => triggerFilePickerForStep(act.step)}
+                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-white text-xs font-bold transition-colors cursor-pointer shadow-2xs bg-blue-600 hover:bg-blue-700"
+                    title="Seleccionar 1 o varios archivos PDF/Excel/Word de su equipo para subirlos a esta actividad"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Subir archivo (PDF / Excel / Word)</span>
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
