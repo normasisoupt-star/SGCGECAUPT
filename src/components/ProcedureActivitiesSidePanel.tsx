@@ -3,7 +3,6 @@ import {
   Eye,
   Download,
   Upload,
-  Link2,
   CheckCircle2,
   Clock,
   AlertCircle,
@@ -13,9 +12,8 @@ import {
   FileSpreadsheet,
   Files,
   Trash2,
-  Edit3,
-  Check,
   X,
+  Check,
   Copy,
   Building2,
   Plus,
@@ -45,7 +43,7 @@ import {
   fetchActivityEvidencesFromCloud,
 } from '../services/firebaseClient';
 
-// --- IndexedDB Helper para almacenar PDFs/Excels pesados sin límite de 5MB de localStorage ---
+// --- IndexedDB Helper para almacenar PDFs/Excels pesados en el navegador sin límite de 5MB ---
 const IDB_NAME = 'sgc_upt_activity_files_db';
 const IDB_STORE = 'files';
 
@@ -103,6 +101,29 @@ async function deleteFileBlobFromIdb(fileId: string): Promise<void> {
       tx.onerror = () => resolve();
     });
   } catch {}
+}
+
+/**
+ * Envía el archivo subido directamente a la carpeta correspondiente del OneDrive Institucional
+ * (`C:\Users\GECA\OneDrive - UNIVERSIDAD PRIVADA DE TACNA\SGC_UPT_EVIDENCIAS\2026\...`)
+ */
+async function syncFileWithLocalOneDrive(params: {
+  action: 'save' | 'delete';
+  organUnitPath: string;
+  procedureCode: string;
+  step: number;
+  fileName: string;
+  dataUrl?: string;
+}): Promise<void> {
+  try {
+    await fetch('/api/onedrive-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+  } catch {
+    // Si se ejecuta en un cliente remoto sin servidor local, continúa normalmente con IndexedDB + Firestore
+  }
 }
 
 interface ProcedureActivitiesSidePanelProps {
@@ -168,20 +189,24 @@ function formatBytes(bytes: number): string {
   return `${(kb / 1024).toFixed(1)} MB`;
 }
 
-function getOneDriveFolderPath(procedureCode: string, scopeUnitId: string): string {
+function getOrganUnitSubpath(procedureCode: string, scopeUnitId: string): string {
   if (scopeUnitId !== 'general' && UNIT_FOLDER_MAP[scopeUnitId]) {
-    return `SGC_UPT_EVIDENCIAS/2026/${UNIT_FOLDER_MAP[scopeUnitId]}/${procedureCode}`;
+    return UNIT_FOLDER_MAP[scopeUnitId];
   }
   const ownerUnit =
     ORGANIZATION_UNITS.find(
       (u) => u.id !== 'rectorado' && u.id !== 'vrac' && u.id !== 'vrin' && u.ownProcedures.includes(procedureCode)
     ) || ORGANIZATION_UNITS.find((u) => u.ownProcedures.includes(procedureCode));
-  const folder = ownerUnit ? UNIT_FOLDER_MAP[ownerUnit.id] || ownerUnit.id : 'OFICINA';
-  return `SGC_UPT_EVIDENCIAS/2026/${folder}/${procedureCode}`;
+  return ownerUnit ? UNIT_FOLDER_MAP[ownerUnit.id] || ownerUnit.id : '01_RECTORADO/08_GECA_Gestion_de_la_Calidad';
+}
+
+function getOneDriveFolderPath(procedureCode: string, scopeUnitId: string): string {
+  const subpath = getOrganUnitSubpath(procedureCode, scopeUnitId);
+  return `SGC_UPT_EVIDENCIAS/2026/${subpath}/${procedureCode}`;
 }
 
 /**
- * Normaliza la lista de archivos de una evidencia (compatible con registros anteriores de 1 solo archivo)
+ * Normaliza la lista de archivos de una evidencia (compatible con registros de 1 o varios archivos)
  */
 function getNormalizedFiles(evidence?: ProcedureActivityEvidence): ActivityAttachedFile[] {
   if (!evidence) return [];
@@ -246,14 +271,6 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
     getActivityEvidences()
   );
 
-  // Estado para formulario de adjuntar/editar enlace de OneDrive por actividad
-  const [editingStep, setEditingStep] = useState<number | null>(null);
-  const [formFileName, setFormFileName] = useState('');
-  const [formOneDriveUrl, setFormOneDriveUrl] = useState('');
-  const [formUploadFolderUrl, setFormUploadFolderUrl] = useState('');
-  const [formFormat, setFormFormat] = useState<ActivityEvidenceFormat>('pdf');
-  const [formStatus, setFormStatus] = useState<ActivityEvidenceStatus>('conforme');
-
   // Menú de 3 puntos abierto por step
   const [openMenuStep, setOpenMenuStep] = useState<number | null>(null);
   const [copiedPath, setCopiedPath] = useState(false);
@@ -312,64 +329,6 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
     activeUser.role === 'auditor' ||
     userUnit?.id === 'geca-office';
 
-  const startEditingStep = (act: ProcedureActivity) => {
-    const existing = evidencesMap[getEvidenceKey(act.step)];
-    setEditingStep(act.step);
-    setOpenMenuStep(null);
-    if (existing) {
-      setFormFileName(existing.fileName);
-      setFormOneDriveUrl(existing.oneDriveUrl);
-      setFormUploadFolderUrl(existing.uploadFolderUrl || '');
-      setFormFormat(existing.fileFormat);
-      setFormStatus(existing.status);
-    } else {
-      const cleanTask = act.task
-        .split(' ')
-        .slice(0, 4)
-        .join('_')
-        .replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_]/g, '');
-      setFormFileName(`${cleanTask || `Evidencia_Act_${act.step}`}_2026.pdf`);
-      setFormOneDriveUrl('');
-      setFormUploadFolderUrl('');
-      setFormFormat('pdf');
-      setFormStatus('conforme');
-    }
-  };
-
-  const handleSaveStepEvidence = async (e: React.FormEvent, step: number) => {
-    e.preventDefault();
-    const id = getEvidenceKey(step);
-    const existing = evidencesMap[id];
-    const existingFiles = getNormalizedFiles(existing);
-    const finalName = formFileName.trim() || `Evidencia_Actividad_${step}.pdf`;
-    const finalUrl = formOneDriveUrl.trim();
-
-    const newEvidence: ProcedureActivityEvidence = {
-      id,
-      procedureCode,
-      step,
-      scopeUnitId,
-      fileName: finalName,
-      fileFormat: existingFiles.length > 1 ? 'multi_files' : formFormat,
-      oneDriveUrl: finalUrl,
-      uploadFolderUrl: formUploadFolderUrl.trim() || finalUrl,
-      fileDataUrl: existing?.fileDataUrl,
-      files: existingFiles,
-      status: formStatus,
-      uploadedBy: activeUser.name,
-      uploadedByUnit: activeUser.officeName || activeUser.department,
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updated = saveActivityEvidence(newEvidence);
-    setEvidencesMap({ ...updated });
-    setEditingStep(null);
-
-    try {
-      await saveActivityEvidenceToCloud(newEvidence);
-    } catch {}
-  };
-
   const handleQuickStatusChange = async (
     evidence: ProcedureActivityEvidence,
     newStatus: ActivityEvidenceStatus
@@ -390,10 +349,18 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
   const handleRemoveEvidence = async (step: number) => {
     const id = getEvidenceKey(step);
     const existing = evidencesMap[id];
+    const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
     if (existing) {
       const files = getNormalizedFiles(existing);
       for (const f of files) {
         await deleteFileBlobFromIdb(f.id);
+        await syncFileWithLocalOneDrive({
+          action: 'delete',
+          organUnitPath,
+          procedureCode,
+          step,
+          fileName: f.fileName,
+        });
       }
     }
     const updated = deleteActivityEvidence(id);
@@ -410,10 +377,24 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
     const existing = evidencesMap[id];
     if (!existing) return;
 
+    const currentFiles = getNormalizedFiles(existing);
+    const targetFile = currentFiles.find((f) => f.id === fileIdToRemove);
     await deleteFileBlobFromIdb(fileIdToRemove);
-    const remaining = getNormalizedFiles(existing).filter((f) => f.id !== fileIdToRemove);
 
-    if (remaining.length === 0 && !existing.oneDriveUrl) {
+    if (targetFile) {
+      const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
+      await syncFileWithLocalOneDrive({
+        action: 'delete',
+        organUnitPath,
+        procedureCode,
+        step,
+        fileName: targetFile.fileName,
+      });
+    }
+
+    const remaining = currentFiles.filter((f) => f.id !== fileIdToRemove);
+
+    if (remaining.length === 0) {
       await handleRemoveEvidence(step);
       return;
     }
@@ -423,15 +404,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
       fileName:
         remaining.length === 1
           ? remaining[0].fileName
-          : remaining.length > 1
-          ? `${remaining.length} documentos adjuntos`
-          : existing.fileName,
-      fileFormat:
-        remaining.length > 1
-          ? 'multi_files'
-          : remaining.length === 1
-          ? remaining[0].fileFormat
-          : existing.fileFormat,
+          : `${remaining.length} documentos adjuntos`,
+      fileFormat: remaining.length > 1 ? 'multi_files' : remaining[0].fileFormat,
       files: remaining,
       updatedAt: new Date().toISOString(),
     };
@@ -454,7 +428,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
   /**
    * Al subir 1 o varios archivos desde la PC:
-   * Se ACUMULAN en la Actividad sin borrar los anteriores.
+   * 1. Se acumulan en la Actividad sin borrar los anteriores.
+   * 2. Se guardan automáticamente en la carpeta de la Actividad dentro de tu OneDrive Institucional.
    */
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
@@ -464,6 +439,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
     const id = getEvidenceKey(targetStep);
     const existing = evidencesMap[id];
     const currentFiles = getNormalizedFiles(existing);
+    const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
 
     const newAttachedFiles: ActivityAttachedFile[] = [];
 
@@ -481,6 +457,14 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
       if (dataUrl) {
         await saveFileBlobToIdb(fileId, dataUrl);
+        await syncFileWithLocalOneDrive({
+          action: 'save',
+          organUnitPath,
+          procedureCode,
+          step: targetStep,
+          fileName: file.name,
+          dataUrl,
+        });
       }
 
       newAttachedFiles.push({
@@ -488,14 +472,13 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
         fileName: file.name,
         fileFormat,
         fileSize: formatBytes(file.size),
-        // Solo guardamos inline en localStorage si es muy liviano (<180KB); el resto vive en IndexedDB sin límite
         fileDataUrl: file.size <= 180000 ? dataUrl : undefined,
         uploadedAt: new Date().toISOString(),
         uploadedBy: activeUser.name,
       });
     }
 
-    // Evitar duplicados exactos por nombre si vuelven a subir el mismo archivo, o acumular los distintos
+    // Acumular archivos en la misma actividad
     const mergedFilesMap = new Map<string, ActivityAttachedFile>();
     for (const f of currentFiles) {
       mergedFilesMap.set(f.fileName.toLowerCase(), f);
@@ -532,7 +515,6 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
     const updatedMap = saveActivityEvidence(updatedEvidence);
     setEvidencesMap({ ...updatedMap });
-    setEditingStep(null);
 
     try {
       await saveActivityEvidenceToCloud(updatedEvidence);
@@ -557,7 +539,6 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
         a.click();
         return;
       }
-      // Convertir base64 dataUrl a Blob URL para que el navegador abra el visor nativo de PDF sin restricciones
       try {
         const res = await fetch(dataUrl);
         const blob = await res.blob();
@@ -581,45 +562,28 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
       return;
     }
 
-    alert(
-      'Este archivo fue registrado desde otro equipo sin enlace de OneDrive. Vincule el enlace compartido de OneDrive en (⋮ -> Editar enlace) para abrirlo desde cualquier lugar.'
-    );
+    alert('Seleccione nuevamente el archivo con el botón "Subir" para visualizarlo en este dispositivo.');
   };
 
   /**
-   * Acción general de la tarjeta (cuando tiene 1 archivo o enlace de carpeta OneDrive)
+   * Acción principal de la tarjeta (Ver / Descargar / Subir)
    */
   const openEvidencePrimaryAction = async (
     evidence: ProcedureActivityEvidence,
     mode: 'view' | 'download' | 'upload'
   ) => {
     if (mode === 'upload') {
-      // Siempre permite elegir 1 o más archivos para agregarlos a esta actividad
       triggerFilePickerForStep(evidence.step);
       return;
     }
 
     const files = getNormalizedFiles(evidence);
-
-    // Si tiene un enlace de carpeta OneDrive y son varios archivos (o toca el botón de carpeta OneDrive)
-    if (evidence.oneDriveUrl && evidence.oneDriveUrl.startsWith('http') && files.length !== 1) {
-      window.open(evidence.oneDriveUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
     if (files.length >= 1) {
       await openAttachedFile(files[0], evidence, mode);
       return;
     }
 
-    if (evidence.oneDriveUrl && evidence.oneDriveUrl.startsWith('http')) {
-      window.open(evidence.oneDriveUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    alert(
-      'Suba un archivo con el botón "Subir" o pegue el enlace compartido de OneDrive desde el menú (⋮).'
-    );
+    triggerFilePickerForStep(evidence.step);
   };
 
   const oneDrivePath = getOneDriveFolderPath(procedureCode, scopeUnitId);
@@ -632,7 +596,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
   return (
     <div className="flex flex-col h-full bg-slate-50/80 rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-      {/* Input de archivo oculto con soporte MULTIPLE (permite elegir 1, 2 o más PDFs/Excels y acumularlos) */}
+      {/* Input de archivo oculto con soporte MULTIPLE (permite elegir 1, 2 o más PDFs/Excels y guardarlos directo en OneDrive) */}
       <input
         ref={fileInputRef}
         type="file"
@@ -691,7 +655,6 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                 value={selectedFacultyId}
                 onChange={(e) => {
                   setSelectedFacultyId(e.target.value);
-                  setEditingStep(null);
                   setOpenMenuStep(null);
                 }}
                 className="w-full px-2.5 py-1.5 text-xs font-bold rounded-xl border border-slate-300 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-700"
@@ -738,151 +701,11 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
         {activities.map((act) => {
           const evidence = evidencesMap[getEvidenceKey(act.step)];
           const attachedFiles = getNormalizedFiles(evidence);
-          const hasMultipleFiles = attachedFiles.length > 1 || evidence?.fileFormat === 'multi_files';
-          const isEditing = editingStep === act.step;
+          const hasMultipleFiles = attachedFiles.length > 1;
           const isMenuOpen = openMenuStep === act.step;
 
-          // MODO EDICIÓN / ADJUNTAR ENLACE DE LA ACTIVIDAD
-          if (isEditing) {
-            return (
-              <form
-                key={act.step}
-                onSubmit={(e) => handleSaveStepEvidence(e, act.step)}
-                className="p-3.5 rounded-2xl bg-white border-2 border-blue-600 shadow-md space-y-3 animate-in fade-in duration-150"
-              >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <span className="text-xs font-bold text-slate-900">
-                    Configurar Enlace OneDrive • Actividad {act.step}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setEditingStep(null)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="text-[11px] text-slate-500 leading-snug bg-slate-50 p-2 rounded-xl border border-slate-100">
-                  <strong>Paso {act.step}:</strong> {act.task}
-                </div>
-
-                {/* Tipo de Evidencia */}
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Tipo de Vista en la Tarjeta
-                  </label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { id: 'pdf', label: '📄 PDF Único' },
-                      { id: 'multi_files', label: '🗂️ Varios Archivos (Carpeta)' },
-                      { id: 'excel', label: '📊 Excel (.xlsx)' },
-                      { id: 'word', label: '📝 Word (.docx)' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setFormFormat(opt.id as ActivityEvidenceFormat)}
-                        className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold border text-left transition-all cursor-pointer ${
-                          formFormat === opt.id
-                            ? 'bg-blue-50 border-blue-600 text-blue-900 shadow-2xs'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Nombre del documento o carpeta */}
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    {formFormat === 'multi_files'
-                      ? 'Nombre de la Carpeta / Expediente *'
-                      : 'Nombre del Documento Oficial *'}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder={
-                      formFormat === 'multi_files'
-                        ? `Ej: Expediente_Actividad_${act.step}_OneDrive`
-                        : `Ej: Diagnostico_PEI_2026.pdf`
-                    }
-                    value={formFileName}
-                    onChange={(e) => setFormFileName(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 font-medium"
-                  />
-                </div>
-
-                {/* Enlace de OneDrive */}
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Enlace Compartido de OneDrive (Carpeta o Archivo)
-                  </label>
-                  <input
-                    type="url"
-                    placeholder="https://upt-my.sharepoint.com/..."
-                    value={formOneDriveUrl}
-                    onChange={(e) => setFormOneDriveUrl(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  <span className="block text-[10px] text-slate-400 mt-1">
-                    Pegue aquí el link compartido de la carpeta{' '}
-                    <code className="text-slate-600">Act_{String(act.step).padStart(2, '0')}</code> de su OneDrive Institucional.
-                  </span>
-                </div>
-
-                {/* Estado de Revisión */}
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Estado de Conformidad
-                  </label>
-                  <div className="flex items-center gap-1.5">
-                    {[
-                      { id: 'conforme', label: '✅ Conforme', activeCls: 'bg-emerald-50 border-emerald-600 text-emerald-800' },
-                      { id: 'en_revision', label: '⏳ En revisión', activeCls: 'bg-amber-50 border-amber-500 text-amber-800' },
-                      { id: 'observado', label: '⚠️ Observado', activeCls: 'bg-rose-50 border-rose-600 text-rose-800' },
-                    ].map((st) => (
-                      <button
-                        key={st.id}
-                        type="button"
-                        onClick={() => setFormStatus(st.id as ActivityEvidenceStatus)}
-                        className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
-                          formStatus === st.id
-                            ? st.activeCls
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                        }`}
-                      >
-                        {st.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setEditingStep(null)}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-2xs cursor-pointer flex items-center gap-1"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Guardar</span>
-                  </button>
-                </div>
-              </form>
-            );
-          }
-
-          // TARJETA VISUAL CUANDO LA ACTIVIDAD YA TIENE 1 O VARIOS ARCHIVOS / ENLACE ONEDRIVE
-          if (evidence) {
+          // TARJETA VISUAL CUANDO LA ACTIVIDAD YA TIENE 1 O VARIOS ARCHIVOS SUBIDOS
+          if (evidence && attachedFiles.length > 0) {
             return (
               <div
                 key={act.step}
@@ -891,35 +714,24 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                 {/* Fila Superior: Ícono de Documento (o Varios Documentos) + Nombre de Actividad + Menú ⋮ */}
                 <div className="flex items-start justify-between gap-2.5">
                   <div className="flex items-start gap-3 min-w-0">
-                    {/* Ícono izquierdo: Si hay 2+ archivos o es carpeta -> botón con las figuras de varios documentos */}
+                    {/* Ícono izquierdo: Si hay 2+ archivos -> botón con las figuras apiladas de varios documentos */}
                     {hasMultipleFiles ? (
                       <button
                         type="button"
-                        onClick={() => {
-                          if (evidence.oneDriveUrl && evidence.oneDriveUrl.startsWith('http')) {
-                            window.open(evidence.oneDriveUrl, '_blank', 'noopener,noreferrer');
-                          } else if (attachedFiles[0]) {
-                            openAttachedFile(attachedFiles[0], evidence, 'view');
-                          }
-                        }}
-                        title={
-                          evidence.oneDriveUrl
-                            ? 'Abrir carpeta de OneDrive con los documentos de esta actividad'
-                            : `${attachedFiles.length} documentos cargados en la Actividad ${act.step}`
-                        }
+                        onClick={() => openAttachedFile(attachedFiles[0], evidence, 'view')}
+                        title={`${attachedFiles.length} documentos cargados en la Actividad ${act.step}`}
                         className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 via-white to-indigo-50 border border-blue-200 flex items-center justify-center shrink-0 shadow-2xs hover:scale-105 transition-transform cursor-pointer"
                       >
-                        {/* Figuras de múltiples documentos (PDF + Excel + Documentos) */}
                         <div className="relative flex items-center justify-center">
                           <FileSpreadsheet className="w-5 h-5 text-emerald-600 -rotate-12 -mr-2" />
                           <FileText className="w-5.5 h-5.5 text-rose-600 z-10 drop-shadow-2xs" />
                           <Files className="w-4.5 h-4.5 text-blue-700 rotate-12 -ml-1.5" />
                         </div>
                         <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[9px] font-extrabold shadow-2xs">
-                          {attachedFiles.length > 0 ? attachedFiles.length : '1D'}
+                          {attachedFiles.length}
                         </span>
                       </button>
-                    ) : evidence.fileFormat === 'excel' ? (
+                    ) : attachedFiles[0].fileFormat === 'excel' ? (
                       <button
                         type="button"
                         onClick={() => openEvidencePrimaryAction(evidence, 'view')}
@@ -931,7 +743,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                           XLS
                         </span>
                       </button>
-                    ) : evidence.fileFormat === 'word' ? (
+                    ) : attachedFiles[0].fileFormat === 'word' ? (
                       <button
                         type="button"
                         onClick={() => openEvidencePrimaryAction(evidence, 'view')}
@@ -967,9 +779,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                         className="text-[13px] font-bold text-slate-900 break-words leading-snug hover:text-blue-700 cursor-pointer"
                         title={act.task}
                       >
-                        {attachedFiles.length > 1
+                        {hasMultipleFiles
                           ? `${attachedFiles.length} documentos en esta actividad`
-                          : evidence.fileName}
+                          : attachedFiles[0].fileName}
                       </div>
                       <div className="text-[10px] text-slate-400 truncate mt-0.5" title={act.task}>
                         {act.task}
@@ -997,14 +809,6 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                         >
                           <Plus className="w-3.5 h-3.5 text-blue-600" />
                           <span>Agregar otro PDF / Excel</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => startEditingStep(act)}
-                          className="w-full px-3 py-1.5 text-left text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
-                        >
-                          <Edit3 className="w-3.5 h-3.5 text-slate-600" />
-                          <span>Vincular enlace OneDrive</span>
                         </button>
                         {isAdminOrAuditor && (
                           <>
@@ -1052,8 +856,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                   </div>
                 </div>
 
-                {/* Si hay 2 o más archivos subidos, mostramos la lista de todos los archivos dentro de la tarjeta */}
-                {attachedFiles.length > 1 && (
+                {/* Si hay 2 o más archivos subidos, mostramos la lista completa de archivos dentro de la tarjeta */}
+                {hasMultipleFiles && (
                   <div className="mt-2.5 space-y-1.5 bg-slate-50/90 p-2 rounded-xl border border-slate-200/80">
                     {attachedFiles.map((fileItem, idx) => (
                       <div
@@ -1138,43 +942,36 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
                   {/* Botones de Acción */}
                   <div className="flex items-center gap-1.5">
-                    {/* Si hay 1 archivo o enlace de carpeta OneDrive mostramos Ver y Descargar directo */}
-                    {(attachedFiles.length <= 1 || evidence.oneDriveUrl) && (
+                    {!hasMultipleFiles && (
                       <>
                         <button
                           type="button"
                           onClick={() => openEvidencePrimaryAction(evidence, 'view')}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
-                          title={
-                            evidence.oneDriveUrl && attachedFiles.length > 1
-                              ? 'Abrir carpeta en OneDrive'
-                              : 'Ver documento'
-                          }
+                          title="Ver documento"
                         >
                           <Eye className="w-3.5 h-3.5 text-slate-600" />
-                          <span>{evidence.oneDriveUrl && attachedFiles.length > 1 ? 'OneDrive' : 'Ver'}</span>
+                          <span>Ver</span>
                         </button>
 
-                        {attachedFiles.length <= 1 && (
-                          <button
-                            type="button"
-                            onClick={() => openEvidencePrimaryAction(evidence, 'download')}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
-                            title="Descargar archivo"
-                          >
-                            <Download className="w-3.5 h-3.5 text-slate-600" />
-                            <span>Descargar</span>
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => openEvidencePrimaryAction(evidence, 'download')}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+                          title="Descargar archivo"
+                        >
+                          <Download className="w-3.5 h-3.5 text-slate-600" />
+                          <span>Descargar</span>
+                        </button>
                       </>
                     )}
 
-                    {/* Botón Subir: Siempre permite subir un 2do, 3er o más PDFs/Excels a esta misma actividad */}
+                    {/* Botón Subir: Permite subir otro PDF o Excel directamente (y lo guarda en OneDrive) */}
                     <button
                       type="button"
                       onClick={() => triggerFilePickerForStep(act.step)}
                       className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
-                      title="Subir otro PDF o Excel adicional a esta actividad (puedes seleccionar varios a la vez)"
+                      title="Subir otro PDF o Excel adicional a esta actividad"
                     >
                       <Upload className="w-3.5 h-3.5 text-blue-600" />
                       <span>Subir</span>
@@ -1185,7 +982,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
             );
           }
 
-          // TARJETA VACÍA (Sin evidencia aún -> Botón "Adjuntar enlace OneDrive" + "Subir archivo")
+          // TARJETA VACÍA (Sin enlaces manuales: solo botón directo de "Subir archivo")
           return (
             <div
               key={act.step}
@@ -1208,24 +1005,15 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
               <p className="text-xs text-slate-600 leading-relaxed">{act.task}</p>
 
-              <div className="pt-1 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => startEditingStep(act)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-bold transition-colors cursor-pointer"
-                >
-                  <Link2 className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Adjuntar enlace OneDrive</span>
-                </button>
-
+              <div className="pt-1">
                 <button
                   type="button"
                   onClick={() => triggerFilePickerForStep(act.step)}
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition-colors cursor-pointer"
-                  title="Seleccionar 1 o varios archivos PDF/Excel de su equipo para esta actividad"
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                  title="Seleccionar 1 o varios archivos PDF/Excel de su equipo para subirlos a esta actividad"
                 >
-                  <Upload className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Subir archivo</span>
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Subir archivo (PDF / Excel / Word)</span>
                 </button>
               </div>
             </div>
