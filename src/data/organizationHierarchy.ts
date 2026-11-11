@@ -1150,3 +1150,103 @@ export function getProcedureResponsibleBadges(
   return badges;
 }
 
+const UNIT_KEYWORDS_MAP: Record<string, string[]> = {
+  'rectorado': [
+    'rectorado', 'consejo universitario', 'alta dirección', 'opla', 'planeamiento', 'planificación',
+    'sege', 'secretaría general', 'ajul', 'asesoría jurídica', 'legal', 'diga', 'administración',
+    'aima', 'infraestructura', 'mantenimiento', 'alog', 'logística', 'patrimonio', 'aphu',
+    'potencial humano', 'tesorería', 'contabilidad', 'tein', 'tecnología de información',
+    'tecnologías de la información', 'reni', 'relaciones nacionales', 'geca', 'gestión de la calidad',
+    'imai', 'imagen institucional', 'seguridad y salud', 'csst'
+  ],
+  'opla': ['opla', 'planeamiento', 'planificación', 'presupuesto'],
+  'sege': ['sege', 'secretaría general', 'grados y títulos'],
+  'ajul': ['ajul', 'asesoría jurídica', 'legal', 'defensoría'],
+  'diga': [
+    'diga', 'dirección general de administración', 'aima', 'infraestructura', 'mantenimiento',
+    'alog', 'logística', 'abastecimiento', 'patrimonio', 'aphu', 'potencial humano',
+    'tesorería', 'tesoreria', 'contabilidad', 'seguridad y salud', 'csst'
+  ],
+  'diga-aima': ['aima', 'infraestructura', 'mantenimiento', 'servicios generales', 'seguridad y salud', 'csst'],
+  'diga-alog': ['alog', 'logística', 'logistica', 'abastecimiento', 'compras', 'adquisición'],
+  'diga-patrimonio': ['patrimonio', 'bienes patrimoniales', 'inventario'],
+  'diga-aphu': ['aphu', 'potencial humano', 'recursos humanos', 'personal'],
+  'diga-tesoreria': ['tesorería', 'tesoreria', 'recaudación', 'caja'],
+  'diga-contabilidad': ['contabilidad', 'estados financieros', 'contable'],
+  'tein': ['tein', 'tecnología de información', 'tecnologías de la información', 'educación virtual', 'aula virtual', 'sistemas'],
+  'reni': ['reni', 'relaciones nacionales', 'internacionales', 'convenios', 'movilidad', 'cooperación'],
+  'geca-office': ['geca', 'gestión de la calidad', 'calidad'],
+  'imai': ['imai', 'imagen institucional', 'comunicación'],
+  'vrac': [
+    'vrac', 'vicerrector académico', 'vicerrectorado académico', 'gpad', 'procesos académicos',
+    'docencia', 'adma', 'admisión', 'marketing', 'obun', 'bienestar', 'resu', 'responsabilidad social',
+    'facultad', 'escuela', 'posgrado', 'espg', 'coordinación académica'
+  ],
+  'gpad': ['gpad', 'procesos académicos', 'docencia', 'curricular'],
+  'adma': ['adma', 'admisión', 'marketing'],
+  'obun': ['obun', 'bienestar universitario', 'bienestar', 'nee', 'necesidades especiales', 'psicopedagogía', 'servicio social'],
+  'resu': ['resu', 'responsabilidad social', 'proyección social', 'voluntariado', 'ambiental'],
+  'vrin': [
+    'vrin', 'vicerrectorado de investigación', 'pitt', 'investigación', 'transferencia',
+    'incubadora', 'edun', 'fondo editorial', 'bisa', 'biblioteca', 'posgrado', 'espg'
+  ],
+  'pitt': ['pitt', 'investigación', 'transferencia', 'incubadora', 'edun', 'fondo editorial'],
+  'bisa': ['bisa', 'biblioteca', 'servicios académicos', 'repositorio'],
+  'faing': ['faing', 'ingeniería', 'director de escuela', 'directores de escuela', 'facultades y escuelas', 'escuela de posgrado', 'coordinación académica'],
+  'facsa': ['facsa', 'ciencias de la salud', 'salud', 'director de escuela', 'directores de escuela', 'facultades y escuelas', 'escuela de posgrado', 'coordinación académica'],
+  'facem': ['facem', 'ciencias empresariales', 'empresariales', 'director de escuela', 'directores de escuela', 'facultades y escuelas', 'escuela de posgrado', 'coordinación académica'],
+  'faedcoh': ['faedcoh', 'educación, ciencias de la comunicación', 'humanidades', 'director de escuela', 'directores de escuela', 'facultades y escuelas', 'escuela de posgrado', 'coordinación académica'],
+  'fau': ['fau', 'arquitectura y urbanismo', 'arquitectura', 'director de escuela', 'directores de escuela', 'facultades y escuelas', 'escuela de posgrado', 'coordinación académica'],
+  'fade': ['fade', 'derecho y ciencias políticas', 'derecho', 'director de escuela', 'directores de escuela', 'facultades y escuelas', 'escuela de posgrado', 'coordinación académica'],
+};
+
+export function doesUnitMatchOfficeText(unit: OrganizationUnit, text: string): boolean {
+  const cleanText = (text || '').trim().toLowerCase();
+  if (!cleanText) return false;
+  const keywords = UNIT_KEYWORDS_MAP[unit.id] || [unit.officeName.toLowerCase(), unit.displayName.toLowerCase()];
+  return keywords.some((kw) => cleanText.includes(kw));
+}
+
+export function doesUserMatchOfficeOrProcess(
+  user: {
+    unitId?: string;
+    secondaryUnitId?: string;
+    officeName?: string;
+    secondaryOfficeName?: string;
+    department?: string;
+    role?: string;
+    processCodes?: ProcessLevel0[];
+  },
+  item: {
+    officeText?: string;
+    processCode?: ProcessLevel0;
+  },
+  allowProcessFallback = false
+): boolean {
+  const primaryUnit = resolveUserOrganizationUnit(user);
+  const secondaryUnit = resolveUserSecondaryUnit(user);
+  const units = [primaryUnit, secondaryUnit].filter((u): u is OrganizationUnit => Boolean(u));
+
+  if (units.length === 0) {
+    if (item.processCode && user.processCodes) {
+      return user.processCodes.includes(item.processCode);
+    }
+    return true;
+  }
+
+  // 1. Coincidencia directa por nombre de oficina / responsable / departamento asignado
+  if (item.officeText && item.officeText.trim().length > 0) {
+    const matchedByText = units.some((u) => doesUnitMatchOfficeText(u, item.officeText!));
+    if (matchedByText) return true;
+    if (!allowProcessFallback) return false;
+  }
+
+  // 2. Coincidencia por código de macroproceso (PE/PM/PS) asignado a la dependencia del usuario
+  if (item.processCode) {
+    return units.some((u) => u.processCodes.includes(item.processCode!));
+  }
+
+  return false;
+}
+
+

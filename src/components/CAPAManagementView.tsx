@@ -42,6 +42,7 @@ import {
   IshikawaAnalysis
 } from '../types';
 import { UPT_PROCESSES } from '../data/initialData';
+import { doesUserMatchOfficeOrProcess } from '../data/organizationHierarchy';
 
 interface CAPAManagementViewProps {
   nonConformities: NonConformity[];
@@ -96,7 +97,7 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
   onToggleScopeMode,
 }) => {
   const isRectorado = activeUser.role === 'rectorado';
-  const isAdmin = activeUser.role === 'geca';
+  const isAdmin = activeUser.role === 'geca' && activeUser.officeName === 'Administrador del Sistema';
   const isAuditor = activeUser.role === 'auditor' || isAdmin;
 
   // Estado de Vista: 'pdca' (Kanban 4 Fases) vs 'grid' (Cuadrícula Clásica)
@@ -163,11 +164,12 @@ export const CAPAManagementView: React.FC<CAPAManagementViewProps> = ({
       nc.processCode.toLowerCase().includes(term);
 
     let matchesScope = true;
-    if (scopeMode === 'my_office' && !isAdmin && !isRectorado && activeUser.role !== 'auditor') {
-      const officeTerm = (activeUser.officeName || activeUser.department).toLowerCase();
-      const matchesProc = activeUser.processCodes && activeUser.processCodes.includes(nc.processCode);
-      const matchesDept = nc.department.toLowerCase().includes(officeTerm) || officeTerm.includes(nc.department.toLowerCase());
-      matchesScope = Boolean(matchesProc || matchesDept);
+    if (!isAdmin || scopeMode === 'my_office') {
+      matchesScope = doesUserMatchOfficeOrProcess(
+        activeUser,
+        { officeText: `${nc.department} ${nc.assignedTo}`, processCode: nc.processCode },
+        true
+      );
     }
 
     return matchesSeverity && matchesSearch && matchesScope;

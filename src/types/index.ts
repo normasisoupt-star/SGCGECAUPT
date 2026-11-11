@@ -18,6 +18,8 @@ export type UserRole =
   | 'auditor' 
   | 'colaborador';
 
+export type OptionalUserModule = 'indicators' | 'capa' | 'checklist';
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -36,6 +38,7 @@ export interface UserProfile {
   isCustomRegistered?: boolean;
   avatar?: string;
   processCodes?: ProcessLevel0[];
+  enabledModules?: OptionalUserModule[];
 }
 
 export type ProcessLevel0 = 

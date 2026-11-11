@@ -8,7 +8,8 @@ import {
   ActivityLog,
   UPTIndicator,
   IndicatorMeasurement,
-  EvaluationYear
+  EvaluationYear,
+  OptionalUserModule
 } from '../types';
 import { 
   UPT_DOCUMENTS, 
@@ -559,6 +560,7 @@ export function normalizeUserProfile(u: UserProfile): UserProfile {
       officeName: resolvedUnit.displayName,
       procedureCodes: combined.procedureCodes,
       processCodes: combined.processCodes,
+      enabledModules: Array.isArray(u.enabledModules) ? u.enabledModules : [],
     };
   }
   return u;
@@ -714,12 +716,26 @@ export function getUsers(): UserProfile[] {
     FIREBASE_AUTH_REGISTERED_USERS.forEach(collectCustomUser);
 
     // 2. Superponer cambios o nuevos registros guardados en la llave actual (reasignaciones de oficina, 2da dependencia, nuevos usuarios)
+    const templateModulesById = new Map<string, OptionalUserModule[]>();
     if (parsed && Array.isArray(parsed)) {
-      parsed.forEach(collectCustomUser);
+      parsed.forEach((u) => {
+        if (u && u.id && officialById.has(u.id) && Array.isArray(u.enabledModules)) {
+          templateModulesById.set(u.id, u.enabledModules);
+        }
+        collectCustomUser(u);
+      });
     }
 
     const customUsers = Array.from(customByEmail.values());
-    const merged = [...UPT_USERS.map(normalizeUserProfile), ...customUsers];
+    const merged = [
+      ...UPT_USERS.map((u) =>
+        normalizeUserProfile({
+          ...u,
+          enabledModules: templateModulesById.get(u.id) || u.enabledModules || [],
+        })
+      ),
+      ...customUsers,
+    ];
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(merged));
     return merged;
   } catch {
@@ -740,6 +756,7 @@ export function getActiveUser(): UserProfile {
       normalized.officeName !== parsed.officeName ||
       normalized.unitId !== parsed.unitId ||
       normalized.secondaryUnitId !== parsed.secondaryUnitId ||
+      JSON.stringify(normalized.enabledModules) !== JSON.stringify(parsed.enabledModules) ||
       JSON.stringify(normalized.procedureCodes) !== JSON.stringify(parsed.procedureCodes)
     ) {
       localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalized));
@@ -940,6 +957,99 @@ export function assignRegisteredUserSecondaryUnit(userId: string, secondaryUnitI
   return updated;
 }
 
+export function updateRegisteredUserModules(
+  userId: string,
+  enabledModules: OptionalUserModule[],
+  adminName: string
+): UserProfile[] {
+  const cleanModules = Array.from(new Set(enabledModules));
+  const currentUsers = getUsers();
+  const updated = currentUsers.map((u) => {
+    if (u.id === userId) {
+      return {
+        ...u,
+        enabledModules: cleanModules,
+      };
+    }
+    return u;
+  });
+
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(updated));
+  localStorage.setItem('upt_sgc_users_v1', JSON.stringify(updated));
+
+  const targetUser = updated.find((u) => u.id === userId);
+  if (targetUser) {
+    const active = getActiveUser();
+    if (
+      active.id === targetUser.id ||
+      (active.email && active.email.trim().toLowerCase() === targetUser.email.trim().toLowerCase())
+    ) {
+      localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(targetUser));
+    }
+    const labelsMap: Record<OptionalUserModule, string> = {
+      indicators: 'Tablero de Indicadores',
+      capa: 'No Conformidades (RG08)',
+      checklist: 'Evaluación ISO 21001',
+    };
+    const enabledText =
+      cleanModules.length > 0 ? cleanModules.map((m) => labelsMap[m]).join(', ') : 'Ninguna (Solo módulos base)';
+    addActivityLog({
+      userName: adminName,
+      userRole: 'Administrador del Sistema',
+      action: 'Actualizó visualización de pestañas SGC para usuario/oficina',
+      entityType: 'sistema',
+      entityId: userId,
+      details: `Funcionario: ${targetUser.name} (${targetUser.officeName}) -> Pestañas habilitadas: ${enabledText}`,
+    });
+  }
+  broadcastChange('USER_CHANGED', updated);
+  return updated;
+}
+
+export function updateBulkRegisteredUsersModules(
+  transformFn: (current: OptionalUserModule[]) => OptionalUserModule[],
+  actionLabel: string,
+  adminName: string
+): UserProfile[] {
+  const currentUsers = getUsers();
+  const active = getActiveUser();
+  let updatedActive: UserProfile | null = null;
+
+  const updated = currentUsers.map((u) => {
+    const isOwner = u.id === 'u-geca' || (u.role === 'geca' && u.officeName === 'Administrador del Sistema');
+    if (isOwner) return u;
+    const nextModules = Array.from(new Set(transformFn(Array.isArray(u.enabledModules) ? u.enabledModules : [])));
+    const nextUser: UserProfile = {
+      ...u,
+      enabledModules: nextModules,
+    };
+    if (
+      active.id === nextUser.id ||
+      (active.email && active.email.trim().toLowerCase() === (nextUser.email || '').trim().toLowerCase())
+    ) {
+      updatedActive = nextUser;
+    }
+    return nextUser;
+  });
+
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(updated));
+  localStorage.setItem('upt_sgc_users_v1', JSON.stringify(updated));
+  if (updatedActive) {
+    localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(updatedActive));
+  }
+
+  addActivityLog({
+    userName: adminName,
+    userRole: 'Administrador del Sistema',
+    action: 'Actualizó visibilidad global de pestañas SGC para todas las oficinas',
+    entityType: 'sistema',
+    entityId: 'global-modules',
+    details: actionLabel,
+  });
+  broadcastChange('USER_CHANGED', updated);
+  return updated;
+}
+
 export function mergeCloudRegisteredUsers(cloudUsers: UserProfile[], cloudRevokedEmails: string[]): UserProfile[] {
   if (typeof window === 'undefined') return getUsers();
 
@@ -978,6 +1088,7 @@ export function mergeCloudRegisteredUsers(cloudUsers: UserProfile[], cloudRevoke
       secondaryUnitId: cu.secondaryUnitId || undefined,
       secondaryOfficeName: cu.secondaryOfficeName || undefined,
       areaName: cu.areaName || undefined,
+      enabledModules: Array.isArray(cu.enabledModules) ? cu.enabledModules : undefined,
       isCustomRegistered: true,
     };
 

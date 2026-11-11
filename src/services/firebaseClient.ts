@@ -22,7 +22,7 @@ import {
   getDoc,
   Firestore
 } from 'firebase/firestore';
-import { UserProfile, UserRole, ProcessLevel0 } from '../types';
+import { UserProfile, UserRole, ProcessLevel0, OptionalUserModule } from '../types';
 import { getOrganizationUnitById, resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from '../data/organizationHierarchy';
 import { isUserEmailRevoked, removeEmailFromRevoked } from './storage';
 
@@ -105,6 +105,7 @@ export async function saveUserToCloudRegistry(profile: UserProfile): Promise<voi
     areaName: profile.areaName || '',
     secondaryUnitId: profile.secondaryUnitId || '',
     secondaryOfficeName: profile.secondaryOfficeName || '',
+    enabledModules: Array.isArray(profile.enabledModules) ? profile.enabledModules : [],
     isCustomRegistered: true,
     updatedAt: new Date().toISOString(),
   };
@@ -186,6 +187,41 @@ export async function assignUserSecondaryUnitInCloud(email: string, secondaryUni
       processCodes: combined.processCodes,
       updatedAt: new Date().toISOString(),
     }, { merge: true })
+  );
+}
+
+/**
+ * Actualiza en Cloud Firestore las pestañas/módulos habilitados para un funcionario o dependencia (exclusivo Administrador)
+ */
+export async function updateUserModulesInCloud(email: string, enabledModules: OptionalUserModule[]): Promise<void> {
+  if (!firebaseDb || !email) return;
+  const docId = encodeEmailDocId(email);
+  await withTimeout(
+    setDoc(doc(firebaseDb, 'sgc_registered_users', docId), {
+      enabledModules: Array.from(new Set(enabledModules)),
+      updatedAt: new Date().toISOString(),
+    }, { merge: true })
+  );
+}
+
+/**
+ * Habilita o deshabilita masivamente pestañas/módulos en Cloud Firestore para múltiples usuarios registrados
+ */
+export async function updateBulkUsersModulesInCloud(
+  updates: { email: string; enabledModules: OptionalUserModule[] }[]
+): Promise<void> {
+  if (!firebaseDb || updates.length === 0) return;
+  await Promise.all(
+    updates.map((u) => {
+      if (!u.email) return Promise.resolve(null);
+      const docId = encodeEmailDocId(u.email);
+      return withTimeout(
+        setDoc(doc(firebaseDb!, 'sgc_registered_users', docId), {
+          enabledModules: Array.from(new Set(u.enabledModules)),
+          updatedAt: new Date().toISOString(),
+        }, { merge: true })
+      );
+    })
   );
 }
 

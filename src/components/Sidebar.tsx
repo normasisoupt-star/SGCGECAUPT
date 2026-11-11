@@ -12,6 +12,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+import { OptionalUserModule } from '../types';
+
 export type NavTab = 'dashboard' | 'process_map' | 'documents' | 'repository' | 'indicators' | 'capa' | 'checklist' | 'logs';
 
 interface SidebarProps {
@@ -20,6 +22,7 @@ interface SidebarProps {
   documentCount: number;
   openCapaCount: number;
   isAdmin?: boolean;
+  enabledModules?: OptionalUserModule[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -28,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   documentCount,
   openCapaCount,
   isAdmin = false,
+  enabledModules = [],
 }) => {
   const navItems = [
     {
@@ -84,9 +88,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
   ];
 
+  const allowedUserTabs = new Set<NavTab>(['dashboard', 'process_map', 'documents', 'repository', ...enabledModules]);
   const availableNavItems = isAdmin
     ? navItems
-    : navItems.filter((item) => ['dashboard', 'process_map', 'documents', 'repository'].includes(item.id));
+    : navItems.filter((item) => allowedUserTabs.has(item.id));
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">

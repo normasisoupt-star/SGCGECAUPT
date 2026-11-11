@@ -40,6 +40,8 @@ import {
   deleteRegisteredUser,
   reassignRegisteredUserUnit,
   assignRegisteredUserSecondaryUnit,
+  updateRegisteredUserModules,
+  updateBulkRegisteredUsersModules,
   getRevokedEmails,
   removeEmailFromRevoked,
   mergeCloudRegisteredUsers,
@@ -50,7 +52,9 @@ import {
   subscribeToCloudUsers,
   revokeUserInCloud,
   reassignUserUnitInCloud,
-  assignUserSecondaryUnitInCloud
+  assignUserSecondaryUnitInCloud,
+  updateUserModulesInCloud,
+  updateBulkUsersModulesInCloud
 } from './services/firebaseClient';
 
 import { 
@@ -61,7 +65,8 @@ import {
   ActivityLog,
   UPTIndicator,
   IndicatorMeasurement,
-  ProcessLevel0
+  ProcessLevel0,
+  OptionalUserModule
 } from './types';
 
 export function App() {
@@ -94,14 +99,19 @@ export function App() {
     const u = getActiveUser();
     return u?.role === 'geca' && computeSyncHash((u?.email || '').trim().toLowerCase()) === '2bdcaa29f816e1df';
   });
-  const isAdmin = activeUser?.role === 'geca' || isOwnerSession;
+  const isAdmin = activeUser?.role === 'geca';
+  const isAdminSession = isAdmin || isOwnerSession;
+  const userEnabledModules: OptionalUserModule[] = Array.isArray(activeUser?.enabledModules)
+    ? activeUser.enabledModules
+    : [];
 
-  // Si el usuario no es Administrador, restringir la navegación a los 3 módulos permitidos
+  // Si el usuario no es Administrador, restringir la navegación a los módulos base + pestañas habilitadas por el Administrador
   useEffect(() => {
-    if (!isAdmin && !['dashboard', 'process_map', 'documents', 'repository'].includes(activeTab)) {
+    const allowed = new Set<NavTab>(['dashboard', 'process_map', 'documents', 'repository', ...userEnabledModules]);
+    if (!isAdmin && !allowed.has(activeTab)) {
       setActiveTab('dashboard');
     }
-  }, [isAdmin, activeTab]);
+  }, [isAdmin, activeTab, userEnabledModules]);
 
   const refreshAll = () => {
     setDocuments(getDocuments());
@@ -196,6 +206,47 @@ export function App() {
     await assignUserSecondaryUnitInCloud(email, secondaryUnitId);
   };
 
+  const handleUpdateUserModules = async (userId: string, email: string, enabledModules: OptionalUserModule[]) => {
+    const updated = updateRegisteredUserModules(userId, enabledModules, activeUser.name);
+    setUsers(updated);
+    setActiveUserState(getActiveUser());
+    setLogs(getLogs());
+    await updateUserModulesInCloud(email, enabledModules);
+  };
+
+  const handleBulkUpdateUsersModules = async (moduleKey: OptionalUserModule | 'all', enable: boolean) => {
+    const labelsMap: Record<OptionalUserModule | 'all', string> = {
+      indicators: 'Tablero de Indicadores',
+      capa: 'No Conformidades (RG08)',
+      checklist: 'Evaluación ISO 21001',
+      all: 'Los 3 Módulos (Indicadores, No Conformidades y Evaluación ISO 21001)',
+    };
+    const actionLabel = `${enable ? 'Habilitó' : 'Ocultó'} ${labelsMap[moduleKey]} para todas las oficinas`;
+    const updated = updateBulkRegisteredUsersModules(
+      (current) => {
+        if (moduleKey === 'all') {
+          return enable ? ['indicators', 'capa', 'checklist'] : [];
+        }
+        return enable
+          ? Array.from(new Set([...current, moduleKey]))
+          : current.filter((m) => m !== moduleKey);
+      },
+      actionLabel,
+      activeUser.name
+    );
+    setUsers(updated);
+    setActiveUserState(getActiveUser());
+    setLogs(getLogs());
+
+    const cloudPayload = updated
+      .filter((u) => u.email && !(u.role === 'geca' && u.officeName === 'Administrador del Sistema') && !u.id.startsWith('u-unit-'))
+      .map((u) => ({
+        email: u.email,
+        enabledModules: Array.isArray(u.enabledModules) ? u.enabledModules : [],
+      }));
+    await updateBulkUsersModulesInCloud(cloudPayload);
+  };
+
   const handleRestoreRevokedEmail = (email: string) => {
     removeEmailFromRevoked(email);
     setUsers(getUsers());
@@ -288,7 +339,8 @@ export function App() {
   };
 
   const handleSelectTab = (tab: NavTab) => {
-    if (!isAdmin && !['dashboard', 'process_map', 'documents', 'repository'].includes(tab)) {
+    const allowed = new Set<NavTab>(['dashboard', 'process_map', 'documents', 'repository', ...userEnabledModules]);
+    if (!isAdmin && !allowed.has(tab)) {
       return;
     }
     if (tab === 'documents') {
@@ -362,7 +414,7 @@ export function App() {
         onToggleScopeMode={setScopeMode}
         activeUnitScope={activeUnitScope}
         onChangeActiveUnitScope={setActiveUnitScope}
-        isAdminSession={isAdmin}
+        isAdminSession={isAdminSession}
         onLogout={() => {
           setIsOwnerSession(false);
           sessionStorage.removeItem('upt_sgc_logged_in');
@@ -377,6 +429,7 @@ export function App() {
           documentCount={(isAdmin || scopedActiveUser?.unitId === 'geca' || scopedActiveUser?.unitId === 'geca-office' || (scopedActiveUser?.officeName || '').includes('Gestión de la Calidad (GECA)')) && scopeMode === 'all' ? documents.length : (scopedActiveUser?.procedureCodes?.length || resolveUserOrganizationUnit(scopedActiveUser)?.consolidatedProcedures.length || documents.length)}
           openCapaCount={openCapasCount}
           isAdmin={isAdmin}
+          enabledModules={userEnabledModules}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
@@ -426,38 +479,38 @@ export function App() {
             <RepositoryView />
           )}
 
-          {isAdmin && activeTab === 'indicators' && (
+          {(isAdmin || userEnabledModules.includes('indicators')) && activeTab === 'indicators' && (
             <IndicatorsView
               indicators={indicators}
               documents={documents}
-              activeUser={activeUser}
+              activeUser={isAdmin ? activeUser : scopedActiveUser}
               onUpdateIndicator={handleUpdateIndicator}
               onAddMeasurement={handleAddMeasurement}
               onValidateMeasurement={handleValidateMeasurement}
-              scopeMode={scopeMode}
+              scopeMode={isAdmin ? scopeMode : 'my_office'}
               onToggleScopeMode={setScopeMode}
             />
           )}
 
-          {isAdmin && activeTab === 'capa' && (
+          {(isAdmin || userEnabledModules.includes('capa')) && activeTab === 'capa' && (
             <CAPAManagementView
               nonConformities={nonConformities}
-              activeUser={activeUser}
+              activeUser={isAdmin ? activeUser : scopedActiveUser}
               onSaveCAPA={handleSaveCAPA}
               onCloseCAPA={handleCloseCAPA}
               isOpenNewModal={isOpenNewCapaModal}
               onCloseNewModal={() => setIsOpenNewCapaModal(false)}
               onOpenNewModal={() => setIsOpenNewCapaModal(true)}
-              scopeMode={scopeMode}
+              scopeMode={isAdmin ? scopeMode : 'my_office'}
               onToggleScopeMode={setScopeMode}
             />
           )}
 
-          {isAdmin && activeTab === 'checklist' && (
+          {(isAdmin || userEnabledModules.includes('checklist')) && activeTab === 'checklist' && (
             <AuditChecklistView
               checklist={checklist}
               nonConformities={nonConformities}
-              activeUser={activeUser}
+              activeUser={isAdmin ? activeUser : scopedActiveUser}
               onUpdateItem={handleUpdateChecklistItem}
               onCreateCapaFromFinding={handleCreateCapaFromFinding}
               onNavigateToCapa={() => {
@@ -467,7 +520,7 @@ export function App() {
                 setActiveTab('capa');
                 setIsOpenNewCapaModal(true);
               }}
-              scopeMode={scopeMode}
+              scopeMode={isAdmin ? scopeMode : 'my_office'}
               onToggleScopeMode={setScopeMode}
             />
           )}
@@ -480,6 +533,8 @@ export function App() {
               onDeleteRegisteredUser={handleDeleteRegisteredUser}
               onReassignUserUnit={handleReassignUserUnit}
               onAssignUserSecondaryUnit={handleAssignUserSecondaryUnit}
+              onUpdateUserModules={handleUpdateUserModules}
+              onBulkUpdateUsersModules={handleBulkUpdateUsersModules}
               onRestoreRevokedEmail={handleRestoreRevokedEmail}
               onSyncCloudUsers={handleSyncCloudUsers}
             />

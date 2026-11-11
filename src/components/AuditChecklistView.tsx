@@ -45,6 +45,7 @@ import {
   updateAuditSession,
   addAuditSession 
 } from '../services/storage';
+import { doesUserMatchOfficeOrProcess } from '../data/organizationHierarchy';
 
 interface AuditChecklistViewProps {
   checklist: AuditChecklistItem[];
@@ -69,7 +70,7 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
   scopeMode = 'all',
   onToggleScopeMode,
 }) => {
-  const isAdmin = activeUser.role === 'geca';
+  const isAdmin = activeUser.role === 'geca' && activeUser.officeName === 'Administrador del Sistema';
   const isRectorado = activeUser.role === 'rectorado';
   const isAuditorOrAdmin = !isRectorado && (isAdmin || activeUser.role === 'auditor');
 
@@ -152,17 +153,18 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
   // Filtrar sesiones por año y por alcance de oficina
   const currentYearSessions = useMemo(() => {
     let list = sessions.filter((s) => s.year === selectedYear);
-    if (scopeMode === 'my_office' && !isAdmin && !isRectorado && activeUser.role !== 'auditor') {
-      const officeTerm = (activeUser.officeName || activeUser.department).toLowerCase();
-      list = list.filter((s) => {
-        const matchesProc = activeUser.processCodes && activeUser.processCodes.includes(s.processCode);
-        const matchesOffice = s.office.toLowerCase().includes(officeTerm) || officeTerm.includes(s.office.toLowerCase());
-        const matchesResp = s.responsible.toLowerCase().includes(activeUser.name.toLowerCase());
-        return Boolean(matchesProc || matchesOffice || matchesResp);
-      });
+    if (!isAdmin || scopeMode === 'my_office') {
+      const directMatches = list.filter((s) =>
+        doesUserMatchOfficeOrProcess(activeUser, { officeText: `${s.office} ${s.responsible}`, processCode: s.processCode }, false)
+      );
+      list = directMatches.length > 0
+        ? directMatches
+        : list.filter((s) =>
+            doesUserMatchOfficeOrProcess(activeUser, { officeText: `${s.office} ${s.responsible}`, processCode: s.processCode }, true)
+          );
     }
     return list;
-  }, [sessions, selectedYear, scopeMode, activeUser, isAdmin, isRectorado]);
+  }, [sessions, selectedYear, scopeMode, activeUser, isAdmin]);
 
   // Sesiones filtradas por proceso y búsqueda
   const filteredSessions = useMemo(() => {
@@ -214,12 +216,20 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
     setSessions(getAuditSessions());
   };
 
-  // --- FILTROS DE MATRIZ GLOBAL ---
+  // --- FILTROS DE MATRIZ GLOBAL / POR DEPENDENCIA ---
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [matrixSearch, setMatrixSearch] = useState<string>('');
 
+  const scopedChecklist = useMemo(() => {
+    if (isAdmin && scopeMode === 'all') return checklist;
+    const matches = checklist.filter((item) =>
+      doesUserMatchOfficeOrProcess(activeUser, { officeText: item.office || '', processCode: item.processCode }, true)
+    );
+    return matches.length > 0 ? matches : checklist;
+  }, [checklist, activeUser, isAdmin, scopeMode]);
+
   const filteredChecklist = useMemo(() => {
-    return checklist.filter((item) => {
+    return scopedChecklist.filter((item) => {
       const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
       const term = matrixSearch.toLowerCase().trim();
       const matchesSearch = !term ||
@@ -230,14 +240,14 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
         (item.notes && item.notes.toLowerCase().includes(term));
       return matchesStatus && matchesSearch;
     });
-  }, [checklist, statusFilter, matrixSearch]);
+  }, [scopedChecklist, statusFilter, matrixSearch]);
 
-  // Métricas de Checklist Global
-  const total = checklist.length;
-  const conformeCount = checklist.filter((c) => c.status === 'conforme').length;
-  const noConformeCount = checklist.filter((c) => c.status === 'no_conforme').length;
-  const observacionCount = checklist.filter((c) => c.status === 'observacion').length;
-  const evaluatedCount = total - checklist.filter((c) => c.status === 'no_evaluado').length;
+  // Métricas de Checklist (Globales o de la Dependencia Activa)
+  const total = scopedChecklist.length;
+  const conformeCount = scopedChecklist.filter((c) => c.status === 'conforme').length;
+  const noConformeCount = scopedChecklist.filter((c) => c.status === 'no_conforme').length;
+  const observacionCount = scopedChecklist.filter((c) => c.status === 'observacion').length;
+  const evaluatedCount = total - scopedChecklist.filter((c) => c.status === 'no_evaluado').length;
   const score = evaluatedCount > 0 ? Math.round((conformeCount / evaluatedCount) * 100) : 0;
 
   // Filtrado de No Conformidades vinculadas al año y alcance de oficina
@@ -245,16 +255,13 @@ export const AuditChecklistView: React.FC<AuditChecklistViewProps> = ({
     let list = nonConformities.filter((nc) => {
       return nc.detectedDate ? nc.detectedDate.includes(String(selectedYear)) : true;
     });
-    if (scopeMode === 'my_office' && !isAdmin && !isRectorado && activeUser.role !== 'auditor') {
-      const officeTerm = (activeUser.officeName || activeUser.department).toLowerCase();
-      list = list.filter((nc) => {
-        const matchesProc = activeUser.processCodes && activeUser.processCodes.includes(nc.processCode);
-        const matchesDept = nc.department.toLowerCase().includes(officeTerm) || officeTerm.includes(nc.department.toLowerCase());
-        return Boolean(matchesProc || matchesDept);
-      });
+    if (!isAdmin || scopeMode === 'my_office') {
+      list = list.filter((nc) =>
+        doesUserMatchOfficeOrProcess(activeUser, { officeText: `${nc.department} ${nc.assignedTo}`, processCode: nc.processCode }, true)
+      );
     }
     return list;
-  }, [nonConformities, selectedYear, scopeMode, activeUser, isAdmin, isRectorado]);
+  }, [nonConformities, selectedYear, scopeMode, activeUser, isAdmin]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

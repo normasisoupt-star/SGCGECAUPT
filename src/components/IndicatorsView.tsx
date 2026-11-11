@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { UPTIndicator, UserProfile, ISODocument, IndicatorMeasurement, EvaluationYear } from '../types';
 import { getEvaluationYears, openNewEvaluationYear, toggleYearStatus } from '../services/storage';
+import { doesUserMatchOfficeOrProcess } from '../data/organizationHierarchy';
 
 interface IndicatorsViewProps {
   indicators: UPTIndicator[];
@@ -85,15 +86,29 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'validado_conforme' | 'pendiente_validacion' | 'observado'>('ALL');
   const [selectedOfficeFilter, setSelectedOfficeFilter] = useState<string>('ALL');
 
+  const isAdmin = activeUser.role === 'geca' && activeUser.officeName === 'Administrador del Sistema';
+
+  // Indicadores correspondientes al alcance del usuario (Global para Admin en 'all', o exclusivos de la Dependencia para oficinas)
+  const officeScopedIndicators = useMemo(() => {
+    if (isAdmin && scopeMode === 'all') return indicators;
+    const directMatches = indicators.filter((ind) =>
+      doesUserMatchOfficeOrProcess(activeUser, { officeText: ind.responsible, processCode: ind.processCode }, false)
+    );
+    if (directMatches.length > 0) return directMatches;
+    return indicators.filter((ind) =>
+      doesUserMatchOfficeOrProcess(activeUser, { officeText: ind.responsible, processCode: ind.processCode }, true)
+    );
+  }, [indicators, activeUser, isAdmin, scopeMode]);
+
   // Dependencias para Filtro de Responsabilidad (Fase 4: 61 KPIs)
   const responsibleOffices = useMemo(() => {
-    const set = new Set(indicators.map((i) => i.responsible));
+    const set = new Set(officeScopedIndicators.map((i) => i.responsible));
     return Array.from(set).sort((a, b) => {
       const labelA = OFFICE_SHORT_NAMES[a] || a;
       const labelB = OFFICE_SHORT_NAMES[b] || b;
       return labelA.localeCompare(labelB);
     });
-  }, [indicators]);
+  }, [officeScopedIndicators]);
 
   // Estados para Gobernanza de Años y Vista
   const [years, setYears] = useState<EvaluationYear[]>(() => getEvaluationYears());
@@ -145,7 +160,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     let amberCount = 0;
     let redCount = 0;
 
-    indicators.forEach((ind) => {
+    officeScopedIndicators.forEach((ind) => {
       const yearMeas = ind.measurements?.find((m) => m.period.includes(String(selectedYear)));
       const value = yearMeas ? yearMeas.calculatedValue : ind.currentValue;
 
@@ -188,7 +203,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       redCount,
       totalCount: counted,
     };
-  }, [indicators, selectedYear]);
+  }, [officeScopedIndicators, selectedYear]);
 
   // Datos para Gráficos de Evolución Multianual
   const evolutionData = useMemo(() => {
@@ -249,36 +264,20 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   // MATRIZ DE ROLES Y PERMISOS DE GOBERNANZA
   // ==========================================
   // 1. Administrador: Ve todo, puede registrar y auditar en cualquier indicador
-  const isAdmin = activeUser.role === 'geca';
   const isRectorado = activeUser.role === 'rectorado';
 
   // 2. Auditores o Personal de Calidad designado: Pueden auditar y emitir dictámenes
-  const isAuditorOrQuality = !isRectorado && (activeUser.role === 'geca' || activeUser.role === 'auditor');
+  const isAuditorOrQuality = !isRectorado && (isAdmin || activeUser.role === 'auditor');
 
-  // 3. Dueño de Proceso: Puede registrar avance si el proceso le compete (Rectorado nunca es dueño de proceso operativo)
+  // 3. Dueño de Proceso / Funcionario de Dependencia: Puede registrar avance en los indicadores que corresponden a su oficina
   const isProcessOwner = (ind: UPTIndicator): boolean => {
-    if (isRectorado) return false;
     if (isAdmin) return true; // Administrador GECA puede registrar todo
-
-    const pCode = ind.processCode;
-    switch (activeUser.role) {
-      case 'vrac': // Vicerrectorado Académico
-        return pCode === 'PM.01' || pCode === 'PM.03' || pCode === 'PS.02';
-      case 'vrin': // Vicerrectorado de Investigación
-        return pCode === 'PM.02';
-      case 'diga': // Dirección General de Administración
-        return pCode.startsWith('PS.') || pCode === 'PE.01'; // Presupuesto y procesos de soporte
-      case 'director_escuela': // Decanatos / Directores
-        return pCode === 'PM.01' || pCode === 'PM.03';
-      case 'auditor':
-        return false; // El auditor solo audita e inspecciona
-      default:
-        return false;
-    }
+    if (activeUser.role === 'auditor') return false;
+    return doesUserMatchOfficeOrProcess(activeUser, { officeText: ind.responsible, processCode: ind.processCode }, true);
   };
 
   // Filtrado de Indicadores
-  const filtered = indicators.filter((ind) => {
+  const filtered = officeScopedIndicators.filter((ind) => {
     const term = searchTerm.toLowerCase().trim();
     const acronymSynonyms: Record<string, string> = {
       'opla': 'planeamiento',
@@ -316,21 +315,11 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     const currentStatus = ind.validationStatus || 'validado_conforme';
     const matchesStatus = statusFilter === 'ALL' || currentStatus === statusFilter;
 
-    let matchesScope = true;
-    if (scopeMode === 'my_office') {
-      if (activeUser.role !== 'geca' && activeUser.role !== 'rectorado' && activeUser.role !== 'auditor') {
-        const userOffice = (activeUser.officeName || activeUser.department).toLowerCase();
-        const matchesResp = ind.responsible.toLowerCase().includes(userOffice) || userOffice.includes(ind.responsible.toLowerCase());
-        const matchesProc = activeUser.processCodes && activeUser.processCodes.some(p => ind.processCode.startsWith(p));
-        matchesScope = Boolean(matchesResp || matchesProc);
-      }
-    }
-
     const matchesOffice = 
       selectedOfficeFilter === 'ALL' || 
       ind.responsible === selectedOfficeFilter;
 
-    return matchesSearch && matchesCategory && matchesStatus && matchesScope && matchesOffice;
+    return matchesSearch && matchesCategory && matchesStatus && matchesOffice;
   });
 
   // Apertura del modal de registro
