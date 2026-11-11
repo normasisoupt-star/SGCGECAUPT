@@ -104,8 +104,45 @@ async function deleteFileBlobFromIdb(fileId: string): Promise<void> {
 }
 
 /**
- * Envía el archivo subido directamente a la carpeta correspondiente del OneDrive Institucional
- * (`C:\Users\GECA\OneDrive - UNIVERSIDAD PRIVADA DE TACNA\SGC_UPT_EVIDENCIAS\2026\...`)
+ * Puente oficial Google Apps Script conectado a la cuenta calidad@virtual.upt.pe
+ */
+const GOOGLE_DRIVE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxur4ZbDNzYzQ9V81pmAhiJRhZmYidGHEpoM8CnEdlppAslL3CcAX_9eOJ2MNXFnL5D/exec';
+
+async function uploadToGoogleDriveBridge(params: {
+  officeName: string;
+  procedureCode: string;
+  step: number;
+  fileName: string;
+  mimeType?: string;
+  dataUrl: string;
+}): Promise<{ status: string; fileUrl?: string; downloadUrl?: string; fileId?: string } | null> {
+  try {
+    const payload = JSON.stringify({
+      officeName: params.officeName,
+      procedureCode: params.procedureCode,
+      step: params.step,
+      fileName: params.fileName,
+      mimeType: params.mimeType || 'application/octet-stream',
+      fileData: params.dataUrl,
+    });
+
+    const response = await fetch(GOOGLE_DRIVE_WEB_APP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: payload,
+    });
+
+    if (!response.ok) return null;
+    const json = await response.json();
+    return json;
+  } catch (err) {
+    console.warn('Google Drive direct upload notice:', err);
+    return null;
+  }
+}
+
+/**
+ * Envía el archivo subido también a la carpeta correspondiente del disco local si está corriendo en PC
  */
 async function syncFileWithLocalOneDrive(params: {
   action: 'save' | 'delete';
@@ -122,7 +159,7 @@ async function syncFileWithLocalOneDrive(params: {
       body: JSON.stringify(params),
     });
   } catch {
-    // Si se ejecuta en un cliente remoto sin servidor local, continúa normalmente con IndexedDB + Firestore
+    // Continúa normalmente
   }
 }
 
@@ -465,6 +502,35 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
           fileName: file.name,
           dataUrl,
         });
+
+        // Subida automática en segundo plano a Google Drive Institucional (calidad@virtual.upt.pe)
+        uploadToGoogleDriveBridge({
+          officeName: organUnitPath,
+          procedureCode,
+          step: targetStep,
+          fileName: file.name,
+          mimeType: file.type || (fileFormat === 'pdf' ? 'application/pdf' : 'application/octet-stream'),
+          dataUrl,
+        }).then((driveRes) => {
+          if (driveRes && driveRes.status === 'success' && driveRes.fileUrl) {
+            // Actualizar la URL de Drive en la evidencia guardada
+            const currentMap = getActivityEvidences();
+            const currentEv = currentMap[id];
+            if (currentEv && currentEv.files) {
+              const updatedFiles = currentEv.files.map((cf) =>
+                cf.id === fileId ? { ...cf, oneDriveUrl: driveRes.fileUrl } : cf
+              );
+              const updatedWithDrive: ProcedureActivityEvidence = {
+                ...currentEv,
+                files: updatedFiles,
+                oneDriveUrl: currentEv.oneDriveUrl || driveRes.fileUrl,
+              };
+              saveActivityEvidence(updatedWithDrive);
+              saveActivityEvidenceToCloud(updatedWithDrive);
+              setEvidencesMap({ ...getActivityEvidences() });
+            }
+          }
+        });
       }
 
       newAttachedFiles.push({
@@ -610,8 +676,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
       <div className="p-4 bg-white border-b border-slate-200 space-y-3 shrink-0">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
-              Repositorio OneDrive UPT
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1 w-fit">
+              <span>Google Drive UPT</span>
             </span>
             <h3 className="text-sm font-bold text-slate-900 mt-1">
               Evidencias por Actividad ({completedCount}/{totalCount})
