@@ -260,9 +260,13 @@ function getOrganUnitSubpath(procedureCode: string, scopeUnitId: string): string
   if (scopeUnitId !== 'general' && UNIT_FOLDER_MAP[scopeUnitId]) {
     return UNIT_FOLDER_MAP[scopeUnitId];
   }
+  // Mapeo oficial exacto para Despacho Rectoral
+  if (procedureCode === 'PE.01.01.01' || procedureCode === 'PE.01.01.02') {
+    return '01_RECTORADO/01_REDO_Despacho_Rectoral';
+  }
   const ownerUnit =
     ORGANIZATION_UNITS.find(
-      (u) => u.id !== 'rectorado' && u.id !== 'vrac' && u.id !== 'vrin' && u.ownProcedures.includes(procedureCode)
+      (u) => u.id !== 'vrac' && u.id !== 'vrin' && u.ownProcedures.includes(procedureCode)
     ) || ORGANIZATION_UNITS.find((u) => u.ownProcedures.includes(procedureCode));
   return ownerUnit ? UNIT_FOLDER_MAP[ownerUnit.id] || ownerUnit.id : '01_RECTORADO/08_GECA_Gestion_de_la_Calidad';
 }
@@ -543,6 +547,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
           reader.readAsDataURL(file);
         });
 
+        let driveUrl: string | undefined;
+        let driveId: string | undefined;
+
         if (dataUrl) {
           try {
             await saveFileBlobToIdb(fileId, dataUrl);
@@ -557,36 +564,23 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
             dataUrl,
           });
 
-          // Subida a Google Drive en segundo plano
-          uploadToGoogleDriveBridge({
-            officeName: organUnitPath,
-            procedureCode,
-            step: targetStep,
-            fileName: file.name,
-            mimeType: file.type || (fileFormat === 'pdf' ? 'application/pdf' : 'application/octet-stream'),
-            dataUrl,
-          }).then((driveRes) => {
-            if (driveRes && driveRes.status === 'success' && driveRes.fileUrl) {
-              const currentMap = getActivityEvidences();
-              const currentEv = currentMap[id];
-              if (currentEv && currentEv.files) {
-                const updatedFiles = currentEv.files.map((cf) =>
-                  cf.id === fileId
-                    ? { ...cf, oneDriveUrl: driveRes.fileUrl, driveFileId: driveRes.fileId }
-                    : cf
-                );
-                const updatedWithDrive: ProcedureActivityEvidence = {
-                  ...currentEv,
-                  files: updatedFiles,
-                  oneDriveUrl: currentEv.oneDriveUrl || driveRes.fileUrl,
-                  driveFileId: currentEv.driveFileId || driveRes.fileId,
-                };
-                saveActivityEvidence(updatedWithDrive);
-                saveActivityEvidenceToCloud(updatedWithDrive);
-                setEvidencesMap({ ...getActivityEvidences() });
-              }
+          // Subida directa a Google Drive
+          try {
+            const driveRes = await uploadToGoogleDriveBridge({
+              officeName: organUnitPath,
+              procedureCode,
+              step: targetStep,
+              fileName: file.name,
+              mimeType: file.type || (fileFormat === 'pdf' ? 'application/pdf' : 'application/octet-stream'),
+              dataUrl,
+            });
+            if (driveRes && driveRes.status === 'success') {
+              driveUrl = driveRes.fileUrl;
+              driveId = driveRes.fileId;
             }
-          });
+          } catch (driveErr) {
+            console.warn('Google Drive notice:', driveErr);
+          }
         }
 
         newAttachedFiles.push({
@@ -594,6 +588,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
           fileName: file.name,
           fileFormat,
           fileSize: formatBytes(file.size),
+          oneDriveUrl: driveUrl,
+          driveFileId: driveId,
           fileDataUrl: file.size <= 180000 ? dataUrl : undefined,
           uploadedAt: new Date().toISOString(),
           uploadedBy: activeUser.name,
@@ -625,7 +621,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
         scopeUnitId,
         fileName: displayFileName,
         fileFormat: displayFormat,
-        oneDriveUrl: existing?.oneDriveUrl || '',
+        oneDriveUrl: allFiles[0]?.oneDriveUrl || existing?.oneDriveUrl || '',
+        driveFileId: allFiles[0]?.driveFileId || existing?.driveFileId,
         uploadFolderUrl: existing?.uploadFolderUrl || '',
         fileDataUrl: !isMultiple ? allFiles[0]?.fileDataUrl : undefined,
         files: allFiles,
@@ -1099,14 +1096,15 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                     )}
 
                     {/* Botón Subir: Permite subir otro PDF o Excel directamente (y lo guarda en OneDrive) */}
+                    {/* Botón Adjuntar: Permite sumar otro documento adicional a esta actividad */}
                     <button
                       type="button"
                       onClick={() => triggerFilePickerForStep(act.step)}
                       className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
-                      title="Subir otro PDF o Excel adicional a esta actividad"
+                      title="Adjuntar otro documento adicional a esta actividad"
                     >
                       <Upload className="w-3.5 h-3.5 text-blue-600" />
-                      <span>Subir</span>
+                      <span>＋ Adjuntar otro</span>
                     </button>
                   </div>
                 </div>
