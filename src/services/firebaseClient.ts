@@ -22,7 +22,7 @@ import {
   getDoc,
   Firestore
 } from 'firebase/firestore';
-import { UserProfile, UserRole, ProcessLevel0, OptionalUserModule } from '../types';
+import { UserProfile, UserRole, ProcessLevel0, OptionalUserModule, ProcedureActivityEvidence } from '../types';
 import { getOrganizationUnitById, resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from '../data/organizationHierarchy';
 import { isUserEmailRevoked, removeEmailFromRevoked } from './storage';
 
@@ -585,4 +585,55 @@ export async function logoutFromFirebase(): Promise<void> {
 export function subscribeToAuthChanges(callback: (user: FirebaseUser | null) => void): () => void {
   if (!firebaseAuth) return () => {};
   return onAuthStateChanged(firebaseAuth, callback);
+}
+
+/**
+ * Sincroniza en Cloud Firestore las evidencias por actividad (OneDrive / Lista Maestra RG04)
+ */
+export async function saveActivityEvidenceToCloud(evidence: ProcedureActivityEvidence): Promise<void> {
+  if (!firebaseDb || !evidence?.id) return;
+  const safeDocId = evidence.id.replace(/[^a-zA-Z0-9_.-]/g, '_');
+  const payload: Record<string, unknown> = {
+    id: evidence.id,
+    procedureCode: evidence.procedureCode,
+    step: evidence.step,
+    scopeUnitId: evidence.scopeUnitId || 'general',
+    fileName: evidence.fileName,
+    fileFormat: evidence.fileFormat,
+    oneDriveUrl: evidence.oneDriveUrl || '',
+    uploadFolderUrl: evidence.uploadFolderUrl || '',
+    status: evidence.status,
+    uploadedBy: evidence.uploadedBy,
+    uploadedByUnit: evidence.uploadedByUnit || '',
+    updatedAt: evidence.updatedAt,
+    auditorNotes: evidence.auditorNotes || '',
+  };
+  if (evidence.fileDataUrl && evidence.fileDataUrl.length < 350000) {
+    payload.fileDataUrl = evidence.fileDataUrl;
+  }
+  await withTimeout(
+    setDoc(doc(firebaseDb, 'sgc_procedure_evidences', safeDocId), payload, { merge: true }),
+    3500
+  );
+}
+
+export async function deleteActivityEvidenceFromCloud(evidenceId: string): Promise<void> {
+  if (!firebaseDb || !evidenceId) return;
+  const safeDocId = evidenceId.replace(/[^a-zA-Z0-9_.-]/g, '_');
+  await withTimeout(deleteDoc(doc(firebaseDb, 'sgc_procedure_evidences', safeDocId)), 3000);
+}
+
+export async function fetchActivityEvidencesFromCloud(): Promise<ProcedureActivityEvidence[]> {
+  if (!firebaseDb) return [];
+  const snap = await withTimeout(getDocs(collection(firebaseDb, 'sgc_procedure_evidences')), 3500);
+  const result: ProcedureActivityEvidence[] = [];
+  if (snap) {
+    snap.forEach((d) => {
+      const data = d.data() as ProcedureActivityEvidence;
+      if (data && data.id && data.procedureCode) {
+        result.push(data);
+      }
+    });
+  }
+  return result;
 }

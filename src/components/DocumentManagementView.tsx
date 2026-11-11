@@ -39,6 +39,7 @@ import { UPT_PROCESSES } from '../data/initialData';
 import { UPT_PROCEDURES_DETAILED } from '../data/proceduresDetailed';
 import { getDocumentCloudUrl, getManualCloudName, getDocumentExactPageUrl, getLocalPdfPath, SHAREPOINT_LISTA_MAESTRA_DOCX } from '../data/cloudManuals';
 import { PdfViewer } from './PdfViewer';
+import { ProcedureActivitiesSidePanel } from './ProcedureActivitiesSidePanel';
 import { getProcedureRange } from '../data/procedurePageRanges';
 import { normalizeSearchText, getSynonymProcedureCodes, UPT_DEPENDENCIES, GUIDE_TOPICS, GuideTopic } from '../data/searchSynonyms';
 
@@ -151,6 +152,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   const [viewingDoc, setViewingDoc] = useState<ISODocument | null>(null);
   const [readingDoc, setReadingDoc] = useState<ISODocument | null>(null);
   const [readingTab, setReadingTab] = useState<'pdf' | 'details'>('pdf');
+  const [showActivitiesSidePanel, setShowActivitiesSidePanel] = useState<boolean>(true);
   const [targetPdfPage, setTargetPdfPage] = useState<number | null>(null);
   const [versioningDoc, setVersioningDoc] = useState<ISODocument | null>(null);
 
@@ -916,7 +918,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
       {/* Modal 1: Visor Interactivo del Procedimiento Oficial UPT */}
       {readingDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-2 sm:p-4 overflow-hidden">
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-5xl lg:max-w-6xl my-auto overflow-hidden flex flex-col h-[94vh] max-h-[94vh]">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-7xl my-auto overflow-hidden flex flex-col h-[95vh] max-h-[95vh]">
             {/* Cabecera formato oficial SGC UPT */}
             <div className="px-6 py-4 bg-gradient-to-r from-[#0d2d3f] to-[#001826] border-b-2 border-[#9C7D0F] text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
@@ -1048,65 +1050,107 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                     </div>
 
                     {/* Selector de Pestañas: Visor PDF vs Ficha Estructurada */}
-                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                      <button
-                        type="button"
-                        onClick={() => setReadingTab('pdf')}
-                        className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                          readingTab === 'pdf'
-                            ? 'bg-red-800 text-white shadow-xs'
-                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                        }`}
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        <span>📄 {isExternal ? 'Documento Externo Completo (PDF)' : isManual ? 'Manual Oficial Completo en PDF' : `Documento Oficial PDF (Págs. ${rangeText})`}</span>
-                      </button>
-                      {!isExternal && (
-<button
-                        type="button"
-                        onClick={() => setReadingTab('details')}
-                        className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                          readingTab === 'details'
-                            ? 'bg-red-800 text-white shadow-xs'
-                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                        }`}
-                      >
-                        <Layers className="w-4 h-4" />
-                        <span>📋 Ficha y Resumen Institucional</span>
-                      </button>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setReadingTab('pdf')}
+                          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                            readingTab === 'pdf'
+                              ? 'bg-red-800 text-white shadow-xs'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          <span>📄 {isExternal ? 'Documento Externo Completo (PDF)' : isManual ? 'Manual Oficial Completo en PDF' : `Documento Oficial PDF (Págs. ${rangeText})`}</span>
+                        </button>
+                        {!isExternal && (
+                          <button
+                            type="button"
+                            onClick={() => setReadingTab('details')}
+                            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                              readingTab === 'details'
+                                ? 'bg-red-800 text-white shadow-xs'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                            }`}
+                          >
+                            <Layers className="w-4 h-4" />
+                            <span>📋 Ficha y Resumen Institucional</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {!isManual && !isExternal && readingTab === 'pdf' && (
+                        <button
+                          type="button"
+                          onClick={() => setShowActivitiesSidePanel((prev) => !prev)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                            showActivitiesSidePanel
+                              ? 'bg-blue-50 text-blue-900 border-blue-300 shadow-2xs'
+                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>📂 {showActivitiesSidePanel ? 'Ocultar Evidencias por Actividad' : 'Mostrar Evidencias por Actividad'}</span>
+                        </button>
                       )}
                     </div>
 
-                    {/* Vista 1: Visor de PDF Oficial Embebido (Predeterminada) */}
+                    {/* Vista 1: Visor de PDF Oficial Embebido + Panel Lateral de Evidencias por Actividad (Opción B) */}
                     {(readingTab === 'pdf' || isExternal) && (
-                      <div className="space-y-3">
-                        <PdfViewer
-                          key={`${readingDoc.code}-${isManual ? 'full' : `${startPage}-${endPage}`}`}
-                          pdfUrl={getLocalPdfPath(readingDoc.code)}
-                          startPage={startPage}
-                          endPage={isManual ? undefined : endPage}
-                          isFullDocument={isManual}
-                          initialPage={targetPdfPage || startPage}
-                          activitiesPage={activitiesPage}
-                          docCode={readingDoc.code}
-                          docTitle={readingDoc.title}
-                          manualName={manual}
-                          className="w-full"
-                        />
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
-                          <span className="flex items-center gap-1.5">
-                            <span>💡 <strong>Visualización Oficial Directa:</strong> Puede hacer zoom, imprimir o desplazarse por las páginas directamente en el visor de arriba.</span>
-                          </span>
-                          <a
-                            href={getDocumentExactPageUrl(readingDoc.code, page)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900 font-bold shrink-0 hover:underline"
-                          >
-                            <span>Abrir en Pestaña Completa</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
+                      <div
+                        className={
+                          !isManual && !isExternal && showActivitiesSidePanel
+                            ? 'grid grid-cols-1 lg:grid-cols-12 gap-4 items-start'
+                            : 'space-y-3'
+                        }
+                      >
+                        <div
+                          className={
+                            !isManual && !isExternal && showActivitiesSidePanel
+                              ? 'lg:col-span-7 xl:col-span-8 space-y-3'
+                              : 'space-y-3'
+                          }
+                        >
+                          <PdfViewer
+                            key={`${readingDoc.code}-${isManual ? 'full' : `${startPage}-${endPage}`}`}
+                            pdfUrl={getLocalPdfPath(readingDoc.code)}
+                            startPage={startPage}
+                            endPage={isManual ? undefined : endPage}
+                            isFullDocument={isManual}
+                            initialPage={targetPdfPage || startPage}
+                            activitiesPage={activitiesPage}
+                            docCode={readingDoc.code}
+                            docTitle={readingDoc.title}
+                            manualName={manual}
+                            className="w-full"
+                          />
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
+                            <span className="flex items-center gap-1.5">
+                              <span>💡 <strong>Visualización Oficial Directa:</strong> Puede hacer zoom, imprimir o desplazarse por las páginas directamente en el visor de arriba.</span>
+                            </span>
+                            <a
+                              href={getDocumentExactPageUrl(readingDoc.code, page)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900 font-bold shrink-0 hover:underline"
+                            >
+                              <span>Abrir en Pestaña Completa</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
                         </div>
+
+                        {!isManual && !isExternal && showActivitiesSidePanel && (
+                          <div className="lg:col-span-5 xl:col-span-4">
+                            <ProcedureActivitiesSidePanel
+                              procedureCode={readingDoc.code}
+                              procedureTitle={readingDoc.title}
+                              activeUser={activeUser}
+                              activitiesPage={activitiesPage}
+                              onJumpToActivitiesPage={() => setTargetPdfPage(activitiesPage)}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 

@@ -257,3 +257,23 @@ export interface ActivityLog {
   entityId: string;
   details: string;
 }
+
+export type ActivityEvidenceFormat = 'pdf' | 'excel' | 'word' | 'multi_files';
+export type ActivityEvidenceStatus = 'conforme' | 'en_revision' | 'observado';
+
+export interface ProcedureActivityEvidence {
+  id: string; // `${scopeUnitId}__${procedureCode}__step_${step}`
+  procedureCode: string;
+  step: number;
+  scopeUnitId: string; // 'general' o id de Facultad ('faing', 'facsa', 'facem', 'faedcoh', 'fau', 'fade')
+  fileName: string;
+  fileFormat: ActivityEvidenceFormat;
+  oneDriveUrl: string;
+  uploadFolderUrl?: string;
+  fileDataUrl?: string;
+  status: ActivityEvidenceStatus;
+  uploadedBy: string;
+  uploadedByUnit?: string;
+  updatedAt: string;
+  auditorNotes?: string;
+}

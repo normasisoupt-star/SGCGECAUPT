@@ -9,7 +9,8 @@ import {
   UPTIndicator,
   IndicatorMeasurement,
   EvaluationYear,
-  OptionalUserModule
+  OptionalUserModule,
+  ProcedureActivityEvidence
 } from '../types';
 import { 
   UPT_DOCUMENTS, 
@@ -31,6 +32,7 @@ const STORAGE_KEYS = {
   INDICATORS: 'upt_iso21001_indicators_v26_10_denominations',
   YEARS: 'upt_iso21001_evaluation_years_v1',
   AUDIT_SESSIONS: 'upt_iso21001_audit_sessions_v1',
+  ACTIVITY_EVIDENCES: 'upt_iso21001_activity_evidences_v1',
 };
 
 const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
@@ -1276,4 +1278,54 @@ export function toggleYearStatus(year: number, authorName: string): EvaluationYe
   });
   saveEvaluationYears(updated);
   return updated;
+}
+
+// --- EVIDENCIAS POR ACTIVIDAD DE PROCEDIMIENTOS (ONEDRIVE / LISTA MAESTRA) ---
+export function getActivityEvidences(): Record<string, ProcedureActivityEvidence> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.ACTIVITY_EVIDENCES);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveActivityEvidence(evidence: ProcedureActivityEvidence): Record<string, ProcedureActivityEvidence> {
+  const all = getActivityEvidences();
+  all[evidence.id] = evidence;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(all));
+    broadcastChange('ACTIVITY_EVIDENCES_UPDATED', all);
+  }
+  return all;
+}
+
+export function deleteActivityEvidence(evidenceId: string): Record<string, ProcedureActivityEvidence> {
+  const all = getActivityEvidences();
+  delete all[evidenceId];
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(all));
+    broadcastChange('ACTIVITY_EVIDENCES_UPDATED', all);
+  }
+  return all;
+}
+
+export function mergeCloudActivityEvidences(
+  cloudList: ProcedureActivityEvidence[]
+): Record<string, ProcedureActivityEvidence> {
+  const localMap = getActivityEvidences();
+  let changed = false;
+  for (const item of cloudList) {
+    if (!item || !item.id) continue;
+    const existing = localMap[item.id];
+    if (!existing || (item.updatedAt && (!existing.updatedAt || item.updatedAt >= existing.updatedAt))) {
+      localMap[item.id] = item;
+      changed = true;
+    }
+  }
+  if (changed && typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(localMap));
+  }
+  return localMap;
 }
