@@ -142,6 +142,36 @@ async function uploadToGoogleDriveBridge(params: {
 }
 
 /**
+ * Solicita a Google Drive enviar el archivo correspondiente a la papelera (Opción B)
+ */
+async function deleteFromGoogleDriveBridge(params: {
+  officeName: string;
+  procedureCode: string;
+  step: number;
+  fileName: string;
+  fileId?: string;
+}): Promise<void> {
+  try {
+    const payload = JSON.stringify({
+      action: 'delete',
+      officeName: params.officeName,
+      procedureCode: params.procedureCode,
+      step: params.step,
+      fileName: params.fileName,
+      fileId: params.fileId,
+    });
+
+    await fetch(GOOGLE_DRIVE_WEB_APP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: payload,
+    });
+  } catch (err) {
+    console.warn('Google Drive direct delete notice:', err);
+  }
+}
+
+/**
  * Envía el archivo subido también a la carpeta correspondiente del disco local si está corriendo en PC
  */
 async function syncFileWithLocalOneDrive(params: {
@@ -400,6 +430,14 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
           step,
           fileName: f.fileName,
         });
+        // Opción B: Mover a la papelera en Google Drive
+        await deleteFromGoogleDriveBridge({
+          officeName: organUnitPath,
+          procedureCode,
+          step,
+          fileName: f.fileName,
+          fileId: f.driveFileId || existing.driveFileId,
+        });
       }
     }
     const updated = deleteActivityEvidence(id);
@@ -428,6 +466,14 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
         procedureCode,
         step,
         fileName: targetFile.fileName,
+      });
+      // Opción B: Mover a la papelera en Google Drive
+      await deleteFromGoogleDriveBridge({
+        officeName: organUnitPath,
+        procedureCode,
+        step,
+        fileName: targetFile.fileName,
+        fileId: targetFile.driveFileId,
       });
     }
 
@@ -525,12 +571,15 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
               const currentEv = currentMap[id];
               if (currentEv && currentEv.files) {
                 const updatedFiles = currentEv.files.map((cf) =>
-                  cf.id === fileId ? { ...cf, oneDriveUrl: driveRes.fileUrl } : cf
+                  cf.id === fileId
+                    ? { ...cf, oneDriveUrl: driveRes.fileUrl, driveFileId: driveRes.fileId }
+                    : cf
                 );
                 const updatedWithDrive: ProcedureActivityEvidence = {
                   ...currentEv,
                   files: updatedFiles,
                   oneDriveUrl: currentEv.oneDriveUrl || driveRes.fileUrl,
+                  driveFileId: currentEv.driveFileId || driveRes.fileId,
                 };
                 saveActivityEvidence(updatedWithDrive);
                 saveActivityEvidenceToCloud(updatedWithDrive);

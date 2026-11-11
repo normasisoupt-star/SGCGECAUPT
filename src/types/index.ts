@@ -267,6 +267,7 @@ export interface ActivityAttachedFile {
   fileFormat: 'pdf' | 'excel' | 'word';
   fileSize?: string;
   oneDriveUrl?: string;
+  driveFileId?: string;
   fileDataUrl?: string;
   uploadedAt: string;
   uploadedBy?: string;
@@ -280,6 +281,7 @@ export interface ProcedureActivityEvidence {
   fileName: string;
   fileFormat: ActivityEvidenceFormat;
   oneDriveUrl: string;
+  driveFileId?: string;
   uploadFolderUrl?: string;
   fileDataUrl?: string;
   files?: ActivityAttachedFile[];

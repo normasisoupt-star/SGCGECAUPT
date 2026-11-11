@@ -152,7 +152,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
   const [viewingDoc, setViewingDoc] = useState<ISODocument | null>(null);
   const [readingDoc, setReadingDoc] = useState<ISODocument | null>(null);
   const [readingTab, setReadingTab] = useState<'pdf' | 'details'>('pdf');
-  const [showActivitiesSidePanel, setShowActivitiesSidePanel] = useState<boolean>(true);
+  const [showActivitiesSidePanel, setShowActivitiesSidePanel] = useState<boolean>(false);
   const [targetPdfPage, setTargetPdfPage] = useState<number | null>(null);
   const [versioningDoc, setVersioningDoc] = useState<ISODocument | null>(null);
 
@@ -846,7 +846,9 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                           {/* Botón principal: Abrir Procedimiento (Visible para todos) */}
                           <button
                             onClick={() => {
-                              setTargetPdfPage(null); setReadingDoc(doc);
+                              setTargetPdfPage(null);
+                              setShowActivitiesSidePanel(false);
+                              setReadingDoc(doc);
                               setReadingTab('pdf');
                             }}
                             title="Abrir Visor Oficial del Procedimiento (PDF en su página de referencia)"
@@ -1198,7 +1200,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                                   Actividades y Diagrama de Flujo del Procedimiento
                                 </div>
                                 <div className="text-[11px] text-slate-500 mt-0.5">
-                                  Consulte el desarrollo oficial de actividades directamente en la pestaña del visor PDF incrustado.
+                                  Consulte el desarrollo oficial de actividades en el visor PDF e interactúe con las evidencias por actividad.
                                 </div>
                               </div>
                             </div>
@@ -1206,13 +1208,14 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                               type="button"
                               onClick={() => {
                                 setTargetPdfPage(activitiesPage);
+                                setShowActivitiesSidePanel(true);
                                 setReadingTab('pdf');
                               }}
                               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-800 hover:bg-red-900 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs shrink-0"
-                              title={`Ir directamente a la página ${activitiesPage} de actividades del procedimiento`}
+                              title={`Ir directamente a la página ${activitiesPage} y desplegar el panel de evidencias por actividad`}
                             >
                               <BookOpen className="w-3.5 h-3.5" />
-                              <span>Ver Actividades en PDF (Pág. {activitiesPage})</span>
+                              <span>Ver Actividades y Evidencias (Pág. {activitiesPage})</span>
                             </button>
                           </div>
                         )}
@@ -1374,7 +1377,9 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                 onClick={() => {
                   const doc = viewingDoc;
                   setViewingDoc(null);
-                  setTargetPdfPage(null); setReadingDoc(doc);
+                  setTargetPdfPage(null);
+                  setShowActivitiesSidePanel(false);
+                  setReadingDoc(doc);
                   setReadingTab('pdf');
                 }}
                 className="px-4 py-2 text-xs font-semibold text-white bg-red-800 hover:bg-red-900 rounded-xl transition-colors cursor-pointer"
@@ -1587,6 +1592,7 @@ export const DocumentManagementView: React.FC<DocumentManagementViewProps> = ({
                                 type="button"
                                 onClick={() => {
                                   setIsGuideModalOpen(false);
+                                  setShowActivitiesSidePanel(false);
                                   setReadingDoc(doc);
                                   setTargetPdfPage(null);
                                   setReadingTab('pdf');
