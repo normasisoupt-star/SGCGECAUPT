@@ -9,7 +9,9 @@ import {
   ClipboardCheck, 
   History, 
   Building2,
-  CheckCircle2
+  CheckCircle2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 import { OptionalUserModule } from '../types';
@@ -23,6 +25,7 @@ interface SidebarProps {
   openCapaCount: number;
   isAdmin?: boolean;
   enabledModules?: OptionalUserModule[];
+  onToggleGlobalModule?: (mod: OptionalUserModule) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -32,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   openCapaCount,
   isAdmin = false,
   enabledModules = [],
+  onToggleGlobalModule,
 }) => {
   const navItems = [
     {
@@ -104,32 +108,61 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {availableNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
+              const isOptionalMod =
+                item.id === 'indicators' || item.id === 'capa' || item.id === 'checklist';
+              const isModEnabled =
+                isOptionalMod && enabledModules.includes(item.id as OptionalUserModule);
+
               return (
-                <button
-                  key={item.id}
-                  onClick={() => onSelectTab(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-[#001826] text-white shadow-md'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#F3E5AB]' : 'text-slate-400'}`} />
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge !== undefined && (
-                    <span
-                      className={`text-[11px] px-2 py-0.5 rounded-full ${
-                        isActive
-                          ? 'bg-[#9C7D0F] text-white font-bold'
-                          : item.badgeColor || 'bg-slate-100 text-slate-600'
+                <div key={item.id} className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onSelectTab(item.id)}
+                    className={`flex-1 min-w-0 flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-[#001826] text-white shadow-md'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#F3E5AB]' : 'text-slate-400'}`} />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {item.badge !== undefined && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded-full shrink-0 ml-1 ${
+                          isActive
+                            ? 'bg-[#9C7D0F] text-white font-bold'
+                            : item.badgeColor || 'bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+
+                  {isAdmin && isOptionalMod && onToggleGlobalModule && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleGlobalModule(item.id as OptionalUserModule);
+                      }}
+                      title={
+                        isModEnabled
+                          ? `${item.label}: HABILITADA para todas las oficinas (Clic para deshabilitar)`
+                          : `${item.label}: OCULTA para las oficinas (Clic para habilitar a todas)`
+                      }
+                      className={`p-2 rounded-xl border transition-all cursor-pointer shrink-0 ${
+                        isModEnabled
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+                          : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-100'
                       }`}
                     >
-                      {item.badge}
-                    </span>
+                      {isModEnabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    </button>
                   )}
-                </button>
+                </div>
               );
             })}
           </nav>

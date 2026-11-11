@@ -484,6 +484,42 @@ export function updateChecklistItem(item: AuditChecklistItem): void {
 
 // --- USUARIOS, JERARQUÍA DE OFICINAS Y CONTROL DE REGISTROS ---
 const REVOKED_EMAILS_KEY = 'upt_sgc_revoked_emails_v3_firebase_exact';
+const GLOBAL_MODULES_KEY = 'upt_sgc_global_enabled_modules_v1';
+
+export function getGlobalEnabledModules(): OptionalUserModule[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(GLOBAL_MODULES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function setGlobalEnabledModules(
+  modules: OptionalUserModule[],
+  adminName?: string,
+  logDetails?: string
+): OptionalUserModule[] {
+  const clean = Array.from(new Set(modules));
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(GLOBAL_MODULES_KEY, JSON.stringify(clean));
+  }
+  if (adminName && logDetails) {
+    addActivityLog({
+      userName: adminName,
+      userRole: 'Administrador del Sistema',
+      action: 'Actualizó visibilidad de pestaña SGC para todas las oficinas',
+      entityType: 'sistema',
+      entityId: 'global-modules',
+      details: logDetails,
+    });
+  }
+  broadcastChange('MODULES_VISIBILITY_UPDATED', clean);
+  return clean;
+}
 
 export function getRevokedEmails(): string[] {
   if (typeof window === 'undefined') return [];

@@ -11,13 +11,9 @@ import {
   Mail,
   Briefcase,
   CheckCircle2,
-  History,
-  LineChart,
-  ClipboardCheck,
-  Eye,
-  EyeOff
+  History
 } from 'lucide-react';
-import { ActivityLog, UserProfile, OptionalUserModule } from '../types';
+import { ActivityLog, UserProfile } from '../types';
 import { ORGAN_GROUPS, ORGANIZATION_UNITS, resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from '../data/organizationHierarchy';
 
 interface ActivityLogsViewProps {
@@ -27,8 +23,6 @@ interface ActivityLogsViewProps {
   onDeleteRegisteredUser?: (userId: string, email: string) => void;
   onReassignUserUnit?: (userId: string, email: string, newUnitId: string) => void;
   onAssignUserSecondaryUnit?: (userId: string, email: string, secondaryUnitId: string) => void;
-  onUpdateUserModules?: (userId: string, email: string, enabledModules: OptionalUserModule[]) => void;
-  onBulkUpdateUsersModules?: (moduleKey: OptionalUserModule | 'all', enable: boolean) => void;
   onRestoreRevokedEmail?: (email: string) => void;
   onSyncCloudUsers?: () => Promise<void>;
 }
@@ -40,8 +34,6 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
   onDeleteRegisteredUser,
   onReassignUserUnit,
   onAssignUserSecondaryUnit,
-  onUpdateUserModules,
-  onBulkUpdateUsersModules,
   onRestoreRevokedEmail,
   onSyncCloudUsers,
 }) => {
@@ -138,113 +130,6 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
 
       {activeSubTab === 'users' ? (
         <div className="space-y-6">
-          {/* Panel Maestro de Habilitación / Deshabilitación de Pestañas SGC para Oficinas */}
-          {onBulkUpdateUsersModules && (
-            <div className="bg-gradient-to-r from-[#0d2d3f] via-[#123b52] to-[#0d2d3f] rounded-2xl p-5 text-white shadow-md border border-[#D4AF37]/30">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D4AF37]/20 text-[#F3E5AB] border border-[#D4AF37]/40 uppercase tracking-wider">
-                    <Eye className="w-3.5 h-3.5 text-[#F3E5AB]" />
-                    <span>Control de Pestañas por Oficina (Tiempo Real • Cloud Firestore)</span>
-                  </div>
-                  <h2 className="text-base font-bold text-white">
-                    Habilitación de Módulos Especializados para Oficinas y Dependencias
-                  </h2>
-                  <p className="text-xs text-slate-300 max-w-3xl">
-                    Por defecto, estos 3 módulos son exclusivos del Administrador. Cuando los habilite (globalmente aquí o individualmente en cada usuario abajo), cada oficina verá en su menú lateral <strong>únicamente los indicadores, no conformidades y auditorías que corresponden a su dependencia</strong>.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => onBulkUpdateUsersModules('all', true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm transition-all cursor-pointer"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Habilitar las 3 a Todas</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onBulkUpdateUsersModules('all', false)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer"
-                  >
-                    <EyeOff className="w-3.5 h-3.5" />
-                    <span>Ocultar las 3 (Solo Admin)</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 pt-4 border-t border-white/15">
-                {([
-                  {
-                    key: 'indicators' as OptionalUserModule,
-                    label: 'Tablero de Indicadores',
-                    desc: 'Muestra los KPIs y metas de los procesos propios de cada oficina',
-                    icon: LineChart,
-                  },
-                  {
-                    key: 'capa' as OptionalUserModule,
-                    label: 'No Conformidades (RG08)',
-                    desc: 'Muestra los hallazgos, 5 Porqués y planes de acción de su oficina',
-                    icon: AlertTriangle,
-                  },
-                  {
-                    key: 'checklist' as OptionalUserModule,
-                    label: 'Evaluación ISO 21001',
-                    desc: 'Muestra el cronograma de auditoría y cláusulas evaluadas en su oficina',
-                    icon: ClipboardCheck,
-                  },
-                ]).map((mod) => {
-                  const nonOwnerOfficials = registeredOfficials.filter(
-                    (u) => !(u.role === 'geca' && u.officeName === 'Administrador del Sistema')
-                  );
-                  const enabledCount = nonOwnerOfficials.filter((u) =>
-                    Array.isArray(u.enabledModules) && u.enabledModules.includes(mod.key)
-                  ).length;
-                  const allEnabled = nonOwnerOfficials.length > 0 && enabledCount === nonOwnerOfficials.length;
-                  const ModIcon = mod.icon;
-
-                  return (
-                    <div
-                      key={mod.key}
-                      className={`rounded-xl p-3.5 border transition-all flex items-center justify-between gap-3 ${
-                        allEnabled
-                          ? 'bg-emerald-950/60 border-emerald-400/50'
-                          : enabledCount > 0
-                          ? 'bg-amber-950/40 border-[#D4AF37]/50'
-                          : 'bg-slate-900/40 border-white/10'
-                      }`}
-                    >
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <ModIcon className="w-4 h-4 text-[#F3E5AB] shrink-0" />
-                          <span className="text-xs font-bold text-white truncate">{mod.label}</span>
-                        </div>
-                        <p className="text-[11px] text-slate-300 mt-0.5 line-clamp-1">{mod.desc}</p>
-                        <span className="inline-block mt-1 text-[10px] font-bold text-[#F3E5AB]">
-                          {enabledCount} de {nonOwnerOfficials.length} usuario(s) con acceso
-                        </span>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => onBulkUpdateUsersModules(mod.key, !allEnabled)}
-                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold shrink-0 cursor-pointer transition-all ${
-                          allEnabled
-                            ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-xs'
-                            : 'bg-white/15 text-white hover:bg-white/25 border border-white/20'
-                        }`}
-                      >
-                        {allEnabled ? 'Habilitado (Desactivar)' : 'Habilitar a Todos'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Barra de búsqueda y sincronización de usuarios */}
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative flex-1">
@@ -418,50 +303,6 @@ export const ActivityLogsView: React.FC<ActivityLogsViewProps> = ({
                                   </optgroup>
                                 ))}
                               </select>
-                            </div>
-                          )}
-
-                          {onUpdateUserModules && (
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">
-                                Pestañas Habilitadas en su Oficina
-                              </span>
-                              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                                {([
-                                  { key: 'indicators' as OptionalUserModule, short: 'Indicadores', icon: LineChart },
-                                  { key: 'capa' as OptionalUserModule, short: 'No Conform.', icon: AlertTriangle },
-                                  { key: 'checklist' as OptionalUserModule, short: 'Eval. ISO', icon: ClipboardCheck },
-                                ]).map((m) => {
-                                  const currentMods = Array.isArray(u.enabledModules) ? u.enabledModules : [];
-                                  const isModEnabled = currentMods.includes(m.key);
-                                  const IconComp = m.icon;
-                                  return (
-                                    <button
-                                      key={m.key}
-                                      type="button"
-                                      onClick={() => {
-                                        const nextMods = isModEnabled
-                                          ? currentMods.filter((item) => item !== m.key)
-                                          : [...currentMods, m.key];
-                                        onUpdateUserModules(u.id, u.email, nextMods);
-                                      }}
-                                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                                        isModEnabled
-                                          ? 'bg-emerald-600 text-white shadow-xs'
-                                          : 'bg-white text-slate-500 hover:text-slate-800 border border-slate-200/80'
-                                      }`}
-                                      title={
-                                        isModEnabled
-                                          ? `Pestaña ${m.short} HABILITADA para ${u.name} (Clic para ocultar)`
-                                          : `Pestaña ${m.short} OCULTA para ${u.name} (Clic para habilitar)`
-                                      }
-                                    >
-                                      <IconComp className="w-3 h-3" />
-                                      <span>{m.short}</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
                             </div>
                           )}
 

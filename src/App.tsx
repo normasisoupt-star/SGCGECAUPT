@@ -1,7 +1,7 @@
 import { resolveUserOrganizationUnit, resolveUserSecondaryUnit, getCombinedUserProceduresAndProcesses } from './data/organizationHierarchy';
 import { initSystemSecurity } from './services/security';
 import React, { useState, useEffect } from 'react';
-import { GraduationCap, ArrowRight, UserCheck } from 'lucide-react';
+import { GraduationCap, ArrowRight, UserCheck, Eye, EyeOff } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { Sidebar, NavTab } from './components/Sidebar';
 import { DashboardView } from './components/DashboardView';
@@ -40,8 +40,8 @@ import {
   deleteRegisteredUser,
   reassignRegisteredUserUnit,
   assignRegisteredUserSecondaryUnit,
-  updateRegisteredUserModules,
-  updateBulkRegisteredUsersModules,
+  getGlobalEnabledModules,
+  setGlobalEnabledModules,
   getRevokedEmails,
   removeEmailFromRevoked,
   mergeCloudRegisteredUsers,
@@ -53,8 +53,8 @@ import {
   revokeUserInCloud,
   reassignUserUnitInCloud,
   assignUserSecondaryUnitInCloud,
-  updateUserModulesInCloud,
-  updateBulkUsersModulesInCloud
+  saveGlobalModulesToCloud,
+  fetchGlobalModulesFromCloud
 } from './services/firebaseClient';
 
 import { 
@@ -95,15 +95,14 @@ export function App() {
   const [isLoggedOut, setIsLoggedOut] = useState(() => sessionStorage.getItem('upt_sgc_logged_in') !== 'true');
 
   const [revokedEmails, setRevokedEmails] = useState<string[]>(getRevokedEmails);
+  const [globalEnabledModules, setGlobalEnabledModulesState] = useState<OptionalUserModule[]>(getGlobalEnabledModules);
   const [isOwnerSession, setIsOwnerSession] = useState<boolean>(() => {
     const u = getActiveUser();
     return u?.role === 'geca' && computeSyncHash((u?.email || '').trim().toLowerCase()) === '2bdcaa29f816e1df';
   });
   const isAdmin = activeUser?.role === 'geca';
   const isAdminSession = isAdmin || isOwnerSession;
-  const userEnabledModules: OptionalUserModule[] = Array.isArray(activeUser?.enabledModules)
-    ? activeUser.enabledModules
-    : [];
+  const userEnabledModules: OptionalUserModule[] = globalEnabledModules;
 
   // Si el usuario no es Administrador, restringir la navegación a los módulos base + pestañas habilitadas por el Administrador
   useEffect(() => {
@@ -122,12 +121,19 @@ export function App() {
     setActiveUserState(getActiveUser());
     setLogs(getLogs());
     setRevokedEmails(getRevokedEmails());
+    setGlobalEnabledModulesState(getGlobalEnabledModules());
   };
 
   const handleSyncCloudUsers = async () => {
     try {
-      const { users: cloudUsers, revokedEmails: cloudRevoked } = await fetchCloudRegisteredUsers();
+      const [{ users: cloudUsers, revokedEmails: cloudRevoked }, cloudModules] = await Promise.all([
+        fetchCloudRegisteredUsers(),
+        fetchGlobalModulesFromCloud(),
+      ]);
       mergeCloudRegisteredUsers(cloudUsers, cloudRevoked);
+      if (cloudModules !== null) {
+        setGlobalEnabledModules(cloudModules);
+      }
       refreshAll();
     } catch {
       // Continuar con datos locales
@@ -206,45 +212,21 @@ export function App() {
     await assignUserSecondaryUnitInCloud(email, secondaryUnitId);
   };
 
-  const handleUpdateUserModules = async (userId: string, email: string, enabledModules: OptionalUserModule[]) => {
-    const updated = updateRegisteredUserModules(userId, enabledModules, activeUser.name);
-    setUsers(updated);
-    setActiveUserState(getActiveUser());
-    setLogs(getLogs());
-    await updateUserModulesInCloud(email, enabledModules);
-  };
-
-  const handleBulkUpdateUsersModules = async (moduleKey: OptionalUserModule | 'all', enable: boolean) => {
-    const labelsMap: Record<OptionalUserModule | 'all', string> = {
+  const handleToggleGlobalModule = async (moduleKey: OptionalUserModule) => {
+    const labelsMap: Record<OptionalUserModule, string> = {
       indicators: 'Tablero de Indicadores',
       capa: 'No Conformidades (RG08)',
       checklist: 'Evaluación ISO 21001',
-      all: 'Los 3 Módulos (Indicadores, No Conformidades y Evaluación ISO 21001)',
     };
-    const actionLabel = `${enable ? 'Habilitó' : 'Ocultó'} ${labelsMap[moduleKey]} para todas las oficinas`;
-    const updated = updateBulkRegisteredUsersModules(
-      (current) => {
-        if (moduleKey === 'all') {
-          return enable ? ['indicators', 'capa', 'checklist'] : [];
-        }
-        return enable
-          ? Array.from(new Set([...current, moduleKey]))
-          : current.filter((m) => m !== moduleKey);
-      },
-      actionLabel,
-      activeUser.name
-    );
-    setUsers(updated);
-    setActiveUserState(getActiveUser());
+    const currentlyEnabled = globalEnabledModules.includes(moduleKey);
+    const nextModules = currentlyEnabled
+      ? globalEnabledModules.filter((m) => m !== moduleKey)
+      : [...globalEnabledModules, moduleKey];
+    const actionText = `${currentlyEnabled ? 'Deshabilitó (ocultó)' : 'Habilitó'} la pestaña "${labelsMap[moduleKey]}" para todas las oficinas y dependencias`;
+    const updated = setGlobalEnabledModules(nextModules, activeUser.name, actionText);
+    setGlobalEnabledModulesState(updated);
     setLogs(getLogs());
-
-    const cloudPayload = updated
-      .filter((u) => u.email && !(u.role === 'geca' && u.officeName === 'Administrador del Sistema') && !u.id.startsWith('u-unit-'))
-      .map((u) => ({
-        email: u.email,
-        enabledModules: Array.isArray(u.enabledModules) ? u.enabledModules : [],
-      }));
-    await updateBulkUsersModulesInCloud(cloudPayload);
+    await saveGlobalModulesToCloud(updated);
   };
 
   const handleRestoreRevokedEmail = (email: string) => {
@@ -430,9 +412,74 @@ export function App() {
           openCapaCount={openCapasCount}
           isAdmin={isAdmin}
           enabledModules={userEnabledModules}
+          onToggleGlobalModule={handleToggleGlobalModule}
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {isAdmin && (activeTab === 'indicators' || activeTab === 'capa' || activeTab === 'checklist') && (
+            <div className="max-w-7xl mx-auto mb-4">
+              {(() => {
+                const modKey = activeTab as OptionalUserModule;
+                const modTitle =
+                  modKey === 'indicators'
+                    ? 'Tablero de Indicadores'
+                    : modKey === 'capa'
+                    ? 'No Conformidades (RG08)'
+                    : 'Evaluación ISO 21001';
+                const isEnabledForAll = userEnabledModules.includes(modKey);
+                return (
+                  <div
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 rounded-2xl border shadow-xs transition-all ${
+                      isEnabledForAll
+                        ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
+                        : 'bg-white border-slate-200 text-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 text-xs">
+                      {isEnabledForAll ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold bg-emerald-600 text-white text-[11px]">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>VISIBLE PARA LAS OFICINAS</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold bg-slate-200 text-slate-700 text-[11px]">
+                          <EyeOff className="w-3.5 h-3.5" />
+                          <span>OCULTO PARA LAS OFICINAS (SOLO ADMIN)</span>
+                        </span>
+                      )}
+                      <span className="text-slate-600 font-medium">
+                        {isEnabledForAll
+                          ? `La pestaña "${modTitle}" está habilitada. Cada usuario ve únicamente lo que corresponde a su dependencia.`
+                          : `La pestaña "${modTitle}" está oculta para los usuarios. Solo usted como Administrador puede verla.`}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleGlobalModule(modKey)}
+                      className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                        isEnabledForAll
+                          ? 'bg-slate-900 hover:bg-slate-800 text-white'
+                          : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
+                      }`}
+                    >
+                      {isEnabledForAll ? (
+                        <>
+                          <EyeOff className="w-3.5 h-3.5" />
+                          <span>Deshabilitar Pestaña para Todos</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Habilitar Pestaña para Todos</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
           {activeTab === 'dashboard' && (
             <DashboardView
               documents={documents}
@@ -533,8 +580,6 @@ export function App() {
               onDeleteRegisteredUser={handleDeleteRegisteredUser}
               onReassignUserUnit={handleReassignUserUnit}
               onAssignUserSecondaryUnit={handleAssignUserSecondaryUnit}
-              onUpdateUserModules={handleUpdateUserModules}
-              onBulkUpdateUsersModules={handleBulkUpdateUsersModules}
               onRestoreRevokedEmail={handleRestoreRevokedEmail}
               onSyncCloudUsers={handleSyncCloudUsers}
             />

@@ -226,6 +226,36 @@ export async function updateBulkUsersModulesInCloud(
 }
 
 /**
+ * Guarda y obtiene en Cloud Firestore la visibilidad general de las 3 pestañas especializadas para todas las oficinas
+ */
+export async function saveGlobalModulesToCloud(enabledModules: OptionalUserModule[]): Promise<void> {
+  if (!firebaseDb) return;
+  await withTimeout(
+    setDoc(
+      doc(firebaseDb, 'sgc_system_settings', 'module_visibility'),
+      {
+        enabledModules: Array.from(new Set(enabledModules)),
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    ),
+    3500
+  );
+}
+
+export async function fetchGlobalModulesFromCloud(): Promise<OptionalUserModule[] | null> {
+  if (!firebaseDb) return null;
+  const snap = await withTimeout(getDoc(doc(firebaseDb, 'sgc_system_settings', 'module_visibility')), 2500);
+  if (snap && snap.exists()) {
+    const data = snap.data() as { enabledModules?: OptionalUserModule[] };
+    if (Array.isArray(data?.enabledModules)) {
+      return data.enabledModules;
+    }
+  }
+  return null;
+}
+
+/**
  * Obtiene todos los usuarios registrados y correos revocados desde la nube
  */
 export async function fetchCloudRegisteredUsers(): Promise<{ users: UserProfile[]; revokedEmails: string[] }> {
