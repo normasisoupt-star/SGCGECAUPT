@@ -20,7 +20,6 @@ import {
   getDocs,
   deleteDoc,
   getDoc,
-  onSnapshot,
   Firestore
 } from 'firebase/firestore';
 import { UserProfile, UserRole, ProcessLevel0 } from '../types';
@@ -225,20 +224,20 @@ export async function fetchCloudRegisteredUsers(): Promise<{ users: UserProfile[
  * Suscripción en tiempo real a Cloud Firestore para sincronizar GitHub Pages <-> Localhost al instante
  */
 export function subscribeToCloudUsers(onCloudChange: () => void): () => void {
-  if (!firebaseDb) return () => {};
-  const unsubUsers = onSnapshot(
-    collection(firebaseDb, 'sgc_registered_users'),
-    () => onCloudChange(),
-    () => {}
-  );
-  const unsubRevoked = onSnapshot(
-    collection(firebaseDb, 'sgc_revoked_users'),
-    () => onCloudChange(),
-    () => {}
-  );
+  if (typeof window === 'undefined' || !firebaseDb) return () => {};
+  const handleFocus = () => onCloudChange();
+  const handleVisibility = () => {
+    if (document.visibilityState === 'visible') onCloudChange();
+  };
+  window.addEventListener('focus', handleFocus);
+  document.addEventListener('visibilitychange', handleVisibility);
+  const interval = window.setInterval(() => {
+    if (document.visibilityState === 'visible') onCloudChange();
+  }, 10000);
   return () => {
-    unsubUsers();
-    unsubRevoked();
+    window.removeEventListener('focus', handleFocus);
+    document.removeEventListener('visibilitychange', handleVisibility);
+    window.clearInterval(interval);
   };
 }
 
