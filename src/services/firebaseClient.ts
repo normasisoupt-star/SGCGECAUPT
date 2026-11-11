@@ -20,6 +20,7 @@ import {
   getDocs,
   deleteDoc,
   getDoc,
+  onSnapshot,
   Firestore
 } from 'firebase/firestore';
 import { UserProfile, UserRole, ProcessLevel0 } from '../types';
@@ -218,6 +219,27 @@ export async function fetchCloudRegisteredUsers(): Promise<{ users: UserProfile[
   }
 
   return { users, revokedEmails };
+}
+
+/**
+ * Suscripción en tiempo real a Cloud Firestore para sincronizar GitHub Pages <-> Localhost al instante
+ */
+export function subscribeToCloudUsers(onCloudChange: () => void): () => void {
+  if (!firebaseDb) return () => {};
+  const unsubUsers = onSnapshot(
+    collection(firebaseDb, 'sgc_registered_users'),
+    () => onCloudChange(),
+    () => {}
+  );
+  const unsubRevoked = onSnapshot(
+    collection(firebaseDb, 'sgc_revoked_users'),
+    () => onCloudChange(),
+    () => {}
+  );
+  return () => {
+    unsubUsers();
+    unsubRevoked();
+  };
 }
 
 /**

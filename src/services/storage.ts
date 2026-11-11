@@ -942,54 +942,66 @@ export function assignRegisteredUserSecondaryUnit(userId: string, secondaryUnitI
 
 export function mergeCloudRegisteredUsers(cloudUsers: UserProfile[], cloudRevokedEmails: string[]): UserProfile[] {
   if (typeof window === 'undefined') return getUsers();
-  const localRevoked = new Set([...getRevokedEmails(), ...cloudRevokedEmails.map(e => e.trim().toLowerCase())]);
-  localStorage.setItem(REVOKED_EMAILS_KEY, JSON.stringify(Array.from(localRevoked)));
 
-  const current = getUsers();
+  const activeCloudEmails = new Set(
+    cloudUsers.map(u => (u.email || '').trim().toLowerCase()).filter(Boolean)
+  );
+  const cloudRevokedSet = new Set(
+    cloudRevokedEmails.map(e => (e || '').trim().toLowerCase()).filter(Boolean)
+  );
+
+  // Si un usuario está activo en sgc_registered_users de Firestore, ya no está revocado
+  const updatedRevoked = new Set(
+    [...getRevokedEmails(), ...Array.from(cloudRevokedSet)].filter(e => !activeCloudEmails.has(e))
+  );
+  localStorage.setItem(REVOKED_EMAILS_KEY, JSON.stringify(Array.from(updatedRevoked)));
+
+  // Filtrar cualquier usuario que haya sido eliminado/revocado en la nube
+  const current = getUsers().filter(u => {
+    const em = (u.email || '').trim().toLowerCase();
+    if (!em || u.id === 'u-geca' || u.id?.startsWith('u-unit-')) return true;
+    return !updatedRevoked.has(em);
+  });
+
   const existingIndexByEmail = new Map<string, number>();
   current.forEach((u, idx) => {
     const em = (u.email || '').trim().toLowerCase();
     if (em) existingIndexByEmail.set(em, idx);
   });
-  let changed = false;
 
   for (const cu of cloudUsers) {
     const cleanEmail = (cu.email || '').trim().toLowerCase();
-    if (!cleanEmail || localRevoked.has(cleanEmail)) continue;
+    if (!cleanEmail || updatedRevoked.has(cleanEmail)) continue;
     const existingIdx = existingIndexByEmail.get(cleanEmail);
+    const cleanedCu: UserProfile = {
+      ...cu,
+      secondaryUnitId: cu.secondaryUnitId || undefined,
+      secondaryOfficeName: cu.secondaryOfficeName || undefined,
+      areaName: cu.areaName || undefined,
+      isCustomRegistered: true,
+    };
+
     if (existingIdx === undefined) {
-      current.push(normalizeUserProfile({ ...cu, isCustomRegistered: true }));
+      current.push(normalizeUserProfile(cleanedCu));
       existingIndexByEmail.set(cleanEmail, current.length - 1);
-      changed = true;
     } else {
       const existingUser = current[existingIdx];
       if (!existingUser.id?.startsWith('u-unit-') && existingUser.id !== 'u-geca') {
         const normalizedCloud = normalizeUserProfile({
           ...existingUser,
-          ...cu,
-          id: existingUser.id || cu.id,
-          isCustomRegistered: true,
+          ...cleanedCu,
+          id: existingUser.id || cleanedCu.id,
         });
-        if (
-          normalizedCloud.unitId !== existingUser.unitId ||
-          normalizedCloud.secondaryUnitId !== existingUser.secondaryUnitId ||
-          JSON.stringify(normalizedCloud.procedureCodes) !== JSON.stringify(existingUser.procedureCodes)
-        ) {
-          current[existingIdx] = normalizedCloud;
-          changed = true;
-          const active = getActiveUser();
-          if ((active.email || '').trim().toLowerCase() === cleanEmail) {
-            localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalizedCloud));
-          }
+        current[existingIdx] = normalizedCloud;
+        const active = getActiveUser();
+        if ((active.email || '').trim().toLowerCase() === cleanEmail) {
+          localStorage.setItem(STORAGE_KEYS.ACTIVE_USER, JSON.stringify(normalizedCloud));
         }
       }
     }
   }
 
-  if (changed) {
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(current));
-    localStorage.setItem('upt_sgc_users_v1', JSON.stringify(current));
-  }
+  localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(current));
   return current;
 }
 

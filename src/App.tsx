@@ -47,6 +47,7 @@ import {
 } from './services/storage';
 import {
   fetchCloudRegisteredUsers,
+  subscribeToCloudUsers,
   revokeUserInCloud,
   reassignUserUnitInCloud,
   assignUserSecondaryUnitInCloud
@@ -125,10 +126,16 @@ export function App() {
 
   useEffect(() => {
     handleSyncCloudUsers();
-    const unsubscribe = subscribeToRealtime(() => {
+    const unsubscribeLocal = subscribeToRealtime(() => {
       refreshAll();
     });
-    return unsubscribe;
+    const unsubscribeCloud = subscribeToCloudUsers(() => {
+      handleSyncCloudUsers();
+    });
+    return () => {
+      unsubscribeLocal();
+      unsubscribeCloud();
+    };
   }, []);
 
   useEffect(() => {
