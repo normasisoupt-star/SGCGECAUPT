@@ -593,6 +593,17 @@ export function subscribeToAuthChanges(callback: (user: FirebaseUser | null) => 
 export async function saveActivityEvidenceToCloud(evidence: ProcedureActivityEvidence): Promise<void> {
   if (!firebaseDb || !evidence?.id) return;
   const safeDocId = evidence.id.replace(/[^a-zA-Z0-9_.-]/g, '_');
+  const safeFiles = Array.isArray(evidence.files)
+    ? evidence.files.map((f) => ({
+        id: f.id,
+        fileName: f.fileName,
+        fileFormat: f.fileFormat,
+        fileSize: f.fileSize || '',
+        oneDriveUrl: f.oneDriveUrl || '',
+        uploadedAt: f.uploadedAt,
+        uploadedBy: f.uploadedBy || '',
+      }))
+    : [];
   const payload: Record<string, unknown> = {
     id: evidence.id,
     procedureCode: evidence.procedureCode,
@@ -602,6 +613,7 @@ export async function saveActivityEvidenceToCloud(evidence: ProcedureActivityEvi
     fileFormat: evidence.fileFormat,
     oneDriveUrl: evidence.oneDriveUrl || '',
     uploadFolderUrl: evidence.uploadFolderUrl || '',
+    files: safeFiles,
     status: evidence.status,
     uploadedBy: evidence.uploadedBy,
     uploadedByUnit: evidence.uploadedByUnit || '',

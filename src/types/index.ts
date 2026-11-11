@@ -261,6 +261,17 @@ export interface ActivityLog {
 export type ActivityEvidenceFormat = 'pdf' | 'excel' | 'word' | 'multi_files';
 export type ActivityEvidenceStatus = 'conforme' | 'en_revision' | 'observado';
 
+export interface ActivityAttachedFile {
+  id: string;
+  fileName: string;
+  fileFormat: 'pdf' | 'excel' | 'word';
+  fileSize?: string;
+  oneDriveUrl?: string;
+  fileDataUrl?: string;
+  uploadedAt: string;
+  uploadedBy?: string;
+}
+
 export interface ProcedureActivityEvidence {
   id: string; // `${scopeUnitId}__${procedureCode}__step_${step}`
   procedureCode: string;
@@ -271,6 +282,7 @@ export interface ProcedureActivityEvidence {
   oneDriveUrl: string;
   uploadFolderUrl?: string;
   fileDataUrl?: string;
+  files?: ActivityAttachedFile[];
   status: ActivityEvidenceStatus;
   uploadedBy: string;
   uploadedByUnit?: string;
