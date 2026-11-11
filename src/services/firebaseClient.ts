@@ -100,15 +100,23 @@ async function withTimeout<T>(promise: Promise<T>, ms = 2500): Promise<T | null>
 export async function saveUserToCloudRegistry(profile: UserProfile): Promise<void> {
   if (!firebaseDb || !profile.email) return;
   const docId = encodeEmailDocId(profile.email);
+  const rawPayload: Record<string, unknown> = {
+    ...profile,
+    areaName: profile.areaName || '',
+    secondaryUnitId: profile.secondaryUnitId || '',
+    secondaryOfficeName: profile.secondaryOfficeName || '',
+    isCustomRegistered: true,
+    updatedAt: new Date().toISOString(),
+  };
+  const cleanPayload = Object.fromEntries(
+    Object.entries(rawPayload).filter(([, val]) => val !== undefined)
+  );
   await withTimeout(
-    setDoc(doc(firebaseDb, 'sgc_registered_users', docId), {
-      ...profile,
-      isCustomRegistered: true,
-      updatedAt: new Date().toISOString(),
-    }, { merge: true })
+    setDoc(doc(firebaseDb, 'sgc_registered_users', docId), cleanPayload, { merge: true }),
+    4000
   );
   // Si estaba en lista de revocados, limpiarlo al registrarse nuevamente
-  await withTimeout(deleteDoc(doc(firebaseDb, 'sgc_revoked_users', docId)));
+  await withTimeout(deleteDoc(doc(firebaseDb, 'sgc_revoked_users', docId)), 3000);
 }
 
 /**
@@ -279,8 +287,8 @@ export async function registerWithFirebase(
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   };
 
-  // Guardar en Firestore sin bloquear
-  saveUserToCloudRegistry(userProfile).catch(() => {});
+  // Guardar en Firestore de inmediato
+  await saveUserToCloudRegistry(userProfile).catch(() => {});
 
   return userProfile;
 }

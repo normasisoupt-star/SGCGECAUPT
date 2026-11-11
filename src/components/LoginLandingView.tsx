@@ -17,6 +17,7 @@ import {
 import { 
   loginWithFirebase, 
   registerWithFirebase,
+  saveUserToCloudRegistry,
   resetPasswordWithFirebase,
   verifyResetCodeWithFirebase,
   confirmNewPasswordWithFirebase
@@ -423,7 +424,9 @@ export const LoginLandingView: React.FC<LoginLandingViewProps> = ({
           // Si cambió de contraseña o era registro previo, igual lo reactivamos en el Padrón local
         }
         onRegisterUser(newUser);
-        const reRegisteredUser: UserProfile = { ...newUser, id: `u-rereg-${Date.now()}` };
+        const nowStr = new Date().toISOString().split('T')[0];
+        const reRegisteredUser: UserProfile = { ...newUser, id: `u-rereg-${Date.now()}`, registeredAt: nowStr };
+        await saveUserToCloudRegistry(reRegisteredUser).catch(() => {});
         setStatusMessage({
           type: 'success',
           text: `¡Registro actualizado exitosamente en el SGC! Bienvenido(a), ${reRegisteredUser.name}.`,
