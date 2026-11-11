@@ -103,13 +103,13 @@ function detectFormatFromName(name: string, defaultFormat: ActivityEvidenceForma
 
 function getOneDriveFolderPath(procedureCode: string, scopeUnitId: string): string {
   if (scopeUnitId !== 'general' && UNIT_FOLDER_MAP[scopeUnitId]) {
-    return `SGC_UPT_EVIDENCIAS_2026/${UNIT_FOLDER_MAP[scopeUnitId]}/${procedureCode}`;
+    return `SGC_UPT_EVIDENCIAS/2026/${UNIT_FOLDER_MAP[scopeUnitId]}/${procedureCode}`;
   }
   const ownerUnit = ORGANIZATION_UNITS.find(
     (u) => u.id !== 'rectorado' && u.id !== 'vrac' && u.id !== 'vrin' && u.ownProcedures.includes(procedureCode)
   ) || ORGANIZATION_UNITS.find((u) => u.ownProcedures.includes(procedureCode));
   const folder = ownerUnit ? UNIT_FOLDER_MAP[ownerUnit.id] || ownerUnit.id : 'OFICINA';
-  return `SGC_UPT_EVIDENCIAS_2026/${folder}/${procedureCode}`;
+  return `SGC_UPT_EVIDENCIAS/2026/${folder}/${procedureCode}`;
 }
 
 export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanelProps> = ({
