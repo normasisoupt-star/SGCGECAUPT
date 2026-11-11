@@ -673,27 +673,29 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
           </div>
         )}
 
-        {/* Ruta de Carpeta en OneDrive Institucional */}
-        <div className="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2 text-[11px] text-slate-600">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <FolderOpen className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-            <span
-              className="truncate font-mono text-[10px]"
-              title={`OneDrive - UNIVERSIDAD PRIVADA DE TACNA/${oneDrivePath}`}
+        {/* Ruta de Carpeta en OneDrive Institucional (Exclusivo Administrador del Sistema / GECA) */}
+        {isAdminOrAuditor && (
+          <div className="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2 text-[11px] text-slate-600">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <FolderOpen className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              <span
+                className="truncate font-mono text-[10px]"
+                title={`OneDrive - UNIVERSIDAD PRIVADA DE TACNA/${oneDrivePath}`}
+              >
+                {oneDrivePath}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyPath}
+              className="px-2 py-0.5 rounded-md bg-white hover:bg-slate-100 border border-slate-200 text-[10px] font-semibold text-slate-700 flex items-center gap-1 shrink-0 cursor-pointer"
+              title="Copiar ruta de carpeta en OneDrive Institucional"
             >
-              {oneDrivePath}
-            </span>
+              {copiedPath ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+              <span>{copiedPath ? 'Copiado' : 'Ruta'}</span>
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleCopyPath}
-            className="px-2 py-0.5 rounded-md bg-white hover:bg-slate-100 border border-slate-200 text-[10px] font-semibold text-slate-700 flex items-center gap-1 shrink-0 cursor-pointer"
-            title="Copiar ruta de carpeta en OneDrive Institucional"
-          >
-            {copiedPath ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-            <span>{copiedPath ? 'Copiado' : 'Ruta'}</span>
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Lista de Tarjetas por Actividad */}
