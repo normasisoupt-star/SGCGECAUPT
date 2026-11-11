@@ -308,6 +308,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
     getActivityEvidences()
   );
 
+  const [isUploadingStep, setIsUploadingStep] = useState<number | null>(null);
+
   // Menú de 3 puntos abierto por step
   const [openMenuStep, setOpenMenuStep] = useState<number | null>(null);
   const [copiedPath, setCopiedPath] = useState(false);
@@ -473,118 +475,131 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
     if (selectedFiles.length === 0 || uploadTargetStep === null) return;
 
     const targetStep = uploadTargetStep;
-    const id = getEvidenceKey(targetStep);
-    const existing = evidencesMap[id];
-    const currentFiles = getNormalizedFiles(existing);
-    const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
+    setIsUploadingStep(targetStep);
 
-    const newAttachedFiles: ActivityAttachedFile[] = [];
+    try {
+      const id = getEvidenceKey(targetStep);
+      const existing = evidencesMap[id];
+      const currentFiles = getNormalizedFiles(existing);
+      const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
 
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const file = selectedFiles[i];
-      const fileFormat = detectSingleFileFormat(file.name);
-      const fileId = `${id}__file_${Date.now()}_${i}`;
+      const newAttachedFiles: ActivityAttachedFile[] = [];
 
-      const dataUrl = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
-        reader.onerror = () => resolve('');
-        reader.readAsDataURL(file);
-      });
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const fileFormat = detectSingleFileFormat(file.name);
+        const fileId = `${id}__file_${Date.now()}_${i}`;
 
-      if (dataUrl) {
-        await saveFileBlobToIdb(fileId, dataUrl);
-        await syncFileWithLocalOneDrive({
-          action: 'save',
-          organUnitPath,
-          procedureCode,
-          step: targetStep,
-          fileName: file.name,
-          dataUrl,
+        const dataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
         });
 
-        // Subida automática en segundo plano a Google Drive Institucional (calidad@virtual.upt.pe)
-        uploadToGoogleDriveBridge({
-          officeName: organUnitPath,
-          procedureCode,
-          step: targetStep,
-          fileName: file.name,
-          mimeType: file.type || (fileFormat === 'pdf' ? 'application/pdf' : 'application/octet-stream'),
-          dataUrl,
-        }).then((driveRes) => {
-          if (driveRes && driveRes.status === 'success' && driveRes.fileUrl) {
-            // Actualizar la URL de Drive en la evidencia guardada
-            const currentMap = getActivityEvidences();
-            const currentEv = currentMap[id];
-            if (currentEv && currentEv.files) {
-              const updatedFiles = currentEv.files.map((cf) =>
-                cf.id === fileId ? { ...cf, oneDriveUrl: driveRes.fileUrl } : cf
-              );
-              const updatedWithDrive: ProcedureActivityEvidence = {
-                ...currentEv,
-                files: updatedFiles,
-                oneDriveUrl: currentEv.oneDriveUrl || driveRes.fileUrl,
-              };
-              saveActivityEvidence(updatedWithDrive);
-              saveActivityEvidenceToCloud(updatedWithDrive);
-              setEvidencesMap({ ...getActivityEvidences() });
+        if (dataUrl) {
+          try {
+            await saveFileBlobToIdb(fileId, dataUrl);
+          } catch {}
+
+          syncFileWithLocalOneDrive({
+            action: 'save',
+            organUnitPath,
+            procedureCode,
+            step: targetStep,
+            fileName: file.name,
+            dataUrl,
+          });
+
+          // Subida a Google Drive en segundo plano
+          uploadToGoogleDriveBridge({
+            officeName: organUnitPath,
+            procedureCode,
+            step: targetStep,
+            fileName: file.name,
+            mimeType: file.type || (fileFormat === 'pdf' ? 'application/pdf' : 'application/octet-stream'),
+            dataUrl,
+          }).then((driveRes) => {
+            if (driveRes && driveRes.status === 'success' && driveRes.fileUrl) {
+              const currentMap = getActivityEvidences();
+              const currentEv = currentMap[id];
+              if (currentEv && currentEv.files) {
+                const updatedFiles = currentEv.files.map((cf) =>
+                  cf.id === fileId ? { ...cf, oneDriveUrl: driveRes.fileUrl } : cf
+                );
+                const updatedWithDrive: ProcedureActivityEvidence = {
+                  ...currentEv,
+                  files: updatedFiles,
+                  oneDriveUrl: currentEv.oneDriveUrl || driveRes.fileUrl,
+                };
+                saveActivityEvidence(updatedWithDrive);
+                saveActivityEvidenceToCloud(updatedWithDrive);
+                setEvidencesMap({ ...getActivityEvidences() });
+              }
             }
-          }
+          });
+        }
+
+        newAttachedFiles.push({
+          id: fileId,
+          fileName: file.name,
+          fileFormat,
+          fileSize: formatBytes(file.size),
+          fileDataUrl: file.size <= 180000 ? dataUrl : undefined,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: activeUser.name,
         });
       }
 
-      newAttachedFiles.push({
-        id: fileId,
-        fileName: file.name,
-        fileFormat,
-        fileSize: formatBytes(file.size),
-        fileDataUrl: file.size <= 180000 ? dataUrl : undefined,
-        uploadedAt: new Date().toISOString(),
+      // Acumular archivos en la misma actividad
+      const mergedFilesMap = new Map<string, ActivityAttachedFile>();
+      for (const f of currentFiles) {
+        mergedFilesMap.set(f.fileName.toLowerCase(), f);
+      }
+      for (const nf of newAttachedFiles) {
+        mergedFilesMap.set(nf.fileName.toLowerCase(), nf);
+      }
+      const allFiles = Array.from(mergedFilesMap.values());
+
+      const isMultiple = allFiles.length > 1;
+      const displayFileName = isMultiple
+        ? `${allFiles.length} documentos adjuntos`
+        : allFiles[0]?.fileName || `Evidencia_Actividad_${targetStep}.pdf`;
+      const displayFormat: ActivityEvidenceFormat = isMultiple
+        ? 'multi_files'
+        : allFiles[0]?.fileFormat || 'pdf';
+
+      const updatedEvidence: ProcedureActivityEvidence = {
+        id,
+        procedureCode,
+        step: targetStep,
+        scopeUnitId,
+        fileName: displayFileName,
+        fileFormat: displayFormat,
+        oneDriveUrl: existing?.oneDriveUrl || '',
+        uploadFolderUrl: existing?.uploadFolderUrl || '',
+        fileDataUrl: !isMultiple ? allFiles[0]?.fileDataUrl : undefined,
+        files: allFiles,
+        status: existing?.status || 'conforme',
         uploadedBy: activeUser.name,
-      });
+        uploadedByUnit: activeUser.officeName || activeUser.department,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedMap = saveActivityEvidence(updatedEvidence);
+      setEvidencesMap({ ...updatedMap });
+
+      try {
+        await saveActivityEvidenceToCloud(updatedEvidence);
+      } catch {}
+    } catch (err) {
+      console.error('Error procesando archivos:', err);
+    } finally {
+      setIsUploadingStep(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
-
-    // Acumular archivos en la misma actividad
-    const mergedFilesMap = new Map<string, ActivityAttachedFile>();
-    for (const f of currentFiles) {
-      mergedFilesMap.set(f.fileName.toLowerCase(), f);
-    }
-    for (const nf of newAttachedFiles) {
-      mergedFilesMap.set(nf.fileName.toLowerCase(), nf);
-    }
-    const allFiles = Array.from(mergedFilesMap.values());
-
-    const isMultiple = allFiles.length > 1;
-    const displayFileName = isMultiple
-      ? `${allFiles.length} documentos adjuntos`
-      : allFiles[0]?.fileName || `Evidencia_Actividad_${targetStep}.pdf`;
-    const displayFormat: ActivityEvidenceFormat = isMultiple
-      ? 'multi_files'
-      : allFiles[0]?.fileFormat || 'pdf';
-
-    const updatedEvidence: ProcedureActivityEvidence = {
-      id,
-      procedureCode,
-      step: targetStep,
-      scopeUnitId,
-      fileName: displayFileName,
-      fileFormat: displayFormat,
-      oneDriveUrl: existing?.oneDriveUrl || '',
-      uploadFolderUrl: existing?.uploadFolderUrl || '',
-      fileDataUrl: !isMultiple ? allFiles[0]?.fileDataUrl : undefined,
-      files: allFiles,
-      status: existing?.status || 'conforme',
-      uploadedBy: activeUser.name,
-      uploadedByUnit: activeUser.officeName || activeUser.department,
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedMap = saveActivityEvidence(updatedEvidence);
-    setEvidencesMap({ ...updatedMap });
-
-    try {
-      await saveActivityEvidenceToCloud(updatedEvidence);
-    } catch {}
   };
 
   /**
@@ -1076,12 +1091,21 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
               <div className="pt-1">
                 <button
                   type="button"
+                  disabled={isUploadingStep === act.step}
                   onClick={() => triggerFilePickerForStep(act.step)}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                  className={`w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-white text-xs font-bold transition-colors cursor-pointer shadow-2xs ${
+                    isUploadingStep === act.step
+                      ? 'bg-blue-400 cursor-wait'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                   title="Seleccionar 1 o varios archivos PDF/Excel de su equipo para subirlos a esta actividad"
                 >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Subir archivo (PDF / Excel / Word)</span>
+                  <Upload className={`w-3.5 h-3.5 ${isUploadingStep === act.step ? 'animate-bounce' : ''}`} />
+                  <span>
+                    {isUploadingStep === act.step
+                      ? 'Procesando archivo...'
+                      : 'Subir archivo (PDF / Excel / Word)'}
+                  </span>
                 </button>
               </div>
             </div>
