@@ -354,6 +354,10 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [uploadStatusText, setUploadStatusText] = useState<string>('');
 
+  const [isDeletingStep, setIsDeletingStep] = useState<number | null>(null);
+  const [deleteProgress, setDeleteProgress] = useState<number>(0);
+  const [deleteStatusText, setDeleteStatusText] = useState<string>('');
+
   // Menú de 3 puntos abierto por step
   const [openMenuStep, setOpenMenuStep] = useState<number | null>(null);
   const [copiedPath, setCopiedPath] = useState(false);
@@ -430,36 +434,63 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
   };
 
   const handleRemoveEvidence = async (step: number) => {
-    const id = getEvidenceKey(step);
-    const existing = evidencesMap[id];
-    const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
-    if (existing) {
-      const files = getNormalizedFiles(existing);
-      for (const f of files) {
-        await deleteFileBlobFromIdb(f.id);
-        await syncFileWithLocalOneDrive({
-          action: 'delete',
-          organUnitPath,
-          procedureCode,
-          step,
-          fileName: f.fileName,
-        });
-        // Opción B: Mover a la papelera en Google Drive
-        await deleteFromGoogleDriveBridge({
-          officeName: organUnitPath,
-          procedureCode,
-          step,
-          fileName: f.fileName,
-          fileId: f.driveFileId || existing.driveFileId,
-        });
-      }
-    }
-    const updated = deleteActivityEvidence(id);
-    setEvidencesMap({ ...updated });
     setOpenMenuStep(null);
+    setIsDeletingStep(step);
+    setDeleteProgress(15);
+    setDeleteStatusText('Iniciando vaciado de actividad...');
+
     try {
-      await deleteActivityEvidenceFromCloud(id);
-    } catch {}
+      const id = getEvidenceKey(step);
+      const existing = evidencesMap[id];
+      const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
+      if (existing) {
+        const files = getNormalizedFiles(existing);
+        const total = files.length || 1;
+        for (let i = 0; i < files.length; i++) {
+          const f = files[i];
+          const pct = 20 + Math.round(((i + 1) / total) * 60);
+          setDeleteProgress(pct);
+          setDeleteStatusText(`Eliminando ${f.fileName}...`);
+
+          await deleteFileBlobFromIdb(f.id);
+          await syncFileWithLocalOneDrive({
+            action: 'delete',
+            organUnitPath,
+            procedureCode,
+            step,
+            fileName: f.fileName,
+          });
+          // Opción B: Mover a la papelera en Google Drive
+          await deleteFromGoogleDriveBridge({
+            officeName: organUnitPath,
+            procedureCode,
+            step,
+            fileName: f.fileName,
+            fileId: f.driveFileId || existing.driveFileId,
+          });
+        }
+      }
+
+      setDeleteProgress(85);
+      setDeleteStatusText('Actualizando registros institucionales...');
+
+      const updated = deleteActivityEvidence(id);
+      setEvidencesMap({ ...updated });
+
+      try {
+        await deleteActivityEvidenceFromCloud(id);
+      } catch {}
+
+      setDeleteProgress(100);
+      setDeleteStatusText('¡Actividad vaciada con éxito!');
+      await new Promise((r) => setTimeout(r, 550));
+    } catch (err) {
+      console.warn('Error al vaciar actividad:', err);
+    } finally {
+      setIsDeletingStep(null);
+      setDeleteProgress(0);
+      setDeleteStatusText('');
+    }
   };
 
   // Elimina un archivo individual dentro de una actividad que tiene varios archivos
@@ -877,6 +908,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
           const hasMultipleFiles = attachedFiles.length > 1;
           const isMenuOpen = openMenuStep === act.step;
           const isUploadingThisAct = isUploadingStep === act.step;
+          const isDeletingThisAct = isDeletingStep === act.step;
 
           const renderUploadProgressBar = () => (
             <div className="p-3 rounded-xl bg-blue-50/90 border border-blue-200/90 shadow-2xs space-y-2 animate-fade-in my-2">
@@ -903,6 +935,35 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
               <div className="flex items-center justify-between text-[10px] text-blue-600/80">
                 <span>{uploadProgress === 100 ? '✓ Sincronizado en Google Drive' : 'Conectando con calidad@virtual.upt.pe'}</span>
                 <span className="font-semibold">{uploadProgress === 100 ? '100% Listo' : 'Subiendo...'}</span>
+              </div>
+            </div>
+          );
+
+          const renderDeleteProgressBar = () => (
+            <div className="p-3 rounded-xl bg-rose-50/90 border border-rose-200/90 shadow-2xs space-y-2 animate-fade-in my-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-rose-900">
+                <span className="flex items-center gap-1.5 truncate max-w-[210px]">
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+                  <span className="truncate">{deleteStatusText || 'Vaciando actividad...'}</span>
+                </span>
+                <span className={`font-mono font-bold text-xs ${deleteProgress === 100 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                  {deleteProgress}%
+                </span>
+              </div>
+              {/* Línea de barra de vaciado de 0 a 100% */}
+              <div className="w-full bg-rose-100/90 rounded-full h-2.5 overflow-hidden shadow-inner">
+                <div
+                  className={`h-2.5 rounded-full transition-all duration-300 ease-out ${
+                    deleteProgress === 100
+                      ? 'bg-emerald-500'
+                      : 'bg-gradient-to-r from-rose-500 via-red-500 to-rose-600'
+                  }`}
+                  style={{ width: `${deleteProgress}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[10px] text-rose-600/80">
+                <span>{deleteProgress === 100 ? '✓ Limpieza completada' : 'Moviendo archivos a papelera de Drive'}</span>
+                <span className="font-semibold">{deleteProgress === 100 ? 'Completado' : 'Vaciando...'}</span>
               </div>
             </div>
           );
@@ -1048,8 +1109,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                         <div className="my-1 border-t border-slate-100" />
                         <button
                           type="button"
+                          disabled={isDeletingThisAct}
                           onClick={() => handleRemoveEvidence(act.step)}
-                          className="w-full px-3 py-1.5 text-left text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer"
+                          className="w-full px-3 py-1.5 text-left text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer disabled:opacity-50"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Vaciar toda la actividad</span>
@@ -1126,6 +1188,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                 {/* Barra de progreso de subida de 0% a 100% */}
                 {isUploadingThisAct && renderUploadProgressBar()}
 
+                {/* Barra de progreso de vaciado de 0% a 100% */}
+                {isDeletingThisAct && renderDeleteProgressBar()}
+
                 {/* Fila Inferior: Insignia Conforme + Botones Ver, Descargar y Subir */}
                 <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                   {/* Píldora de Estado (Conforme / En revisión / Observado) */}
@@ -1152,8 +1217,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                       <>
                         <button
                           type="button"
+                          disabled={isDeletingThisAct || isUploadingThisAct}
                           onClick={() => openEvidencePrimaryAction(evidence, 'view')}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
                           title="Ver documento"
                         >
                           <Eye className="w-3.5 h-3.5 text-slate-600" />
@@ -1162,8 +1228,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
                         <button
                           type="button"
+                          disabled={isDeletingThisAct || isUploadingThisAct}
                           onClick={() => openEvidencePrimaryAction(evidence, 'download')}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
                           title="Descargar archivo"
                         >
                           <Download className="w-3.5 h-3.5 text-slate-600" />
@@ -1175,7 +1242,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                     {/* Botón Adjuntar: Permite sumar otro documento adicional a esta actividad */}
                     <button
                       type="button"
-                      disabled={isUploadingThisAct}
+                      disabled={isUploadingThisAct || isDeletingThisAct}
                       onClick={() => triggerFilePickerForStep(act.step)}
                       className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
                       title="Adjuntar otro documento adicional a esta actividad"
@@ -1212,9 +1279,11 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
               <p className="text-xs text-slate-600 leading-relaxed">{act.task}</p>
 
-              {/* Barra de progreso de subida de 0% a 100% o Botón de Subir */}
+              {/* Barra de progreso de subida o vaciado de 0% a 100% o Botón de Subir */}
               {isUploadingThisAct ? (
                 renderUploadProgressBar()
+              ) : isDeletingThisAct ? (
+                renderDeleteProgressBar()
               ) : (
                 <div className="pt-1">
                   <button
