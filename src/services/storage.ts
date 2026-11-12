@@ -1293,10 +1293,20 @@ export function getActivityEvidences(): Record<string, ProcedureActivityEvidence
 
 export function saveActivityEvidence(evidence: ProcedureActivityEvidence): Record<string, ProcedureActivityEvidence> {
   const all = getActivityEvidences();
-  all[evidence.id] = evidence;
+  // Limpiar cualquier fileDataUrl para que localStorage NUNCA se desborde ni falle por cuota
+  const cleanEvidence: ProcedureActivityEvidence = {
+    ...evidence,
+    fileDataUrl: undefined,
+    files: evidence.files?.map((f) => ({ ...f, fileDataUrl: undefined })),
+  };
+  all[cleanEvidence.id] = cleanEvidence;
   if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(all));
-    broadcastChange('ACTIVITY_EVIDENCES_UPDATED', all);
+    try {
+      localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(all));
+      broadcastChange('ACTIVITY_EVIDENCES_UPDATED', all);
+    } catch (e) {
+      console.warn('Almacenamiento seguro en localStorage:', e);
+    }
   }
   return all;
 }
@@ -1305,8 +1315,12 @@ export function deleteActivityEvidence(evidenceId: string): Record<string, Proce
   const all = getActivityEvidences();
   delete all[evidenceId];
   if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(all));
-    broadcastChange('ACTIVITY_EVIDENCES_UPDATED', all);
+    try {
+      localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(all));
+      broadcastChange('ACTIVITY_EVIDENCES_UPDATED', all);
+    } catch (e) {
+      console.warn('Almacenamiento seguro en localStorage:', e);
+    }
   }
   return all;
 }
@@ -1320,12 +1334,21 @@ export function mergeCloudActivityEvidences(
     if (!item || !item.id) continue;
     const existing = localMap[item.id];
     if (!existing || (item.updatedAt && (!existing.updatedAt || item.updatedAt >= existing.updatedAt))) {
-      localMap[item.id] = item;
+      // Limpiar dataUrl al fusionar
+      localMap[item.id] = {
+        ...item,
+        fileDataUrl: undefined,
+        files: item.files?.map((f) => ({ ...f, fileDataUrl: undefined })),
+      };
       changed = true;
     }
   }
   if (changed && typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(localMap));
+    try {
+      localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(localMap));
+    } catch (e) {
+      console.warn('Almacenamiento seguro en localStorage:', e);
+    }
   }
   return localMap;
 }

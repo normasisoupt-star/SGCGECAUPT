@@ -116,6 +116,8 @@ async function uploadToGoogleDriveBridge(params: {
   mimeType?: string;
   dataUrl: string;
 }): Promise<{ status: string; fileUrl?: string; downloadUrl?: string; fileId?: string } | null> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
   try {
     const payload = JSON.stringify({
       officeName: params.officeName,
@@ -130,12 +132,15 @@ async function uploadToGoogleDriveBridge(params: {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: payload,
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!response.ok) return null;
     const json = await response.json();
     return json;
   } catch (err) {
+    clearTimeout(timeoutId);
     console.warn('Google Drive direct upload notice:', err);
     return null;
   }
@@ -603,7 +608,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
         }
 
         setUploadProgress(100);
-        setUploadStatusText('¡Completado y sincronizado en Google Drive!');
+        setUploadStatusText(driveUrl ? '¡Completado y sincronizado en Google Drive!' : '¡Documento guardado con éxito!');
         await new Promise((r) => setTimeout(r, 650));
 
         newAttachedFiles.push({
@@ -613,7 +618,6 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
           fileSize: formatBytes(file.size),
           oneDriveUrl: driveUrl,
           driveFileId: driveId,
-          fileDataUrl: file.size <= 180000 ? dataUrl : undefined,
           uploadedAt: new Date().toISOString(),
           uploadedBy: activeUser.name,
         });
@@ -647,7 +651,6 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
         oneDriveUrl: allFiles[0]?.oneDriveUrl || existing?.oneDriveUrl || '',
         driveFileId: allFiles[0]?.driveFileId || existing?.driveFileId,
         uploadFolderUrl: existing?.uploadFolderUrl || '',
-        fileDataUrl: !isMultiple ? allFiles[0]?.fileDataUrl : undefined,
         files: allFiles,
         status: existing?.status || 'conforme',
         uploadedBy: activeUser.name,
@@ -660,7 +663,9 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
       try {
         await saveActivityEvidenceToCloud(updatedEvidence);
-      } catch {}
+      } catch (cloudErr) {
+        console.warn('Registro en la nube pospuesto:', cloudErr);
+      }
     } catch (err) {
       console.error('Error procesando archivos:', err);
     } finally {
