@@ -187,6 +187,9 @@ async function syncFileWithLocalOneDrive(params: {
   fileName: string;
   dataUrl?: string;
 }): Promise<void> {
+  if (typeof window === 'undefined' || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
+    return;
+  }
   try {
     await fetch('/api/onedrive-sync', {
       method: 'POST',
@@ -530,6 +533,17 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
     if (selectedFiles.length === 0 || uploadTargetStep === null) return;
+
+    const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
+    for (const f of selectedFiles) {
+      if (f.size > MAX_FILE_SIZE) {
+        alert(
+          `El archivo "${f.name}" pesa ${(f.size / (1024 * 1024)).toFixed(1)} MB y supera el límite de 25 MB para subida institucional. Seleccione un archivo menor a 25 MB.`
+        );
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+    }
 
     const targetStep = uploadTargetStep;
     setIsUploadingStep(targetStep);

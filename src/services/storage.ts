@@ -1285,7 +1285,29 @@ export function getActivityEvidences(): Record<string, ProcedureActivityEvidence
   if (typeof window === 'undefined') return {};
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.ACTIVITY_EVIDENCES);
-    return raw ? JSON.parse(raw) : {};
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    let hadBloat = false;
+    for (const key of Object.keys(parsed)) {
+      if (parsed[key]?.fileDataUrl) {
+        delete parsed[key].fileDataUrl;
+        hadBloat = true;
+      }
+      if (Array.isArray(parsed[key]?.files)) {
+        for (const f of parsed[key].files) {
+          if (f?.fileDataUrl) {
+            delete f.fileDataUrl;
+            hadBloat = true;
+          }
+        }
+      }
+    }
+    if (hadBloat) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.ACTIVITY_EVIDENCES, JSON.stringify(parsed));
+      } catch {}
+    }
+    return parsed;
   } catch {
     return {};
   }
