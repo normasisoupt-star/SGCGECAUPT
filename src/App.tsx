@@ -534,7 +534,7 @@ export function App() {
               onUpdateIndicator={handleUpdateIndicator}
               onAddMeasurement={handleAddMeasurement}
               onValidateMeasurement={handleValidateMeasurement}
-              scopeMode={isAdmin ? scopeMode : 'my_office'}
+              scopeMode={scopeMode}
               onToggleScopeMode={setScopeMode}
             />
           )}

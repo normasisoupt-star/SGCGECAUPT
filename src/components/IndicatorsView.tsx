@@ -87,10 +87,10 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   const [selectedOfficeFilter, setSelectedOfficeFilter] = useState<string>('ALL');
 
   const isAdmin = activeUser.role === 'geca' && activeUser.officeName === 'Administrador del Sistema';
+  const isViewingAll = (isAdmin && scopeMode === 'all') || (!isAdmin && scopeMode === 'all');
 
-  // Indicadores correspondientes al alcance del usuario (Global para Admin en 'all', o exclusivos de la Dependencia para oficinas)
-  const officeScopedIndicators = useMemo(() => {
-    if (isAdmin && scopeMode === 'all') return indicators;
+  // Indicadores correspondientes a la oficina activa
+  const myOfficeScopedIndicators = useMemo(() => {
     const directMatches = indicators.filter((ind) =>
       doesUserMatchOfficeOrProcess(activeUser, { officeText: ind.responsible, processCode: ind.processCode }, false)
     );
@@ -98,17 +98,34 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     return indicators.filter((ind) =>
       doesUserMatchOfficeOrProcess(activeUser, { officeText: ind.responsible, processCode: ind.processCode }, true)
     );
-  }, [indicators, activeUser, isAdmin, scopeMode]);
+  }, [indicators, activeUser]);
+
+  // Lista base según el modo de visualización: exclusiva de la oficina o institucional completa (61)
+  const baseIndicators = useMemo(() => {
+    if (isViewingAll) return indicators;
+    return myOfficeScopedIndicators;
+  }, [isViewingAll, indicators, myOfficeScopedIndicators]);
+
+  // Conteo de indicadores por macroproceso para la vista activa
+  const categoryCounts = useMemo(() => {
+    return {
+      all: baseIndicators.length,
+      pe: baseIndicators.filter((i) => i.processCode.startsWith('PE')).length,
+      pm: baseIndicators.filter((i) => i.processCode.startsWith('PM')).length,
+      ps: baseIndicators.filter((i) => i.processCode.startsWith('PS')).length,
+    };
+  }, [baseIndicators]);
 
   // Dependencias para Filtro de Responsabilidad (Fase 4: 61 KPIs)
   const responsibleOffices = useMemo(() => {
-    const set = new Set(officeScopedIndicators.map((i) => i.responsible));
+    const list = isViewingAll ? indicators : baseIndicators;
+    const set = new Set(list.map((i) => i.responsible));
     return Array.from(set).sort((a, b) => {
       const labelA = OFFICE_SHORT_NAMES[a] || a;
       const labelB = OFFICE_SHORT_NAMES[b] || b;
       return labelA.localeCompare(labelB);
     });
-  }, [officeScopedIndicators]);
+  }, [isViewingAll, indicators, baseIndicators]);
 
   // Estados para Gobernanza de Años y Vista
   const [years, setYears] = useState<EvaluationYear[]>(() => getEvaluationYears());
@@ -160,7 +177,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
     let amberCount = 0;
     let redCount = 0;
 
-    officeScopedIndicators.forEach((ind) => {
+    baseIndicators.forEach((ind) => {
       const yearMeas = ind.measurements?.find((m) => m.period.includes(String(selectedYear)));
       const value = yearMeas ? yearMeas.calculatedValue : ind.currentValue;
 
@@ -198,12 +215,15 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
       peAvg: peCount > 0 ? Math.round(peScore / peCount) : 0,
       pmAvg: pmCount > 0 ? Math.round(pmScore / pmCount) : 0,
       psAvg: psCount > 0 ? Math.round(psScore / psCount) : 0,
+      peCount,
+      pmCount,
+      psCount,
       greenCount,
       amberCount,
       redCount,
       totalCount: counted,
     };
-  }, [officeScopedIndicators, selectedYear]);
+  }, [baseIndicators, selectedYear]);
 
   // Datos para Gráficos de Evolución Multianual
   const evolutionData = useMemo(() => {
@@ -277,7 +297,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
   };
 
   // Filtrado de Indicadores
-  const filtered = officeScopedIndicators.filter((ind) => {
+  const filtered = baseIndicators.filter((ind) => {
     const term = searchTerm.toLowerCase().trim();
     const acronymSynonyms: Record<string, string> = {
       'opla': 'planeamiento',
@@ -692,12 +712,30 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                     : 'Nivel Crítico / Requiere CAPA'}
                 </span>
               </div>
-              <h2 className="text-xl font-black tracking-tight text-white mt-1.5">
-                Índice Global de Calidad UPT &bull; Año {selectedYear}
-              </h2>
-              <p className="text-xs text-slate-300 max-w-xl mt-1 leading-relaxed">
-                Resultado consolidado de los <strong>{globalScoreData.totalCount} indicadores oficiales</strong> del SGC bajo normas ISO 21001 e ISO 9001. Evidencias auditadas y custodiadas en la nube institucional.
-              </p>
+              {isViewingAll ? (
+                <>
+                  <h2 className="text-xl font-black tracking-tight text-white mt-1.5">
+                    Índice Global de Calidad UPT &bull; Año {selectedYear}
+                  </h2>
+                  <p className="text-xs text-slate-300 max-w-xl mt-1 leading-relaxed">
+                    Resultado consolidado de los <strong>{globalScoreData.totalCount} indicadores oficiales</strong> del SGC bajo normas ISO 21001 e ISO 9001. Evidencias auditadas y custodiadas en la nube institucional.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    <h2 className="text-xl font-black tracking-tight text-white">
+                      Tablero de Indicadores: {activeUser.officeName || activeUser.department} &bull; Año {selectedYear}
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-200 border border-blue-400/30">
+                      {globalScoreData.totalCount} de 61 Indicadores UPT
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 max-w-xl mt-1 leading-relaxed">
+                    Esta dependencia tiene a su cargo <strong>{globalScoreData.totalCount} de los 61 indicadores oficiales</strong> del SGC bajo normas ISO 21001 e ISO 9001. Evidencias auditadas y custodiadas en la nube institucional.
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
@@ -705,53 +743,74 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0 lg:min-w-[420px]">
             {/* Pilar Estratégico */}
             <div className="bg-white/5 border border-white/10 p-3.5 rounded-2xl">
-              <div className="text-[11px] font-bold text-blue-200 uppercase tracking-wider">
-                Estratégico (PE)
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-blue-200 uppercase tracking-wider">
+                  Estratégico (PE)
+                </span>
+                <span className="text-[10px] text-blue-300/80 font-semibold">
+                  {globalScoreData.peCount} ind.
+                </span>
               </div>
               <div className="text-2xl font-black text-white mt-1">
-                {globalScoreData.peAvg}%
+                {globalScoreData.peCount > 0 ? `${globalScoreData.peAvg}%` : '—'}
               </div>
               <div className="w-full bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
                   className="bg-blue-400 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${globalScoreData.peAvg}%` }}
+                  style={{ width: `${globalScoreData.peCount > 0 ? globalScoreData.peAvg : 0}%` }}
                 />
               </div>
-              <div className="text-[10px] text-slate-400 mt-1">Planeamiento, Calidad, Riesgos</div>
+              <div className="text-[10px] text-slate-400 mt-1">
+                {globalScoreData.peCount > 0 ? 'Planeamiento, Calidad, Riesgos' : 'Sin indicadores en este pilar'}
+              </div>
             </div>
 
             {/* Pilar Misional */}
             <div className="bg-white/5 border border-white/10 p-3.5 rounded-2xl">
-              <div className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
-                Misional (PM)
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-emerald-200 uppercase tracking-wider">
+                  Misional (PM)
+                </span>
+                <span className="text-[10px] text-emerald-300/80 font-semibold">
+                  {globalScoreData.pmCount} ind.
+                </span>
               </div>
               <div className="text-2xl font-black text-white mt-1">
-                {globalScoreData.pmAvg}%
+                {globalScoreData.pmCount > 0 ? `${globalScoreData.pmAvg}%` : '—'}
               </div>
               <div className="w-full bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
                   className="bg-emerald-400 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${globalScoreData.pmAvg}%` }}
+                  style={{ width: `${globalScoreData.pmCount > 0 ? globalScoreData.pmAvg : 0}%` }}
                 />
               </div>
-              <div className="text-[10px] text-slate-400 mt-1">Formación, Docencia, I+D, RSU</div>
+              <div className="text-[10px] text-slate-400 mt-1">
+                {globalScoreData.pmCount > 0 ? 'Formación, Docencia, I+D, RSU' : 'Sin indicadores en este pilar'}
+              </div>
             </div>
 
             {/* Pilar Soporte */}
             <div className="bg-white/5 border border-white/10 p-3.5 rounded-2xl">
-              <div className="text-[11px] font-bold text-amber-200 uppercase tracking-wider">
-                Soporte (PS)
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-amber-200 uppercase tracking-wider">
+                  Soporte (PS)
+                </span>
+                <span className="text-[10px] text-amber-300/80 font-semibold">
+                  {globalScoreData.psCount} ind.
+                </span>
               </div>
               <div className="text-2xl font-black text-white mt-1">
-                {globalScoreData.psAvg}%
+                {globalScoreData.psCount > 0 ? `${globalScoreData.psAvg}%` : '—'}
               </div>
               <div className="w-full bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
                   className="bg-amber-400 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${globalScoreData.psAvg}%` }}
+                  style={{ width: `${globalScoreData.psCount > 0 ? globalScoreData.psAvg : 0}%` }}
                 />
               </div>
-              <div className="text-[10px] text-slate-400 mt-1">Personal, Finanzas, TI, Logística</div>
+              <div className="text-[10px] text-slate-400 mt-1">
+                {globalScoreData.psCount > 0 ? 'Personal, Finanzas, TI, Logística' : 'Sin indicadores en este pilar'}
+              </div>
             </div>
           </div>
         </div>
@@ -771,6 +830,9 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
               {globalScoreData.redCount} Requiere CAPA (&lt;60%)
             </span>
+            <span className="text-blue-200 font-semibold text-[11px] bg-white/10 px-2.5 py-0.5 rounded-md border border-white/10">
+              {isViewingAll ? '61 Indicadores Institucionales UPT' : `${globalScoreData.totalCount} de 61 Asignados a esta Dependencia`}
+            </span>
           </div>
           <span className="text-slate-400 text-[11px]">
             Norma ISO 21001:2025 Cláusula 9.1 &bull; Universidad Privada de Tacna
@@ -780,28 +842,50 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
 
       {viewMode === 'tablero' ? (
         <>
-          {/* Banner de Espacio de Trabajo por Oficina */}
-          {scopeMode === 'my_office' && activeUser.role !== 'geca' && activeUser.role !== 'rectorado' && (
-            <div className="p-4 rounded-3xl bg-blue-50 border border-blue-200 text-blue-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          {/* Banner de Espacio de Trabajo por Dependencia */}
+          {activeUser.role !== 'geca' && activeUser.role !== 'rectorado' && (
+            <div className={`p-4 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs ${
+              isViewingAll 
+                ? 'bg-amber-50/80 border-amber-200 text-amber-950' 
+                : 'bg-blue-50 border-blue-200 text-blue-950'
+            }`}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+                  isViewingAll ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                }`}>
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="font-bold text-xs uppercase tracking-wider text-blue-700 block">
-                    Tablero de Indicadores de Mi Oficina
+                  <span className={`font-bold text-xs uppercase tracking-wider block ${
+                    isViewingAll ? 'text-amber-800' : 'text-blue-700'
+                  }`}>
+                    {isViewingAll ? 'Vista Institucional Completa UPT' : 'Tablero de Indicadores de Mi Dependencia'}
                   </span>
-                  <p className="text-xs text-blue-900 mt-0.5">
-                    Mostrando <strong>{filtered.length} indicadores oficiales</strong> bajo la competencia de: <strong>{activeUser.officeName || activeUser.department}</strong>.
+                  <p className="text-xs mt-0.5">
+                    {isViewingAll ? (
+                      <>Mostrando los <strong>61 indicadores institucionales</strong> de la UPT. Tu dependencia (<strong>{activeUser.officeName || activeUser.department}</strong>) tiene <strong>{myOfficeScopedIndicators.length} asignados</strong>.</>
+                    ) : (
+                      <>Esta dependencia tiene a su cargo <strong>{myOfficeScopedIndicators.length} de los 61 indicadores oficiales</strong> del SGC UPT: <strong>{activeUser.officeName || activeUser.department}</strong>.</>
+                    )}
                   </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => onToggleScopeMode?.('all')}
-                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-blue-900 hover:bg-blue-100 border border-blue-200 transition-colors shadow-2xs cursor-pointer shrink-0"
+                onClick={() => {
+                  setCategoryFilter('ALL');
+                  setSelectedOfficeFilter('ALL');
+                  onToggleScopeMode?.(isViewingAll ? 'my_office' : 'all');
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors shadow-2xs cursor-pointer shrink-0 ${
+                  isViewingAll
+                    ? 'bg-white text-amber-900 hover:bg-amber-100 border-amber-300'
+                    : 'bg-white text-blue-900 hover:bg-blue-100 border-blue-200'
+                }`}
               >
-                Ver todos los 61 indicadores UPT
+                {isViewingAll
+                  ? `Volver a mis ${myOfficeScopedIndicators.length} indicadores`
+                  : 'Ver todos los 61 indicadores UPT'}
               </button>
             </div>
           )}
@@ -817,7 +901,7 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
                 : 'text-slate-600 hover:bg-slate-200'
             }`}
           >
-            Todos ({indicators.length})
+            Todos ({categoryCounts.all}{!isViewingAll ? ` de 61` : ''})
           </button>
           <button
             onClick={() => setCategoryFilter('PE')}
@@ -825,9 +909,10 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               categoryFilter === 'PE'
                 ? 'bg-blue-900 text-white shadow-2xs'
                 : 'text-slate-600 hover:bg-slate-200'
-            }`}
+            } ${categoryCounts.pe === 0 && !isViewingAll ? 'opacity-40' : ''}`}
+            title={categoryCounts.pe === 0 && !isViewingAll ? 'Esta dependencia no tiene indicadores estratégicos (PE)' : ''}
           >
-            Estratégicos PE ({indicators.filter(i => i.processCode.startsWith('PE')).length})
+            Estratégicos PE ({categoryCounts.pe})
           </button>
           <button
             onClick={() => setCategoryFilter('PM')}
@@ -835,9 +920,10 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               categoryFilter === 'PM'
                 ? 'bg-blue-900 text-white shadow-2xs'
                 : 'text-slate-600 hover:bg-slate-200'
-            }`}
+            } ${categoryCounts.pm === 0 && !isViewingAll ? 'opacity-40' : ''}`}
+            title={categoryCounts.pm === 0 && !isViewingAll ? 'Esta dependencia no tiene indicadores misionales (PM)' : ''}
           >
-            Misionales PM ({indicators.filter(i => i.processCode.startsWith('PM')).length})
+            Misionales PM ({categoryCounts.pm})
           </button>
           <button
             onClick={() => setCategoryFilter('PS')}
@@ -845,9 +931,10 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               categoryFilter === 'PS'
                 ? 'bg-blue-900 text-white shadow-2xs'
                 : 'text-slate-600 hover:bg-slate-200'
-            }`}
+            } ${categoryCounts.ps === 0 && !isViewingAll ? 'opacity-40' : ''}`}
+            title={categoryCounts.ps === 0 && !isViewingAll ? 'Esta dependencia no tiene indicadores de soporte (PS)' : ''}
           >
-            Soporte PS ({indicators.filter(i => i.processCode.startsWith('PS')).length})
+            Soporte PS ({categoryCounts.ps})
           </button>
         </div>
 
@@ -862,9 +949,17 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
               className="text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#0d2d3f] max-w-[240px] truncate"
               title="Filtrar indicadores por oficina o área responsable"
             >
-              <option value="ALL">Todas las Dependencias ({indicators.length})</option>
+              {isViewingAll ? (
+                <option value="ALL">Todas las Dependencias (61)</option>
+              ) : (
+                <option value="ALL">
+                  {responsibleOffices.length === 1
+                    ? `${OFFICE_SHORT_NAMES[responsibleOffices[0]] || responsibleOffices[0]} (${categoryCounts.all} de 61)`
+                    : `Mi Dependencia (${categoryCounts.all} de 61)`}
+                </option>
+              )}
               {responsibleOffices.map((off) => {
-                const count = indicators.filter(i => i.responsible === off).length;
+                const count = baseIndicators.filter((i) => i.responsible === off).length;
                 const label = OFFICE_SHORT_NAMES[off] || off;
                 return (
                   <option key={off} value={off}>
@@ -1157,6 +1252,32 @@ export const IndicatorsView: React.FC<IndicatorsViewProps> = ({
             </div>
           );
         })}
+
+        {filtered.length === 0 && (
+          <div className="col-span-full bg-slate-50 border border-dashed border-slate-300 rounded-3xl p-10 text-center">
+            <FolderOpen className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+            <h4 className="text-sm font-bold text-slate-700">No hay indicadores para mostrar</h4>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              {categoryFilter !== 'ALL'
+                ? `Esta dependencia no tiene indicadores asignados en la categoría ${
+                    categoryFilter === 'PE' ? 'Estratégica (PE)' : categoryFilter === 'PM' ? 'Misional (PM)' : 'Soporte (PS)'
+                  }.`
+                : 'No se encontraron indicadores con los filtros seleccionados.'}
+            </p>
+            {(categoryFilter !== 'ALL' || selectedOfficeFilter !== 'ALL' || searchTerm !== '') && (
+              <button
+                onClick={() => {
+                  setCategoryFilter('ALL');
+                  setSelectedOfficeFilter('ALL');
+                  setSearchTerm('');
+                }}
+                className="mt-4 px-4 py-2 bg-blue-900 text-white rounded-xl text-xs font-bold hover:bg-blue-950 transition-colors shadow-2xs cursor-pointer"
+              >
+                Ver todos los indicadores de mi dependencia
+              </button>
+            )}
+          </div>
+        )}
       </div>
         </>
       ) : (
