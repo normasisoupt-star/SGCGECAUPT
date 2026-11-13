@@ -355,6 +355,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
   const [uploadStatusText, setUploadStatusText] = useState<string>('');
 
   const [isDeletingStep, setIsDeletingStep] = useState<number | null>(null);
+  const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [deleteProgress, setDeleteProgress] = useState<number>(0);
   const [deleteStatusText, setDeleteStatusText] = useState<string>('');
 
@@ -501,27 +502,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
 
     const currentFiles = getNormalizedFiles(existing);
     const targetFile = currentFiles.find((f) => f.id === fileIdToRemove);
-    await deleteFileBlobFromIdb(fileIdToRemove);
-
-    if (targetFile) {
-      const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
-      await syncFileWithLocalOneDrive({
-        action: 'delete',
-        organUnitPath,
-        procedureCode,
-        step,
-        fileName: targetFile.fileName,
-      });
-      // Opción B: Mover a la papelera en Google Drive
-      await deleteFromGoogleDriveBridge({
-        officeName: organUnitPath,
-        procedureCode,
-        step,
-        fileName: targetFile.fileName,
-        fileId: targetFile.driveFileId,
-      });
-    }
-
+    const fileName = targetFile?.fileName || 'archivo';
     const remaining = currentFiles.filter((f) => f.id !== fileIdToRemove);
 
     if (remaining.length === 0) {
@@ -529,22 +510,75 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
       return;
     }
 
-    const updatedEvidence: ProcedureActivityEvidence = {
-      ...existing,
-      fileName:
-        remaining.length === 1
-          ? remaining[0].fileName
-          : `${remaining.length} documentos adjuntos`,
-      fileFormat: remaining.length > 1 ? 'multi_files' : remaining[0].fileFormat,
-      files: remaining,
-      updatedAt: new Date().toISOString(),
-    };
+    setOpenMenuStep(null);
+    setIsDeletingStep(step);
+    setDeletingFileId(fileIdToRemove);
+    setDeleteProgress(15);
+    setDeleteStatusText(`Iniciando eliminación de ${fileName}...`);
 
-    const updatedMap = saveActivityEvidence(updatedEvidence);
-    setEvidencesMap({ ...updatedMap });
+    const progressInterval = setInterval(() => {
+      setDeleteProgress((prev) => {
+        if (prev < 88) return prev + Math.floor(Math.random() * 8) + 4;
+        return prev;
+      });
+    }, 180);
+
     try {
-      await saveActivityEvidenceToCloud(updatedEvidence);
-    } catch {}
+      await deleteFileBlobFromIdb(fileIdToRemove);
+
+      if (targetFile) {
+        const organUnitPath = getOrganUnitSubpath(procedureCode, scopeUnitId);
+        setDeleteStatusText(`Eliminando ${fileName} de OneDrive y Google Drive...`);
+        await syncFileWithLocalOneDrive({
+          action: 'delete',
+          organUnitPath,
+          procedureCode,
+          step,
+          fileName: targetFile.fileName,
+        });
+        // Opción B: Mover a la papelera en Google Drive
+        await deleteFromGoogleDriveBridge({
+          officeName: organUnitPath,
+          procedureCode,
+          step,
+          fileName: targetFile.fileName,
+          fileId: targetFile.driveFileId,
+        });
+      }
+
+      clearInterval(progressInterval);
+      setDeleteProgress(92);
+      setDeleteStatusText('Actualizando registros institucionales...');
+
+      const updatedEvidence: ProcedureActivityEvidence = {
+        ...existing,
+        fileName:
+          remaining.length === 1
+            ? remaining[0].fileName
+            : `${remaining.length} documentos adjuntos`,
+        fileFormat: remaining.length > 1 ? 'multi_files' : remaining[0].fileFormat,
+        files: remaining,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedMap = saveActivityEvidence(updatedEvidence);
+      setEvidencesMap({ ...updatedMap });
+      try {
+        await saveActivityEvidenceToCloud(updatedEvidence);
+      } catch {}
+
+      setDeleteProgress(100);
+      setDeleteStatusText(`¡${fileName} eliminado con éxito!`);
+      await new Promise((r) => setTimeout(r, 550));
+    } catch (err) {
+      console.warn('Error al eliminar archivo individual:', err);
+    } finally {
+      clearInterval(progressInterval);
+      setIsDeletingStep(null);
+      setDeletingFileId(null);
+      setDeleteProgress(0);
+      setDeleteStatusText('');
+    }
   };
 
   const triggerFilePickerForStep = (step: number) => {
@@ -944,7 +978,7 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
               <div className="flex items-center justify-between text-xs font-semibold text-rose-900">
                 <span className="flex items-center gap-1.5 truncate max-w-[210px]">
                   <Trash2 className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
-                  <span className="truncate">{deleteStatusText || 'Vaciando actividad...'}</span>
+                  <span className="truncate">{deleteStatusText || (deletingFileId ? 'Eliminando archivo...' : 'Vaciando actividad...')}</span>
                 </span>
                 <span className={`font-mono font-bold text-xs ${deleteProgress === 100 ? 'text-emerald-700' : 'text-rose-700'}`}>
                   {deleteProgress}%
@@ -962,8 +996,8 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                 />
               </div>
               <div className="flex items-center justify-between text-[10px] text-rose-600/80">
-                <span>{deleteProgress === 100 ? '✓ Limpieza completada' : 'Moviendo archivos a papelera de Drive'}</span>
-                <span className="font-semibold">{deleteProgress === 100 ? 'Completado' : 'Vaciando...'}</span>
+                <span>{deleteProgress === 100 ? '✓ Proceso completado' : (deletingFileId ? 'Moviendo a papelera de Drive' : 'Moviendo archivos a papelera de Drive')}</span>
+                <span className="font-semibold">{deleteProgress === 100 ? 'Completado' : (deletingFileId ? 'Eliminando...' : 'Vaciando...')}</span>
               </div>
             </div>
           );
@@ -1124,64 +1158,83 @@ export const ProcedureActivitiesSidePanel: React.FC<ProcedureActivitiesSidePanel
                 {/* Si hay 2 o más archivos subidos, mostramos la lista completa de archivos dentro de la tarjeta */}
                 {hasMultipleFiles && (
                   <div className="mt-2.5 space-y-1.5 bg-slate-50/90 p-2 rounded-xl border border-slate-200/80">
-                    {attachedFiles.map((fileItem, idx) => (
-                      <div
-                        key={fileItem.id || idx}
-                        className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-white border border-slate-200/80 hover:border-slate-300 transition-colors"
-                      >
+                    {attachedFiles.map((fileItem, idx) => {
+                      const isThisFileDeleting = deletingFileId === fileItem.id;
+                      return (
                         <div
-                          onClick={() => openAttachedFile(fileItem, evidence, 'view')}
-                          className="flex items-center gap-2 min-w-0 cursor-pointer group"
-                          title={`Ver ${fileItem.fileName}`}
+                          key={fileItem.id || idx}
+                          className={`flex items-center justify-between gap-2 p-1.5 rounded-lg border transition-all ${
+                            isThisFileDeleting
+                              ? 'bg-rose-50/80 border-rose-300 ring-1 ring-rose-200'
+                              : 'bg-white border-slate-200/80 hover:border-slate-300'
+                          }`}
                         >
-                          <span
-                            className={`w-6 h-6 rounded-md text-white flex items-center justify-center text-[8px] font-extrabold shrink-0 ${
-                              fileItem.fileFormat === 'excel'
-                                ? 'bg-emerald-600'
+                          <div
+                            onClick={() => !isDeletingThisAct && openAttachedFile(fileItem, evidence, 'view')}
+                            className={`flex items-center gap-2 min-w-0 ${isDeletingThisAct ? 'cursor-not-allowed opacity-75' : 'cursor-pointer group'}`}
+                            title={`Ver ${fileItem.fileName}`}
+                          >
+                            <span
+                              className={`w-6 h-6 rounded-md text-white flex items-center justify-center text-[8px] font-extrabold shrink-0 ${
+                                fileItem.fileFormat === 'excel'
+                                  ? 'bg-emerald-600'
+                                  : fileItem.fileFormat === 'word'
+                                  ? 'bg-blue-600'
+                                  : 'bg-rose-600'
+                              }`}
+                            >
+                              {fileItem.fileFormat === 'excel'
+                                ? 'XLS'
                                 : fileItem.fileFormat === 'word'
-                                ? 'bg-blue-600'
-                                : 'bg-rose-600'
-                            }`}
-                          >
-                            {fileItem.fileFormat === 'excel'
-                              ? 'XLS'
-                              : fileItem.fileFormat === 'word'
-                              ? 'DOC'
-                              : 'PDF'}
-                          </span>
-                          <span className="text-[11px] font-bold text-slate-800 truncate group-hover:text-blue-700">
-                            {fileItem.fileName}
-                          </span>
-                        </div>
+                                ? 'DOC'
+                                : 'PDF'}
+                            </span>
+                            <span className={`text-[11px] font-bold truncate ${isThisFileDeleting ? 'text-rose-700' : 'text-slate-800 group-hover:text-blue-700'}`}>
+                              {fileItem.fileName}
+                            </span>
+                            {isThisFileDeleting && (
+                              <span className="text-[10px] font-mono font-bold text-rose-600 animate-pulse shrink-0">
+                                ({deleteProgress}%)
+                              </span>
+                            )}
+                          </div>
 
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => openAttachedFile(fileItem, evidence, 'view')}
-                            className="p-1 rounded-md text-slate-600 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
-                            title="Ver este documento"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openAttachedFile(fileItem, evidence, 'download')}
-                            className="p-1 rounded-md text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
-                            title="Descargar este documento"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSingleFileFromStep(act.step, fileItem.id)}
-                            className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Quitar este archivo"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              disabled={isDeletingThisAct || isUploadingThisAct}
+                              onClick={() => openAttachedFile(fileItem, evidence, 'view')}
+                              className="p-1 rounded-md text-slate-600 hover:text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="Ver este documento"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isDeletingThisAct || isUploadingThisAct}
+                              onClick={() => openAttachedFile(fileItem, evidence, 'download')}
+                              className="p-1 rounded-md text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="Descargar este documento"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isDeletingThisAct || isUploadingThisAct}
+                              onClick={() => handleRemoveSingleFileFromStep(act.step, fileItem.id)}
+                              className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="Quitar este archivo"
+                            >
+                              {isThisFileDeleting ? (
+                                <Trash2 className="w-3.5 h-3.5 text-rose-600 animate-spin" />
+                              ) : (
+                                <X className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
